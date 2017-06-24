@@ -26,11 +26,14 @@ httpd_set("/settings", function(request, response)
 			variables_set("smartthings", "{ token = \"" .. request.body.token .. "\",\r\n apiUrl = \""..request.body.apiUrl.."\" }")
 			variables_set("sensors", sensors)
 			variables_set("actuators", actuators)
-			initializePins()
+
+			print('Settings updated! Restarting in 2 seconds...')
+			tmr.create():alarm(2000, tmr.ALARM_SINGLE, node.restart)
+
 			response:contentType("application/json")
 			response:status("204")
 			response:send("")
-		end            
+		end
 	end
 end)
 httpd_set("/device", function(request, response) 

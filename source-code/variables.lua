@@ -19,6 +19,7 @@ function variables_set(name,value)
 	local f = file.open(fn, "w")
 	f.writeline(name.." = "..value)
 	f.close()
+	print('Wrote ' .. fn)
 	variables_load()
 	collectgarbage()
 end
