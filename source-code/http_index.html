@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+		<title>Alarm Panel</title>
+		<style type=text/css>
+			* {
+				margin: 0;
+				padding: 0;
+			}		
+			html, body {
+				height: 100%;
+				font-family: sans-serif;
+				text-align: left;
+				background-image: linear-gradient(180deg, #15B 0%, #39C 100%);
+			}		
+			#content {
+				position: absolute;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				left: 0;
+				width: 320px;
+				height: 480px;
+				margin: auto;
+			}		
+			input, button, select {
+				-webkit-appearance: none;
+				border-radius: 0;
+				margin-bottom: 10px;
+			}		
+			fieldset {
+				border: 0;
+				box-shadow: 0 0 5px #000;
+				box-sizing: border-box;
+				border-radius: 15px;
+				padding: 30px 20px;
+				background: #FFF;
+				min-height: 320px;
+			}		
+			input {
+				border: 1px solid #ccc;
+				box-sizing: border-box;
+				color: #222;
+				font: 16px monospace;
+				padding: 15px;
+				width: 100%;
+			}		
+			select {
+				font: 16px monospace;
+				background-color: transparent;
+				padding: 15px;
+			}		
+			button {
+				color: #fff;
+				border: 0;
+				border-radius: 5px;
+				cursor: pointer;				
+				font: 15px sans-serif;
+				font-variant:small-caps;
+				text-decoration: none;
+				background: #0AD;
+				margin: 0px 0px;
+				padding: 10px;
+				box-shadow: 1px 1px 1px 1px #0AD;
+			}
+			button:focus, button:hover {
+				box-shadow: -1px -1px 1px 1px #0AD;
+			}
+			#b1 {		
+				width: 135px;
+				margin: 0 10px 10px 0;
+			}
+			#b2 {		
+				width: 135px;
+				margin: 0 0 10px 0;
+			}
+			#b3 {
+				width: 100%;
+				display: block;
+			}
+			h2 {
+				font: 18px sans-serif;
+				color: #444;
+				margin-bottom: 10px;
+			}	
+			h3 {
+				font: 14px sans-serif;
+				color: #444;
+				margin-bottom: 10px;
+			}		
+			h4 {
+				color: #888;
+				font: 14px sans-serif;
+				font-style: italic;
+				padding: 10px;
+			}
+			table {
+				font: 14px sans-serif;
+			}
+			td {
+				padding: 5px;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div id=content>
+			<fieldset>
+				<div id=f1>
+					<h1>Status</h1>
+					<table>
+						<tr><td>Hardware Version:</td><td><div id=s1></div></td></tr>
+						<tr><td>Software Version:</td><td><div id=s2></div></td></tr>
+						<tr><td>IP Address:</td><td><div id=s3></div></td></tr>
+						<tr><td>MAC Address:</td><td><div id=s4></div></td></tr>
+						<tr><td>Remaining Memory:</td><td><div id=s5></div></td></tr>
+						<tr><td>Total Uptime:</td><td><div id=s6></div></td></tr>
+					</table>
+				</div>
+				<div id=deviceId></div>
+			</fieldset>
+		</div>	
+		<script>
+			var stopAll = false, r;
+			function getStat() { 
+				if (!stopAll) 
+					fetch('/status?n=' + Math.random(), 'GET', getStatHandler, 2); 
+			}
+			function getStatHandler(s, d) {
+				if (s == 200) {
+					if (typeof d === 'string') { d = JSON.parse(d); }
+					s1.innerText = d.hwVersion;
+					s2.innerText = d.swVersion;
+					s3.innerText = d.ip;
+					s4.innerText = d.mac;
+					s5.innerText = d.heap;
+					var uptimeDays  = Math.floor(d.uptime / 86400);
+					var uptimeHours = Math.floor(d.uptime % 86400 / 3600); 
+					var uptimeMins  = Math.floor(d.uptime % 86400 % 3600 / 60);
+					var uptimeSecs  = d.uptime % 60;
+					s6.innerText = '';
+					if (uptimeDays >= 1)  s6.innerText += uptimeDays + " D ";
+					if (uptimeHours >= 1) s6.innerText += uptimeHours + " H ";
+					if (uptimeMins >= 1 ) s6.innerText += uptimeMins + " m ";
+					if (uptimeSecs > 1)   s6.innerText += uptimeSecs + " s";   
+				}
+			}			
+			function fetch(u, m, c, t) {
+				var x = new XMLHttpRequest();
+				x.onloadend = function () { c(x.status, x.responseText); }
+				x.ontimeout = function () { c(-1, null); }
+				x.open(m, u, true);
+				x.setRequestHeader('Accept', 'application/json');
+				x.timeout = (t || 10) * 1000;
+				x.send();
+			}
+			window.onload = function() {
+				getStat();						  				
+			}
+			
+		</script>
+	</body>
+</html>
