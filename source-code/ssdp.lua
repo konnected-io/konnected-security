@@ -20,9 +20,7 @@ local ssdp_deviceXML = "<?xml version=\"1.0\"?>\r\n" ..
 net.multicastJoin(wifi.sta.getip(), "239.255.255.250")
 
 local ssdp_sv = net.createServer(net.UDP)
-
 ssdp_sv:listen(1900, "239.255.255.250")
-
 ssdp_sv:on("receive", function(c, d, p, i)
   if string.match(d, "M-SEARCH") then
     if (string.match(d, "urn.*%d") == ssdp_deviceType) then

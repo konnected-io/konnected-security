@@ -1,3 +1,4 @@
+
 function variables_set(name, value)
   local fnc = string.match(name, ".*%.")
   local fn = "var_" .. name
