@@ -1,5 +1,5 @@
 local ssdp_deviceType = "urn:schemas-konnected-io:device:AlarmPanel:1"
-local ssdp_deviceID = "uuid:8f655392-a778-4fee-97b9-4825918"..string.format("%x",node.chipid()),
+local ssdp_deviceID = "uuid:8f655392-a778-4fee-97b9-4825918"..string.format("%x",node.chipid())
 local ssdp_deviceXML = "<?xml version=\"1.0\"?>\r\n"..
 				"<root xmlns=\"urn:schemas-upnp-org:device-1-0\">\r\n"..
 				"\t<specVersion><major>1</major><minor>0</minor></specVersion>\r\n"..
