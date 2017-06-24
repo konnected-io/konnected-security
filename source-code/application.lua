@@ -1,8 +1,19 @@
 local sensorSend = { }
 
-for i,sensor in pairs(sensors) do
-	gpio.mode(sensor.pin, gpio.INPUT, gpio.PULLUP)
+function initializePins()
+	for i,sensor in pairs(sensors) do
+		print('Initializing sensor on pin ' .. sensor.pin)
+		gpio.mode(sensor.pin, gpio.INPUT, gpio.PULLUP)
+	end
+
+	for i,actuator in pairs(actuators) do
+		print('Initializing actuator on pin ' .. actuator.pin)
+		gpio.mode(actuator.pin, gpio.OUTPUT)
+		gpio.write(actuator.pin, gpio.LOW)
+	end
 end
+
+initializePins()
 
 tmr.create():alarm(200, tmr.ALARM_AUTO,function(t)
 	for i, sensor in pairs(sensors) do
