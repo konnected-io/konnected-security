@@ -1,4 +1,5 @@
 local sensorSend = {}
+local dni = wifi.sta.getmac():gsub("%:", "")
 
 for i, sensor in pairs(sensors) do
   print('Initializing sensor on pin ' .. sensor.pin)
@@ -24,13 +25,17 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
   if sensorSend[1] then
     t:stop()
     local sensor = sensors[sensorSend[1]]
-    http.put(smartthings.apiUrl .. "\/device\/" .. wifi.sta.getmac():gsub("%:", "") .. "\/" .. sensor.pin .. "\/" .. gpio.read(sensor.pin), "Authorization: Bearer " .. smartthings.token .. "\r\n", "", function(stat, b, h)
-      table.remove(sensorSend, 1)
-      t:start()
-    end)
+    http.put(
+      table.concat({ smartthings.apiUrl, "\/device\/", dni, "\/", sensor.pin, "\/", gpio.read(sensor.pin) }),
+      table.concat({ "Authorization: Bearer ", smartthings.token, "\r\n" }),
+      "",
+      function(code)
+        print("Heap:", node.heap(), "Success:", code)
+        table.remove(sensorSend, 1)
+        blinktimer:start()
+        t:start()
+      end)
+    collectgarbage()
   end
 end)
 
-tmr.create():alarm(5000, tmr.ALARM_AUTO, function()
-  print("Memory: " .. node.heap())
-end)
