@@ -1,4 +1,5 @@
 print("Starting.. Memory: " .. node.heap())
+require("compile")
 require("variables")
 enduser_setup.manual(false)
 enduser_setup.start()
@@ -19,10 +20,3 @@ tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
     print("Started.. Memory: " .. node.heap() .. " IP: " .. wifi.sta.getip())
   end
 end)
-
-
-
-
-
-
-
