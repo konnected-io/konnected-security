@@ -13,22 +13,37 @@ httpd_set("/favicon.ico", function(request, response)
 end)
 
 httpd_set("/settings", function(request, response)
-  local function buildLuaTable(objects)
-    local out = "{ "
+  local function buildValue(objects)
+    local out = {}
+    table.insert(out, "{ ")
     for i, object in pairs(objects) do
-      out = out .. "\r\n{ pin = " .. object.pin .. " }"
+       table.insert(out, "\r\n{ pin = ")
+       table.insert(out, object.pin)
+       table.insert(out, " }")
       if i < #objects then
-        out = out .. ","
+        table.insert(out, ",")
       end
     end
-    return out .. " }"
+    table.insert(out, " }")
+    return table.concat(out)
   end
 
   if request.contentType == "application/json" then
     if request.method == "PUT" then
-      variables_set("smartthings", "{ token = \"" .. request.body.token .. "\",\r\n apiUrl = \"" .. request.body.apiUrl .. "\" }")
-      variables_set("sensors", buildLuaTable(request.body.sensors))
-      variables_set("actuators", buildLuaTable(request.body.actuators))
+      local function variables_set(name, value)
+        local fnc = string.match(name, ".*%.")
+        local fn = "var_" .. name .. '.lua'
+        local f = file.open(fn, "w")
+        f.writeline(name .. " = " .. value)
+        f.close()
+        node.compile(fn)
+        file.remove(fn)
+        print("Heap: ", node.heap(), "Wrote: ", fn)
+        collectgarbage()
+      end
+      variables_set("smartthings", table.concat({ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\" }" }))
+      variables_set("sensors", buildValue(request.body.sensors))
+      variables_set("actuators", buildValue(request.body.actuators))
 
       print('Settings updated! Restarting in 2 seconds...')
       tmr.create():alarm(2000, tmr.ALARM_SINGLE, node.restart)
@@ -74,9 +89,7 @@ httpd_set("/status", function(request, response)
 end)
 
 httpd_set("/restart", function(request, response)
-  tmr.create():alarm(10000, tmr.ALARM_AUTO, function(t)
-    node.restart()
-  end)
+  tmr.create():alarm(5000, tmr.ALARM_SINGLE, node.restart)
   response:contentType("application/json")
   response:status("204")
   response:send("")
