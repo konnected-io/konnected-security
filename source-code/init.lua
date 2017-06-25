@@ -1,4 +1,5 @@
 print("Starting.. Memory: " .. node.heap())
+require("compile")
 require("variables")
 enduser_setup.manual(false)
 enduser_setup.start()

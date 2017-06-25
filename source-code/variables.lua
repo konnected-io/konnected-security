@@ -1,11 +1,12 @@
 
 function variables_set(name, value)
   local fnc = string.match(name, ".*%.")
-  local fn = "var_" .. name
+  local fn = "var_" .. name .. '.lua'
   local f = file.open(fn, "w")
   f.writeline(name .. " = " .. value)
   f.close()
-  dofile(fn)
+  node.compile(fn)
+  file.remove(fn)
   print("Heap: ", node.heap(), "Wrote: ", fn)
   variables_load()
   collectgarbage()
