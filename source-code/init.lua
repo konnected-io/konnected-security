@@ -20,10 +20,3 @@ tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
     print("Started.. Memory: " .. node.heap() .. " IP: " .. wifi.sta.getip())
   end
 end)
-
-
-
-
-
-
-

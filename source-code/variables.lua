@@ -1,4 +1,3 @@
-
 function variables_set(name, value)
   local fnc = string.match(name, ".*%.")
   local fn = "var_" .. name .. '.lua'
@@ -8,12 +7,10 @@ function variables_set(name, value)
   node.compile(fn)
   file.remove(fn)
   print("Heap: ", node.heap(), "Wrote: ", fn)
-  variables_load()
   collectgarbage()
 end
 
-local fl = file.list()
-for fn in pairs(fl) do
+for fn in pairs(file.list()) do
   local fm = string.match(fn,"var_.*")
   if (fm) then 
     dofile(fm) 
