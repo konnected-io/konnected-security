@@ -1,5 +1,7 @@
 local sensorSend = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
+local timeout = tmr.create()
+timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
 for i, sensor in pairs(sensors) do
   print('Initializing sensor on pin ' .. sensor.pin)
@@ -25,11 +27,13 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
   if sensorSend[1] then
     t:stop()
     local sensor = sensors[sensorSend[1]]
+    timeout:start()
     http.put(
       table.concat({ smartthings.apiUrl, "\/device\/", dni, "\/", sensor.pin, "\/", gpio.read(sensor.pin) }),
       table.concat({ "Authorization: Bearer ", smartthings.token, "\r\n" }),
       "",
       function(code)
+        timeout:stop()
         print("Heap:", node.heap(), "Success:", code)
         table.remove(sensorSend, 1)
         blinktimer:start()
