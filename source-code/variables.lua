@@ -17,3 +17,6 @@ blinktimer:register(100, tmr.ALARM_SEMI, function(t)
     gpio.write(4, gpio.HIGH)
   end
 end)
+
+timeout = tmr.create()
+timeout:register(15000, tmr.ALARM_SEMI, node.restart)

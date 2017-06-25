@@ -1,7 +1,5 @@
 local sensorSend = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
-local timeout = tmr.create()
-timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
 for i, sensor in pairs(sensors) do
   print('Initializing sensor on pin ' .. sensor.pin)
