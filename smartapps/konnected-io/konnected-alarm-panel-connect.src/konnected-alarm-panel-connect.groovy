@@ -72,8 +72,12 @@ def initialize() {
 
 //Page : 1 : Discovery page - search and select devices
 def pageDiscovery() {
+  //create accessToken
   if(!state.accessToken) { createAccessToken() }  
+      
+  //This is a workaround to prevent page to refresh too fast.
   if(!state.pageConfigurationRefresh) { state.pageConfigurationRefresh = 2 }
+  
   dynamicPage(name: "pageDiscovery", nextPage: "pageConfiguration", refreshInterval: state.pageConfigurationRefresh) {
     state.pageConfigurationRefresh =  state.pageConfigurationRefresh + 3
     discoverySubscribtion()
@@ -83,11 +87,21 @@ def pageDiscovery() {
     section("Please wait while we discover your device") {
       input(name: "selectedAlarmPanels", type: "enum", title: "Select Alarm Panel (${alarmPanels.size() ?: 0} found)", required: true, multiple: true, options: alarmPanels, defaultValue: settings.selectedAlarmPanels, submitOnChange: true)
     }
-  }    
+  }
 }
+
+Map pageDiscoveryGetAlarmPanels() {
+  def alarmPanels = [:]
+  def verifiedAlarmPanels = getAlarmPanels().findAll{ it.value.verified == true }
+  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "AlarmPanel_${it.value.mac[-6..-1]}" }
+  return alarmPanels
+}
+
 //Page : 2 : Configure sensors and alarms connected to the panel
 def pageConfiguration() {
+  //Get all selected devices
   def configuredAlarmPanels = [] + getSelectedAlarmPanel()
+  
   dynamicPage(name: "pageConfiguration") {
     configuredAlarmPanels.each { alarmPanel ->
       section(hideable: true, "AlarmPanel_${alarmPanel.mac[-6..-1]}") {
@@ -103,20 +117,15 @@ def pageConfiguration() {
     }
   }
 }
+
 Map pageConfigurationGetDeviceType() { 
   return [
-    "contact" : "Open/Close Sensor", 
-    "motion"  : "Motion Sensor", 
-    "smoke"   : "Smoke Detector",
-    "siren"   : "Siren/Strobe",
-    "switch"  : "Panic Button"
+    "Konnected Contact Sensor" : "Open/Close Sensor", 
+    "Konnected Motion Sensor"  : "Motion Sensor", 
+    "Konnected Smoke Sensor"   : "Smoke Detector",
+    "Konnected Siren/Strobe"   : "Siren/Strobe",
+    "Konnected Panic Button"   : "Panic Button"
   ] 
-}
-Map pageDiscoveryGetAlarmPanels() {
-  def alarmPanels = [:]
-  def verifiedAlarmPanels = getAlarmPanels().findAll{ it.value.verified == true }
-  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "AlarmPanel_${it.value.mac[-6..-1]}" }
-  return alarmPanels
 }
 
 //Retrieve selected device
@@ -139,6 +148,7 @@ def getSelectedAlarmPanel(mac) {
     return state.alarmPanel
   }
 }
+
 //Retrieve devices saved in state
 def getAlarmPanels() {
   if (!state.devices) { state.devices = [:] }
@@ -195,31 +205,7 @@ def discoveryVerificationHandler(physicalgraph.device.HubResponse hubResponse) {
   if (device) { device.value << [name: body?.device?.roomName?.text(), model:body?.device?.modelName?.text(), serialNumber:body?.device?.serialNum?.text(), verified: true] }
 }
 
-//Child Devices : Get device type
-def childDeviceGetDeviceType(value) {
-  def deviceType = ""
-    switch(value) {
-      case "contact": 
-        deviceType = "Konnected Contact Sensor"
-        break
-      case "motion": 
-        deviceType = "Konnected Motion Sensor"
-        break
-      case "smoke":
-        deviceType = "Konnected Smoke Sensor"
-        break
-      case "siren":
-        deviceType = "Konnected Siren/Strobe"
-        break
-      case "switch":
-        deviceType = "Konnected Panic Button"
-        break
-      default:
-        deviceType = ""
-        break
-    }
-  return deviceType
-}
+
 
 //Child Devices : create/delete child devices from SmartThings app selection
 def childDeviceConfiguration() {
@@ -230,7 +216,7 @@ def childDeviceConfiguration() {
       def selectedAlarmPanel = getSelectedAlarmPanel().find { it.mac == nameValue[1] } 
       def deviceDNI = [ selectedAlarmPanel.mac, "${nameValue[2]}"].join('|') 
       def deviceLabel = settings."deviceLabel_${nameValue[1]}_${nameValue[2]}"
-      def deviceType = childDeviceGetDeviceType(value)
+      def deviceType = value
       def deviceChild = getChildDevice(deviceDNI)      
       if (!deviceChild) { 
         if (deviceType != "") {
@@ -248,7 +234,7 @@ def childDeviceConfiguration() {
       }
     }
   }
-  def deleteChildDevices = getAllChildDevices().findAll { childDeviceGetDeviceType(settings."deviceType_${it.deviceNetworkId.split("\\|")[0]}_${it.deviceNetworkId.split("\\|")[1]}") == "" }
+  def deleteChildDevices = getAllChildDevices().findAll { settings."deviceType_${it.deviceNetworkId.split("\\|")[0]}_${it.deviceNetworkId.split("\\|")[1]}" == "" }
   deleteChildDevices.each { deleteChildDevice(it.deviceNetworkId) }  
 }
 //Child Devices : update state of child device sent from nodemcu

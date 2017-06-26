@@ -14,31 +14,33 @@
  *
  */
 metadata {
-	definition (name: "Konnected Motion Sensor", namespace: "konnected-io", author: "konnected.io") {
-		capability "Motion Sensor"
-		capability "Sensor"
-	}
-	tiles {
-		multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-			tileAttribute ("device.motion", key: "PRIMARY_CONTROL") {
-				attributeState ("inactive", label: "No Motion", 	icon:"st.motion.motion.inactive", 	backgroundColor:"#ffffff")
-				attributeState ("active", 	label: "Motion", 		icon:"st.motion.motion.active", 	backgroundColor:"#00a0dc")
-			}
-		}
-		main "main"
-		details "main"
-	}
+  definition (name: "Konnected Motion Sensor", namespace: "konnected-io", author: "konnected.io") {
+    capability "Motion Sensor"
+    capability "Sensor"
+  }
+  tiles {
+    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+      tileAttribute ("device.motion", key: "PRIMARY_CONTROL") {
+        attributeState ("inactive", label: "No Motion", icon:"st.motion.motion.inactive", backgroundColor:"#ffffff")
+        attributeState ("active",   label: "Motion",    icon:"st.motion.motion.active",   backgroundColor:"#00a0dc")
+      }
+    }
+    main "main"
+    details "main"
+  }
 }
+
+//Update state sent from parent app
 def setStatus(state) { 
-	switch(state) {
-		case "0" :
-			sendEvent(name: "motion", value: "inactive") 
-			break
-		case "1" :
-			sendEvent(name: "motion", value: "active") 
-			break
-		default:
-			sendEvent(name: "motion", value: "inactive") 
-			break
-	}
+  switch(state) {
+    case "0" :
+      sendEvent(name: "motion", value: "inactive") 
+      break
+    case "1" :
+      sendEvent(name: "motion", value: "active") 
+      break
+    default:
+      sendEvent(name: "motion", value: "inactive") 
+      break
+  }
 }

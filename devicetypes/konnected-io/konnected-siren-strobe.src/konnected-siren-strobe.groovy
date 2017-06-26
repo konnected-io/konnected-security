@@ -14,33 +14,37 @@
  *
  */
 metadata {
-	definition (name: "Konnected Siren/Strobe", namespace: "konnected-io", author: "konnected.io") {
-		capability "Alarm"
-		capability "Switch"
-		capability "Actuator"
-	}
-	tiles {
-		multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-			tileAttribute ("device.alarm", key: "PRIMARY_CONTROL") {
-				attributeState ("off", 		label: "Off",	 	icon:"st.security.alarm.clear", action:"alarm.both",	backgroundColor:"#ffffff")
-				attributeState ("both", 	label: "Alarm!", 	icon:"st.security.alarm.alarm", action:"alarm.off",		backgroundColor:"#e86d13")
-			}
-		}
-		main "main"
-		details "main"
-	}
+  definition (name: "Konnected Siren/Strobe", namespace: "konnected-io", author: "konnected.io") {
+    capability "Alarm"
+    capability "Switch"
+    capability "Actuator"
+  }
+  tiles {
+    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+      tileAttribute ("device.alarm", key: "PRIMARY_CONTROL") {
+        attributeState ("off",  label: "Off",    icon:"st.security.alarm.clear", action:"alarm.both", backgroundColor:"#ffffff")
+        attributeState ("both", label: "Alarm!", icon:"st.security.alarm.alarm", action:"alarm.off",  backgroundColor:"#e86d13")
+      }
+    }
+    main "main"
+    details "main"
+  }
 }
 
 def off() { 
-	sendEvent([name: "switch", value: "off", displayed: false])
-	sendEvent([name: "alarm", value: "off"])
-	parent.deviceUpdateDeviceState(device.deviceNetworkId, 0)
+  sendEvent([name: "switch", value: "off", displayed: false])
+  sendEvent([name: "alarm", value: "off"])
+  parent.deviceUpdateDeviceState(device.deviceNetworkId, 0)
 }
+
 def on() {
-	sendEvent([name: "switch", value: "on", displayed: false])
-	sendEvent([name: "alarm", value: "both"])
-	parent.deviceUpdateDeviceState(device.deviceNetworkId, 1)
+  sendEvent([name: "switch", value: "on", displayed: false])
+  sendEvent([name: "alarm", value: "both"])
+  parent.deviceUpdateDeviceState(device.deviceNetworkId, 1)
 }
+
 def both() { on() }
+
 def strobe() { on() }
+
 def siren() { on() }
