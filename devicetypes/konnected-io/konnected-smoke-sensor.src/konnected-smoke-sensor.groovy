@@ -14,31 +14,33 @@
  *
  */
 metadata {
-	definition (name: "Konnected Smoke Sensor", namespace: "konnected-io", author: "konnected.io") {
-		capability "Smoke Detector"
-		capability "Sensor"
-	}
-	tiles {
-		multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-			tileAttribute ("device.smoke", key: "PRIMARY_CONTROL") {
-				attributeState ("clear", 	label: "Clear", 	icon:"st.alarm.smoke.clear",	backgroundColor:"#ffffff")
-				attributeState ("detected", label: "Smoke", 	icon:"st.alarm.smoke.smoke", 	backgroundColor:"#e86d13")
-			}
-		}
-		main "main"
-		details "main"
-	}
+  definition (name: "Konnected Smoke Sensor", namespace: "konnected-io", author: "konnected.io") {
+    capability "Smoke Detector"
+    capability "Sensor"
+  }
+  tiles {
+    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+      tileAttribute ("device.smoke", key: "PRIMARY_CONTROL") {
+        attributeState ("clear",    label: "Clear", icon:"st.alarm.smoke.clear", backgroundColor:"#ffffff")
+        attributeState ("detected", label: "Smoke", icon:"st.alarm.smoke.smoke", backgroundColor:"#e86d13")
+      }
+    }
+    main "main"
+    details "main"
+  }
 }
+
+//Update state sent from parent app
 def setStatus(state) { 
-	switch(state) {
-		case "0" :
-			sendEvent(name: "smoke", value: "clear") 
-			break
-		case "1" :
-			sendEvent(name: "smoke", value: "detected") 
-			break
-		default:
-			sendEvent(name: "smoke", value: "detected") 
-			break
-	}
+  switch(state) {
+    case "0" :
+      sendEvent(name: "smoke", value: "clear") 
+      break
+    case "1" :
+      sendEvent(name: "smoke", value: "detected") 
+      break
+    default:
+      sendEvent(name: "smoke", value: "detected") 
+      break
+  }
 }

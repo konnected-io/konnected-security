@@ -14,31 +14,33 @@
  *
  */
 metadata {
-	definition (name: "Konnected Panic Button", namespace: "konnected-io", author: "konnected.io") {
-		capability "Switch"
-		capability "Sensor"
-	}
-	tiles {
-		multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState ("off", 	label: "Off", 		icon:"st.illuminance.illuminance.dark", 	backgroundColor:"#ffffff")
-				attributeState ("on", 	label: "Panic!", 	icon:"st.illuminance.illuminance.light", 	backgroundColor:"#e86d13")
-			}
-		}
-		main "main"
-		details "main"
-	}
+  definition (name: "Konnected Panic Button", namespace: "konnected-io", author: "konnected.io") {
+    capability "Switch"
+    capability "Sensor"
+  }
+  tiles {
+    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+      tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
+        attributeState ("off", label: "Off",    icon:"st.illuminance.illuminance.dark",  backgroundColor:"#ffffff")
+        attributeState ("on",  label: "Panic!", icon:"st.illuminance.illuminance.light", backgroundColor:"#e86d13")
+      }
+    }
+    main "main"
+    details "main"
+  }
 }
+
+//Update state sent from parent app
 def setStatus(state) { 
-	switch(state) {
-		case "0" :
-			sendEvent(name: "switch", value: "off") 
-			break
-		case "1" :
-			sendEvent(name: "switch", value: "on") 
-			break
-		default:
-			sendEvent(name: "switch", value: "on") 
-			break
-	}
+  switch(state) {
+    case "0" :
+      sendEvent(name: "switch", value: "off") 
+      break
+    case "1" :
+      sendEvent(name: "switch", value: "on") 
+      break
+    default:
+      sendEvent(name: "switch", value: "on") 
+      break
+  }
 }
