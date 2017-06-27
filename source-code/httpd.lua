@@ -134,6 +134,7 @@ end
 
 local httpd_server = net.createServer(net.TCP, 10)
 local httpd_port = math.floor(node.chipid()/1000) + 8000
+print("Heap: ", node.heap(), "HTTP: ", "Starting server on port", httpd_port )
 httpd_server:listen(httpd_port, function(c)
   c:on('receive', function(s, d)
     local r = { source = d, path = '' }
