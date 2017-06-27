@@ -11,11 +11,11 @@ if wifi.sta.getconfig() == "" then
 end
 
 tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
-if gpio.read(4) == gpio.LOW then
-  gpio.write(4, gpio.HIGH)
-else
-  gpio.write(4, gpio.LOW)
-end
+  if gpio.read(4) == gpio.LOW then
+    gpio.write(4, gpio.HIGH)
+  else
+    gpio.write(4, gpio.LOW)
+  end
   if wifi.sta.getip() then
     t:unregister()
     t = nil
