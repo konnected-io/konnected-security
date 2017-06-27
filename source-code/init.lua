@@ -10,6 +10,7 @@ if wifi.sta.getconfig() == "" then
   print("Heap: ", node.heap(), "End User Setup started")
 end
 
+timeout:start()
 tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
   if gpio.read(4) == gpio.LOW then
     gpio.write(4, gpio.HIGH)
@@ -17,6 +18,7 @@ tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
     gpio.write(4, gpio.LOW)
   end
   if wifi.sta.getip() then
+    timeout:stop()
     t:unregister()
     t = nil
     print("Heap: ", node.heap(), "Wifi connected with IP: ", wifi.sta.getip())
