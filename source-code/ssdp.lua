@@ -24,13 +24,14 @@ ssdp_sv:listen(1900, "239.255.255.250")
 ssdp_sv:on("receive", function(c, d, p, i)
   if string.match(d, "M-SEARCH") then
     if (string.match(d, "urn.*%d") == ssdp_deviceType) then
+      local httpd_port = math.floor(node.chipid()/1000) + 8000
       local ssdp_resp =
       "HTTP/1.1 200 OK\r\n" ..
         "Cache-Control: max-age=120\r\n" ..
         "ST: " .. ssdp_deviceType .. "\r\n" ..
         "USN: " .. ssdp_deviceID .. "::" .. ssdp_deviceType .. "\r\n" .. "EXT:\r\n" ..
         "SERVER: NodeMCU/" .. string.format("%d.%d.%d", node.info()) .. " UPnP/1.1 " .. device.name .. "/" .. device.hwVersion .. "\r\n" ..
-        "LOCATION: http://" .. wifi.sta.getip() .. ":80/Device.xml\r\n\r\n"
+        "LOCATION: http://" .. wifi.sta.getip() .. ":" .. httpd_port .. "/Device.xml\r\n\r\n"
       c:send(ssdp_resp)
       ssdp_resp = nil
     end
