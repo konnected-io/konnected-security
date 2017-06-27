@@ -14,6 +14,24 @@ local function findAttr(line)
   return host,port,path,filenm
 end
 
+local function getHeaderValue(line, headerPattern)
+  local l1 = string.match(line, headerPattern .. ": (.*)")
+  if l1 then 
+    local l2 = string.sub(l1, 1, ( string.find(l1, "\r\n") - 1 ))
+    return l2
+  else
+    return nil
+  end
+end
+
+tmr.create():alarm(180, tmr.ALARM_AUTO, function(t) 
+  if gpio.read(4) == gpio.HIGH then
+    gpio.write(4, gpio.LOW)
+  else
+    gpio.write(4, gpio.HIGH)
+  end
+end)
+
 if file.exists("manifest") then
   print("Heap: ", node.heap(), "Updater: Processing manifest")
   dofile("manifest")
@@ -23,86 +41,76 @@ if file.exists("manifest") then
       local fw = file.open(manifest[1].filenm .. ".tmp", "w")
       local conn = net.createConnection(net.TCP, 1)
       conn:connect(443, manifest[1].host)
-      conn:on("receive", function(sck, c)  fw.write(c) end)
+      conn:on("receive", function(sck, c)  fw:write(c) end)
       conn:on("disconnection", function(sck)
-        fw.close()
+        fw:close()
         sck:close()
         collectgarbage()
         
-        local fr = file.open(manifest[1].filenm .. ".tmp", "r")
         local redirect = false
-        local locat = nil
-        
-        
+        local fr = file.open(manifest[1].filenm .. ".tmp", "r+")
+        local fr_line = ""
         while true do
-          local line = fr.readline()
-          if line == nil then
+          fr_line = fr:readline()
+          if fr_line == nil then
             break
           end
-          if string.find(line, "Status: 302 Found") then
+          if string.find(fr_line, "Status: 302 Found") then
             redirect = true
           end
           if redirect then
-            if string.match(line, "Location: (.*)") then  
-              local fpos = fr:seek("cur")
-              fr:seek("set", (fpos - #line))
-              local fposline = fr:read(1024)
-              local fposend = (string.find(fposline,"\r\n") - 1)
-              local host, port, path = findAttr(string.match(string.sub(fposline,1,fposend), "Location: (.*)"))
-              
+            if string.match(fr_line, "Location: (.*)") then  
+              fr:seek("set", (fr:seek("cur") - #fr_line))
+              fr_line = fr:read(1024)
+              local host, port, path = findAttr(getHeaderValue(fr_line, "Location"))
               table.insert(manifest, { host = host, port = port, path = path, filenm = manifest[1].filenm })
               print("Heap: ", node.heap(), "Updater: File redirection", manifest[1].filenm, "\r\nhttps:\/\/".. host .. path)
               break
             end
           end
         end
-        fr.close()
+        fr:close()
+        fr_line = nil
         collectgarbage()
         
         if redirect == false then
           print("Heap: ", node.heap(), "Updater: Downloaded", manifest[1].filenm)
-          local fr1 = file.open(manifest[1].filenm .. ".tmp", "r")
           
-          local fi = 0
-          local fc = 0
-          
+          local fr_body_pos = 0
+          local fr_line = ""
+          local fr_len = 0
+          fr = file.open(manifest[1].filenm .. ".tmp", "r+")
           print("Heap: ", node.heap(), "Updater: Processing file", manifest[1].filenm)
-          fr1.seek("set", 1)
           while true do
-            local fline = fr1:read(1024)
-            local _, fj = string.find(fline, "\r\n\r\n")
-            if fj then
-              fc = fr1:seek("cur") + 1 + fj
+            local fr_line = fr:readline()
+            if fr_line == nil then
               break
             end
-            fi = fi + 512
-            local fs = fr1:seek("set", fi)
-            if fs == nil then 
+            
+            fr_len = getHeaderValue(fr_line, "Content%-Length") 
+            if fr_len then
+              fr_body_pos = fr:seek("end") - string.format( "%d", fr_len )
               break
             end
           end
-          fr1:close()
+          fr_len = nil
+          fr_line = nil
           collectgarbage()
           
-          print("Heap: ", node.heap(), "Updater: Finalizing file", manifest[1].filenm)
-          local fr2 = file.open(manifest[1].filenm .. ".tmp", "r")
-          local fw1 = file.open(manifest[1].filenm .. ".tmp" .. ".tmp", "w")
-          if fc > 0 then
-            fr2:seek("set", fc)
-            print("Heap: ", node.heap(), "Updater: file position", fc)
-            while true do
-              local fline = fr2:read(512)
-              print(fline)
-              fw1:write(fline)
-              fi = fi + 512
-              local fs = fr2:seek("set", fi)
-              if fs == nil then 
-                break
-              end
+          local fr_line = ""
+          local fw = file.open(manifest[1].filenm, "w")
+          if fr_body_pos > 0 then
+            print("Heap: ", node.heap(), "Updater: Finalizing file", manifest[1].filenm)
+            while fr:seek("set", fr_body_pos) do
+              fr_body_pos = fr_body_pos + 512
+              fr_line = fr:read(512)
+              fw:write(fr_line)
             end
           end
-          fr2:close()
-          fw1:close()
+          fr_line = nil
+          fr_body_pos = nil
+          fr:close()
+          fw:close()
           collectgarbage()
         end
         table.remove(manifest, 1)
@@ -115,12 +123,16 @@ if file.exists("manifest") then
     else
       t:unregister()
       local fw = file.open("var_update.lua", "w")
-      fw.writeline("update = false")
-      fw.close()
+      fw:writeline("update = false")
+      fw:close()
       if file.exists("manifest") then 
         file.remove("manifest")
       end
-      print("Heap: ", node.heap(), "Updater: Done")
+      if file.exists("device") then
+        file.rename("device", "var_device.lua")
+      end
+      print("Heap: ", node.heap(), "Updater: Done restarting in 3 seconds")
+      tmr.create():alarm(3000, tmr.ALARM_SINGLE, function(t) node.restart() end)
     end
   end)
 else
@@ -173,7 +185,7 @@ else
         end
       end
       
-      fw = file.open("manifest", "w")
+      local fw = file.open("manifest", "w")
       fw.writeline("manifest = { ")
       for i, dl in pairs(dlist) do
         local host, port, path, filenm = findAttr(string.match(dl, "(.*)\r\n"))
@@ -184,17 +196,24 @@ else
       end
       fw.writeline("}")
       fw.close()
+      collectgarbage()
       
+      local fw = file.open("device", "w")
+      fw:writeline("device = { name = \"".. device.name .."\",\r\nhwVersion = \"" .. device.hwVersion .. "\",\r\nswVersion = \"" .. body.tag_name .. "\" }")
+      fw:close()
+      collectgarbage()
     end
+    
     if file.exists("manifest.tmp") then
       file.remove("manifest.tmp")
     end
+    
     print("Heap: ", node.heap(), "Updater: Retrieved manifest list.. restarting in 3 seconds")
     tmr.create():alarm(3000, tmr.ALARM_SINGLE, function(t) node.restart() end)    
   end)
   conn:on("connection", function(sck)
-    sck:send("GET /repos/copy-ninja/AlarmPanel/releases/latest HTTP/1.1\r\nHost: api.github.com\r\nConnection: keep-alive\r\n"..
-             "Accept: */*\r\nUser-Agent: ESP8266\r\nAuthorization: Basic Y29weS1uaW5qYTptY2g1MTgz\r\n\r\n")
+    sck:send("GET /repos/konnected-io/"..device.name.."/releases/latest HTTP/1.1\r\nHost: api.github.com\r\nConnection: keep-alive\r\n"..
+             "Accept: */*\r\nUser-Agent: konnected.io "..device.name.."\r\n\r\n")
   end)
 end
 

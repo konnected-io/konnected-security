@@ -10,7 +10,7 @@ for fn in pairs(file.list()) do
     if string.sub(fn, -4) ~= ".tmp" then
       node.compile(fm)
       file.remove(fm)
-    print("Heap: ", node.heap(), " Compiled & removed ", fn)
+    print("Heap: ", node.heap(), "Compiled: ", fn)
     end
   end
 end
