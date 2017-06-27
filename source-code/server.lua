@@ -102,8 +102,12 @@ httpd_set("/restart", function(request, response)
 end)
 
 httpd_set("/update", function(request, response)
-  print("Heap: ", node.heap(), "HTTP: ", "Update")
-  variables_set("update", "true")
+  print("Heap: ", node.heap(), "HTTP: ", "Update")  
+  if request.query then
+    request.query.force = request.query.force or "false"
+    request.query.setfactory = request.query.setfactory or "false"
+  end
+  variables_set("update", "{ run = true, force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
   tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
   response:contentType("application/json")
   response:status("204")

@@ -20,7 +20,7 @@ tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
     t:unregister()
     t = nil
     print("Heap: ", node.heap(), "Wifi connected with IP: ", wifi.sta.getip())
-    if (update) then
+    if (update.run) then
       require("update")
     else 
       gpio.write(4, gpio.HIGH)

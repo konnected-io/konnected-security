@@ -98,7 +98,7 @@ if file.exists("manifest") then
           collectgarbage()
           
           local fr_line = ""
-          local fw = file.open(manifest[1].filenm, "w")
+          local fw = file.open(manifest[1].filenm .. ".bak.tmp", "w")
           if fr_body_pos > 0 then
             print("Heap: ", node.heap(), "Updater: Finalizing file", manifest[1].filenm)
             while fr:seek("set", fr_body_pos) do
@@ -112,8 +112,23 @@ if file.exists("manifest") then
           fr:close()
           fw:close()
           collectgarbage()
+          
+          file.rename(manifest[1].filenm .. ".bak.tmp", manifest[1].filenm)
         end
+        
         table.remove(manifest, 1)
+        local fw = file.open("manifest", "w")
+        fw.writeline("manifest = { ")
+        for i, dl in pairs(manifest) do
+          fw.write(table.concat({"{ host = \"",dl.host,"\", port = \"",dl.port,"\", path = \"", dl.path, "\", filenm = \"",dl.filenm,"\" }"}))
+          if i < #manifest then
+            fw.writeline(",")
+          end
+        end
+        fw.writeline("}")
+        fw.close()
+        collectgarbage()
+        
         t:start()
       end)
       conn:on("connection", function(sck)
@@ -123,7 +138,7 @@ if file.exists("manifest") then
     else
       t:unregister()
       local fw = file.open("var_update.lua", "w")
-      fw:writeline("update = false")
+      fw:writeline("update = { run = false, force = false, setFactory = false }")
       fw:close()
       if file.exists("manifest") then 
         file.remove("manifest")
@@ -151,29 +166,28 @@ else
   conn:on("disconnection", function(sck)
     fw.close()
     collectgarbage()
+    
     local fr = file.open("manifest.tmp", "r")
     while true do 
       line = fr.readline() 
+      if (line == nil) then 
+        break 
+      end
       local tag = string.find(line,"\"tag_name\"", 1, true)
       if (tag) then
         body = "{ " .. string.gsub(line, "\"%," , "\"") .. " }"
         body = cjson.decode(body)
-        fr.close()
         break 
-      end
-      if (line == nil) then 
-        fr.close()
-        break 
-      end
+      end     
     end
+    fr.close()
     
-    if (body.tag_name > device.swVersion) then
+    if (body.tag_name > device.swVersion) or update.force then
       print("Heap: ", node.heap(), "Updater: Version outdated, retrieving manifest list...")
       local fr = file.open("manifest.tmp", "r")
       while true do 
         line = fr.readline() 
         if (line == nil) then 
-          fr.close()
           break 
         end
         local tag = string.find(line,"\"browser_download_url\"", 1, true)
@@ -184,6 +198,7 @@ else
           table.insert(dlist, line)
         end
       end
+      fr.close()
       
       local fw = file.open("manifest", "w")
       fw.writeline("manifest = { ")
@@ -206,7 +221,7 @@ else
     else
       print("Heap: ", node.heap(), "Updater: Software version up to date, cancelling update")
       local fupdate = file.open("var_update.lua", "w")
-      fupdate:writeline("update = false")
+      fupdate:writeline("update = { run = false, force = false, setFactory = false }")
       fupdate:close()
     end
     
