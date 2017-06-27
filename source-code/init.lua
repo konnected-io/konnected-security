@@ -20,11 +20,16 @@ tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
     t:unregister()
     t = nil
     print("Heap: ", node.heap(), "Wifi connected with IP: ", wifi.sta.getip())
-    gpio.write(4, gpio.HIGH)
-    enduser_setup.stop()
-    require("server")
-    print("Heap: ", node.heap(), "Loaded: ", "server")
-    require("application")
-    print("Heap: ", node.heap(), "Loaded: ", "application")
+    if (update.run) then
+      require("update")
+    else 
+      gpio.write(4, gpio.HIGH)
+      enduser_setup.stop()
+      require("server")
+      print("Heap: ", node.heap(), "Loaded: ", "server")
+      require("application")
+      print("Heap: ", node.heap(), "Loaded: ", "application")
+    end
   end
 end)
+
