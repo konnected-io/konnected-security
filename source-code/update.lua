@@ -197,23 +197,29 @@ else
       fw.writeline("}")
       fw.close()
       collectgarbage()
+      print("Heap: ", node.heap(), "Updater: Manifest Retrieved")
       
       local fw = file.open("device", "w")
       fw:writeline("device = { name = \"".. device.name .."\",\r\nhwVersion = \"" .. device.hwVersion .. "\",\r\nswVersion = \"" .. body.tag_name .. "\" }")
       fw:close()
       collectgarbage()
+    else
+      print("Heap: ", node.heap(), "Updater: Software version up to date, cancelling update")
+      local fupdate = file.open("var_update.lua", "w")
+      fupdate:writeline("update = false")
+      fupdate:close()
     end
     
     if file.exists("manifest.tmp") then
       file.remove("manifest.tmp")
     end
     
-    print("Heap: ", node.heap(), "Updater: Retrieved manifest list.. restarting in 3 seconds")
+    print("Heap: ", node.heap(), "Updater: restarting in 3 seconds")
     tmr.create():alarm(3000, tmr.ALARM_SINGLE, function(t) node.restart() end)    
   end)
   conn:on("connection", function(sck)
     sck:send("GET /repos/konnected-io/"..device.name.."/releases/latest HTTP/1.1\r\nHost: api.github.com\r\nConnection: keep-alive\r\n"..
-             "Accept: */*\r\nUser-Agent: konnected.io "..device.name.."\r\n\r\n")
+             "Accept: */*\r\nUser-Agent: ESP8266\r\n\r\n")
   end)
 end
 
