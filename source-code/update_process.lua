@@ -87,7 +87,7 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
         fr:close()
         fw:close()
         collectgarbage()
-        
+        file.remove(manifest[1].filenm .. ".tmp")
         file.rename(manifest[1].filenm .. ".bak.tmp", manifest[1].filenm)
       end
       
