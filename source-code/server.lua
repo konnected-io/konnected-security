@@ -4,7 +4,6 @@ require("ssdp")
 print("Heap: ", node.heap(), "Loaded: ", "ssdp")
 
 local function variables_set(name, value)
-  local fnc = string.match(name, ".*%.")
   local fn = "var_" .. name .. '.lua'
   local f = file.open(fn, "w")
   f.writeline(name .. " = " .. value)
@@ -107,7 +106,7 @@ httpd_set("/update", function(request, response)
     request.query.force = request.query.force or "false"
     request.query.setfactory = request.query.setfactory or "false"
   end
-  variables_set("update", "{ run = true, force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
+  variables_set("update", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
   tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
   response:contentType("application/json")
   response:status("204")
