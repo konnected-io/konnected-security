@@ -73,6 +73,12 @@ conn:on("disconnection", function(sck)
     fupdate:close()
   end
   
+  if file.exists("var_update.lua") then 
+    file.remove("var_update.lua")
+  end
+  if file.exists("var_update.lc") then 
+    file.remove("var_update.lc")
+  end
   if file.exists("manifest.tmp") then
     file.remove("manifest.tmp")
   end

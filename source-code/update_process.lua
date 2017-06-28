@@ -87,7 +87,7 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
         fr:close()
         fw:close()
         collectgarbage()
-        
+        file.remove(manifest[1].filenm .. ".tmp")
         file.rename(manifest[1].filenm .. ".bak.tmp", manifest[1].filenm)
       end
       
@@ -112,9 +112,12 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
     end)
   else
     t:unregister()
-    local fw = file.open("var_update.lua", "w")
-    fw:writeline("update = { run = false, force = false, setFactory = false }")
-    fw:close()
+    if file.exists("var_update.lua") then 
+      file.remove("var_update.lua")
+    end
+    if file.exists("var_update.lc") then 
+      file.remove("var_update.lc")
+    end
     if file.exists("manifest") then 
       file.remove("manifest")
     end
