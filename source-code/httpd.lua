@@ -1,5 +1,3 @@
-local httpdResponse = require("httpd_res")
-
 local httpServer_handler = {
   {
     url = '.*',
@@ -52,7 +50,7 @@ print("Heap: ", node.heap(), "HTTP: ", "Starting server on port", httpd_port )
 httpd_server:listen(httpd_port, function(c)
   c:on('receive', function(s, d)
     local r = { source = d, path = '' }
-    local s = httpdResponse:new(s)
+    local s = require("httpd_res").new(s)
     for i = 1, #httpServer_handler do
       if string.find(r.path, '^' .. httpServer_handler[i].url .. '$') and not httpServer_handler[i].cb(r, s) then
         break

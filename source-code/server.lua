@@ -4,17 +4,16 @@ local deviceXML = require("ssdp")
 print("Heap: ", node.heap(), "Loaded: ", "ssdp")
 
 httpd_set("/", function(request, response)
-  response:file("http_index.html")
+  response.file("http_index.html")
 end)
 
 --httpd_set("/favicon.ico", function(request, response)
---  response:contentType("image/x-icon")
---  response:file("http_favicon.ico")
+--  response.contentType("image/x-icon")
+--  response.file("http_favicon.ico")
 --end)
 
 httpd_set("/Device.xml", function(request, response)
-  response:contentType("text/xml")
-  response:send(deviceXML)
+  response.send(deviceXML, "text/xml")
 end)
 
 httpd_set("/settings", function(request, response)
@@ -33,7 +32,7 @@ httpd_set("/settings", function(request, response)
     if request.query.restart == "true" then
       require("restart")
     end
-    response:send("")
+    response.send("")
   end
   if request.contentType == "application/json" then
     if request.method == "PUT" then
@@ -45,7 +44,7 @@ httpd_set("/settings", function(request, response)
       print('Settings updated! Restarting in 5 seconds...')
       require("restart")
       
-      response:send("")
+      response.send("")
     end
   end
 end)
@@ -58,12 +57,12 @@ httpd_set("/device", function(request, response)
         pin = request.body.pin,
         state = gpio.read(request.body.pin)
       }
-      response:send(cjson.encode(body))
+      response.send(cjson.encode(body))
     end
     if request.method == "PUT" then
       gpio.write(request.body.pin, request.body.state)
       blinktimer:start()
-      response:send("")
+      response.send("")
     end
   end
 end)
@@ -79,5 +78,5 @@ httpd_set("/status", function(request, response)
     mac = wifi.sta.getmac(),
     uptime = tmr.time()
   }
-  response:send(cjson.encode(body))
+  response.send(cjson.encode(body))
 end)
