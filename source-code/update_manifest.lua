@@ -1,3 +1,5 @@
+local device = require("device")
+local update = require("update_init")
 local dlist = { }
 local body = ""
 local line = ""
@@ -75,11 +77,11 @@ conn:on("disconnection", function(sck)
     fupdate:close()
   end
   
-  if file.exists("var_update.lua") then 
-    file.remove("var_update.lua")
+  if file.exists("update_init.lua") then 
+    file.remove("update_init.lua")
   end
-  if file.exists("var_update.lc") then 
-    file.remove("var_update.lc")
+  if file.exists("update_init.lc") then 
+    file.remove("update_init.lc")
   end
   if file.exists("manifest.tmp") then
     file.remove("manifest.tmp")
