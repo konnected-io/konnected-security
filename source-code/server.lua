@@ -1,6 +1,6 @@
 require("httpd")
 print("Heap: ", node.heap(), "Loaded: ", "httpd")
-require("ssdp")
+local deviceXML = require("ssdp")
 print("Heap: ", node.heap(), "Loaded: ", "ssdp")
 
 httpd_set("/", function(request, response)
@@ -11,6 +11,11 @@ end)
 --  response:contentType("image/x-icon")
 --  response:file("http_favicon.ico")
 --end)
+
+httpd_set("/Device.xml", function(request, response)
+  response:contentType("text/xml")
+  response:send(deviceXML)
+end)
 
 httpd_set("/settings", function(request, response)
   print("Heap: ", node.heap(), "HTTP: ", "Settings")
