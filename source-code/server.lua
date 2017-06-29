@@ -3,17 +3,6 @@ print("Heap: ", node.heap(), "Loaded: ", "httpd")
 require("ssdp")
 print("Heap: ", node.heap(), "Loaded: ", "ssdp")
 
-local function variables_set(name, value)
-  local fn = "var_" .. name .. '.lua'
-  local f = file.open(fn, "w")
-  f.writeline(name .. " = " .. value)
-  f.close()
-  node.compile(fn)
-  file.remove(fn)
-  print("Heap: ", node.heap(), "Wrote: ", fn)
-  collectgarbage()
-end
-
 httpd_set("/", function(request, response)
   response:file("http_index.html")
 end)
@@ -25,30 +14,15 @@ end)
 
 httpd_set("/settings", function(request, response)
   print("Heap: ", node.heap(), "HTTP: ", "Settings")
-  local function buildValue(objects)
-    local out = {}
-    table.insert(out, "{ ")
-    for i, object in pairs(objects) do
-       table.insert(out, "\r\n{ pin = ")
-       table.insert(out, object.pin)
-       table.insert(out, " }")
-      if i < #objects then
-        table.insert(out, ",")
-      end
-    end
-    table.insert(out, " }")
-    return table.concat(out)
-  end
-
   if request.contentType == "application/json" then
     if request.method == "PUT" then
       
-      variables_set("smartthings", table.concat({ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\" }" }))
-      variables_set("sensors", buildValue(request.body.sensors))
-      variables_set("actuators", buildValue(request.body.actuators))
+      require("variables_set").set("smartthings", table.concat({ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\" }" }))
+      require("variables_set").set("sensors",   require("variables_build").build(request.body.sensors))
+      require("variables_set").set("actuators", require("variables_build").build(request.body.actuators))
 
       print('Settings updated! Restarting in 2 seconds...')
-      tmr.create():alarm(2000, tmr.ALARM_SINGLE, node.restart)
+      local _ = tmr.create():alarm(2000, tmr.ALARM_SINGLE, function() node.restart() end)
 
       response:contentType("application/json")
       response:status("204")
@@ -81,8 +55,8 @@ end)
 httpd_set("/status", function(request, response)
   print("Heap: ", node.heap(), "HTTP: ", "Status")
   local body = {
-    hwVersion = device.name .. " \/ " .. device.hwVersion,
-    swVersion = device.swVersion,
+    hwVersion = require("var_device").name .. " \/ " .. require("var_device").hwVersion,
+    swVersion = require("var_device").swVersion,
     heap = node.heap(),
     ip = wifi.sta.getip(),
     mac = wifi.sta.getmac(),
@@ -106,7 +80,7 @@ httpd_set("/update", function(request, response)
     request.query.force = request.query.force or "false"
     request.query.setfactory = request.query.setfactory or "false"
   end
-  variables_set("update", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
+  require("variables_set").set("update", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
   tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
   response:contentType("application/json")
   response:status("204")

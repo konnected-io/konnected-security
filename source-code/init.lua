@@ -10,12 +10,8 @@ if wifi.sta.getconfig() == "" then
   print("Heap: ", node.heap(), "End User Setup started")
 end
 
-tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
-  if gpio.read(4) == gpio.LOW then
-    gpio.write(4, gpio.HIGH)
-  else
-    gpio.write(4, gpio.LOW)
-  end
+local _ = tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
+  require("led_flip").flip()
   if wifi.sta.getip() then
     t:unregister()
     t = nil

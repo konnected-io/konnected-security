@@ -6,12 +6,12 @@ local ssdp_deviceXML = "<?xml version=\"1.0\"?>\r\n" ..
   "\t<URLBase>http://" .. wifi.sta.getip() .. ":80</URLBase>\r\n" ..
   "\t<device>\r\n" ..
   "\t\t<deviceType>" .. ssdp_deviceType .. "</deviceType>\r\n" ..
-  "\t\t<friendlyName>" .. device.name .. "</friendlyName>\r\n" ..
+  "\t\t<friendlyName>" .. require("device").name .. "</friendlyName>\r\n" ..
   "\t\t<manufacturer>konnected.io</manufacturer>\r\n" ..
   "\t\t<manufacturerURL>http://konnected.io/</manufacturerURL>\r\n" ..
   "\t\t<modelDescription>Alarm Panel</modelDescription>\r\n" ..
-  "\t\t<modelName>" .. device.name .. "</modelName>\r\n" ..
-  "\t\t<modelNumber>" .. device.hwVersion .. "</modelNumber>\r\n" ..
+  "\t\t<modelName>" .. require("device").name .. "</modelName>\r\n" ..
+  "\t\t<modelNumber>" .. require("device").hwVersion .. "</modelNumber>\r\n" ..
   "\t\t<serialNumber>" .. node.chipid() .. "</serialNumber>\r\n" ..
   "\t\t<UDN>" .. ssdp_deviceID .. "</UDN>\r\n" ..
   "\t\t<presentationURL>/</presentationURL>\r\n" ..
@@ -30,7 +30,7 @@ ssdp_sv:on("receive", function(c, d, p, i)
         "Cache-Control: max-age=120\r\n" ..
         "ST: " .. ssdp_deviceType .. "\r\n" ..
         "USN: " .. ssdp_deviceID .. "::" .. ssdp_deviceType .. "\r\n" .. "EXT:\r\n" ..
-        "SERVER: NodeMCU/" .. string.format("%d.%d.%d", node.info()) .. " UPnP/1.1 " .. device.name .. "/" .. device.hwVersion .. "\r\n" ..
+        "SERVER: NodeMCU/" .. string.format("%d.%d.%d", node.info()) .. " UPnP/1.1 " .. require("device").name .. "/" .. require("device").hwVersion .. "\r\n" ..
         "LOCATION: http://" .. wifi.sta.getip() .. ":" .. httpd_port .. "/Device.xml\r\n\r\n"
       c:send(ssdp_resp)
       ssdp_resp = nil

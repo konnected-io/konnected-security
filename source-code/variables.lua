@@ -11,9 +11,7 @@ end
 blinktimer = tmr.create()
 blinktimer:register(100, tmr.ALARM_SEMI, function(t)
   if gpio.read(4) == gpio.HIGH then
-    gpio.write(4, gpio.LOW)
     t:start()
-  else
-    gpio.write(4, gpio.HIGH)
   end
+  require("led_flip").flip()
 end)
