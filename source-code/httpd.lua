@@ -11,7 +11,7 @@ local httpServer_handler = {
 
       local query = {}
       if q ~= nil then
-        q = string.gsub(q, '%%(%x%x)', string.char(tonumber(x, 16)))
+        q = string.gsub(q, '%%(%x%x)', function(x) string.char(tonumber(x, 16)) end)
         for k, v in string.gmatch(q, '([^&]+)=([^&]*)&*') do
           query[k] = v
         end
