@@ -1,8 +1,6 @@
 print("Heap: ", node.heap(), "Initializing device")
-require("compile")
-print("Heap: ", node.heap(), "Loaded: ", "compile")
-require("variables")
-print("Heap: ", node.heap(), "Loaded: ", "variables")
+require("start")
+print("Heap: ", node.heap(), "Loaded: ", "Startup (compiler & blinker)")
 
 if wifi.sta.getconfig() == "" then 
   enduser_setup.manual(false)
@@ -10,6 +8,7 @@ if wifi.sta.getconfig() == "" then
   print("Heap: ", node.heap(), "End User Setup started")
 end
 
+print("Heap: ", node.heap(), "Connecting to Wifi..")
 local _ = tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
   require("led_flip").flip()
   if wifi.sta.getip() then
