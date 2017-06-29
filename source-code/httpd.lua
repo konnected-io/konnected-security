@@ -22,7 +22,7 @@ end
 
 function httpdResponse:send(body)
   self._st = self._st or 200
-  self._ty = self._ty or 'text/html'
+  self._ty = self._ty or "application/json"
 
   local b = 'HTTP/1.1 ' .. self._st .. '\r\n' ..
     'Content-Type: ' .. self._ty .. '\r\n' ..

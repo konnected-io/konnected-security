@@ -39,9 +39,7 @@ httpd_set("/settings", function(request, response)
 
       print('Settings updated! Restarting in 5 seconds...')
       require("restart")
-
-      response:contentType("application/json")
-      response:status("204")
+      
       response:send("")
     end
   end
@@ -55,14 +53,11 @@ httpd_set("/device", function(request, response)
         pin = request.body.pin,
         state = gpio.read(request.body.pin)
       }
-      response:contentType("application/json")
       response:send(cjson.encode(body))
     end
     if request.method == "PUT" then
       gpio.write(request.body.pin, request.body.state)
       blinktimer:start()
-      response:contentType("application/json")
-      response:status("204")
       response:send("")
     end
   end
@@ -79,6 +74,5 @@ httpd_set("/status", function(request, response)
     mac = wifi.sta.getmac(),
     uptime = tmr.time()
   }
-  response:contentType("application/json")
   response:send(cjson.encode(body))
 end)

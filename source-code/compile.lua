@@ -6,3 +6,4 @@ for fn in pairs(file.list()) do
     print("Heap: ", node.heap(), "Compiled: ", fn)
   end
 end
+fn = nil
