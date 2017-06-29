@@ -16,7 +16,7 @@ local _ = tmr.create():alarm(700, tmr.ALARM_AUTO, function(t)
     t:unregister()
     t = nil
     print("Heap: ", node.heap(), "Wifi connected with IP: ", wifi.sta.getip())
-    if file.exists("var_update.lc") or file.exists("var_update.lua") then
+    if file.exists("update_init.lc")then
       require("update")
     else 
       gpio.write(4, gpio.HIGH)

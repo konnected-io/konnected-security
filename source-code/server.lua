@@ -7,13 +7,29 @@ httpd_set("/", function(request, response)
   response:file("http_index.html")
 end)
 
-httpd_set("/favicon.ico", function(request, response)
-  response:contentType("image/x-icon")
-  response:file("http_favicon.ico")
-end)
+--httpd_set("/favicon.ico", function(request, response)
+--  response:contentType("image/x-icon")
+--  response:file("http_favicon.ico")
+--end)
 
 httpd_set("/settings", function(request, response)
   print("Heap: ", node.heap(), "HTTP: ", "Settings")
+  if request.method == "GET" then
+    if request.query then
+      request.query.update = request.query.update or "false"
+      request.query.force = request.query.force or "false"
+      request.query.setfactory = request.query.setfactory or "false"
+      request.query.restart = request.query.restart or "false"
+    end
+    if request.query.restart == "true" then
+      local _ = tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
+    end
+    if request.query.update == "true" then 
+      require("variables_set").set("update_init", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
+      local _ = tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
+    end  
+    response:send("")
+  end
   if request.contentType == "application/json" then
     if request.method == "PUT" then
       
@@ -55,8 +71,8 @@ end)
 httpd_set("/status", function(request, response)
   print("Heap: ", node.heap(), "HTTP: ", "Status")
   local body = {
-    hwVersion = require("var_device").name .. " \/ " .. require("var_device").hwVersion,
-    swVersion = require("var_device").swVersion,
+    hwVersion = require("device").name .. " \/ " .. require("device").hwVersion,
+    swVersion = require("device").swVersion,
     heap = node.heap(),
     ip = wifi.sta.getip(),
     mac = wifi.sta.getmac(),
@@ -64,25 +80,4 @@ httpd_set("/status", function(request, response)
   }
   response:contentType("application/json")
   response:send(cjson.encode(body))
-end)
-
-httpd_set("/restart", function(request, response)
-  print("Heap: ", node.heap(), "HTTP: ", "Restart")
-  tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
-  response:contentType("application/json")
-  response:status("204")
-  response:send("")
-end)
-
-httpd_set("/update", function(request, response)
-  print("Heap: ", node.heap(), "HTTP: ", "Update")  
-  if request.query then
-    request.query.force = request.query.force or "false"
-    request.query.setfactory = request.query.setfactory or "false"
-  end
-  require("variables_set").set("update", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
-  tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
-  response:contentType("application/json")
-  response:status("204")
-  response:send("")
 end)

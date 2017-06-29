@@ -1,8 +1,9 @@
 local me = { 
   set = function (name, value)
-    local fn = "var_" .. name .. '.lua'
+    local fn = name .. '.lua'
     local f = file.open(fn, "w")
-    f.writeline(name .. " = " .. value)
+    f.writeline("local " .. name .. " = " .. value)
+    f.writeline("return " .. name)
     f.close()
     node.compile(fn)
     file.remove(fn)

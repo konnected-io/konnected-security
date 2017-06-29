@@ -1,3 +1,4 @@
+require("update_init")
 print("Heap: ", node.heap(), "Updater: running..")
 function findAttr(line) 
   local l1 = string.match(line, "http.*:\/\/(.*)")

@@ -1,0 +1,2 @@
+local sensors = {}
+return sensors

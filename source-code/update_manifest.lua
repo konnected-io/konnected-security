@@ -63,7 +63,9 @@ conn:on("disconnection", function(sck)
     print("Heap: ", node.heap(), "Updater: Manifest Retrieved")
     
     local fw = file.open("device", "w")
-    fw:writeline("device = { name = \"".. device.name .."\",\r\nhwVersion = \"" .. device.hwVersion .. "\",\r\nswVersion = \"" .. version .. "\" }")
+        
+    fw:writeline("local device = { name = \"".. device.name .."\",\r\nhwVersion = \"" .. device.hwVersion .. "\",\r\nswVersion = \"" .. version .. "\" }")
+    fw:writeline("return device")
     fw:close()
     collectgarbage()
   else

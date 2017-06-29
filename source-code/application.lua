@@ -1,3 +1,6 @@
+local sensors = require("sensors")
+local actuators = require("actuators")
+local smartthings = require("smartthings")
 local sensorSend = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
 local timeout = tmr.create()
