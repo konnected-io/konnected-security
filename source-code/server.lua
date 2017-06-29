@@ -21,24 +21,24 @@ httpd_set("/settings", function(request, response)
       request.query.setfactory = request.query.setfactory or "false"
       request.query.restart = request.query.restart or "false"
     end
-    if request.query.restart == "true" then
-      local _ = tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
-    end
     if request.query.update == "true" then 
       require("variables_set").set("update_init", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
-      local _ = tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)
+      require("restart")
     end  
+    if request.query.restart == "true" then
+      require("restart")
+    end
     response:send("")
   end
   if request.contentType == "application/json" then
     if request.method == "PUT" then
-      
-      require("variables_set").set("smartthings", table.concat({ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\" }" }))
-      require("variables_set").set("sensors",   require("variables_build").build(request.body.sensors))
-      require("variables_set").set("actuators", require("variables_build").build(request.body.actuators))
+      local var = require("variables_set")
+      var.set("smartthings", table.concat({ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\" }" }))
+      var.set("sensors",   require("variables_build").build(request.body.sensors))
+      var.set("actuators", require("variables_build").build(request.body.actuators))
 
-      print('Settings updated! Restarting in 2 seconds...')
-      local _ = tmr.create():alarm(2000, tmr.ALARM_SINGLE, function() node.restart() end)
+      print('Settings updated! Restarting in 5 seconds...')
+      require("restart")
 
       response:contentType("application/json")
       response:status("204")
@@ -70,9 +70,10 @@ end)
 
 httpd_set("/status", function(request, response)
   print("Heap: ", node.heap(), "HTTP: ", "Status")
+  local device = require("device")
   local body = {
-    hwVersion = require("device").name .. " \/ " .. require("device").hwVersion,
-    swVersion = require("device").swVersion,
+    hwVersion = device.name .. " \/ " .. device.hwVersion,
+    swVersion = device.swVersion,
     heap = node.heap(),
     ip = wifi.sta.getip(),
     mac = wifi.sta.getmac(),

@@ -4,6 +4,8 @@ local smartthings = require("smartthings")
 local sensorSend = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
 local timeout = tmr.create()
+local sensorTimer = tmr.create()
+local sendTimer = tmr.create()
 timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
 for i, sensor in pairs(sensors) do
@@ -17,7 +19,7 @@ for i, actuator in pairs(actuators) do
   gpio.write(actuator.pin, gpio.LOW)
 end
 
-tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
+sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   for i, sensor in pairs(sensors) do
     if sensor.state ~= gpio.read(sensor.pin) then
       sensor.state = gpio.read(sensor.pin)
@@ -26,7 +28,7 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
   end
 end)
 
-tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
+sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   if sensorSend[1] then
     t:stop()
     local sensor = sensors[sensorSend[1]]
