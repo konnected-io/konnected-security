@@ -112,17 +112,17 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
     end)
   else
     t:unregister()
-    if file.exists("var_update.lua") then 
-      file.remove("var_update.lua")
+    if file.exists("update_init.lua") then 
+      file.remove("update_init.lua")
     end
-    if file.exists("var_update.lc") then 
-      file.remove("var_update.lc")
+    if file.exists("update_init.lc") then 
+      file.remove("update_init.lc")
     end
     if file.exists("manifest") then 
       file.remove("manifest")
     end
     if file.exists("device") then
-      file.rename("device", "var_device.lua")
+      file.rename("device", "device.lua")
     end
     print("Heap: ", node.heap(), "Updater: Done restarting in 3 seconds")
     tmr.create():alarm(3000, tmr.ALARM_SINGLE, function(t) node.restart() end)

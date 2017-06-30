@@ -1,0 +1,2 @@
+local smartthings = {}
+return smartthings
