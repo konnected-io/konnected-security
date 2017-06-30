@@ -14,8 +14,7 @@ srv:listen(port, function(conn)
     end
     
     if request.path == "/favicon.ico" then
-      response.contentType("image/x-icon")
-      response.file("http_favicon.ico")
+      response.file("http_favicon.ico", "image/x-icon")
     end
     
     if request.path == "/Device.xml" then
