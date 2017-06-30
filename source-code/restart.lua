@@ -1,1 +1,0 @@
-local restartTimer = tmr.create():alarm(5000, tmr.ALARM_SINGLE, function() node.restart() end)

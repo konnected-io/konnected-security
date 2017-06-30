@@ -105,7 +105,7 @@ def pageConfiguration() {
   dynamicPage(name: "pageConfiguration") {
     configuredAlarmPanels.each { alarmPanel ->
       section(hideable: true, "AlarmPanel_${alarmPanel.mac[-6..-1]}") {
-        for ( i in [1, 2, 5, 6, 7, 8]) {
+        for ( i in [1, 2, 5, 6, 7]) {
           def deviceTypeDefaultValue = (settings."deviceType_${alarmPanel.mac}_${i}") ? settings."deviceType_${alarmPanel.mac}_${i}" : ""
           def deviceLabelDefaultValue = (settings."deviceLabel_${alarmPanel.mac}_${i}") ? settings."deviceLabel_${alarmPanel.mac}_${i}" : ""
           input(name: "deviceType_${alarmPanel.mac}_${i}", type: "enum", title:"Pin ${i} Device Type", required: false, multiple: false, options: pageConfigurationGetDeviceType(), defaultValue: deviceTypeDefaultValue, submitOnChange: true)
