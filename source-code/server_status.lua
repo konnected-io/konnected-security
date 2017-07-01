@@ -1,7 +1,7 @@
 local me = {
-	process = function (request, response) 
+  process = function (request, response) 
     local ip, nm, gw = wifi.sta.getip()
-		local device = require("device")
+    local device = require("device")
     local body = {
       hwVersion = device.name .. " \/ " .. device.hwVersion,
       swVersion = device.swVersion,
