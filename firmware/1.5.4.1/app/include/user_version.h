@@ -8,7 +8,7 @@
 
 #define NODE_VERSION	"NodeMCU 1.5.4.1\r\nAlarmPanel 0.1\r\n"
 #ifndef BUILD_DATE
-#define BUILD_DATE	  "20170622"
+#define BUILD_DATE	  "20170628"
 #endif
 
 extern char SDK_VERSION[];
