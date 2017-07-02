@@ -26,9 +26,11 @@ definition(
 )
 mappings {
   path("/device/:mac/:id/:deviceState") { action: [ PUT: "childDeviceStateUpdate"] }
+  path("/ping") { action: [ GET: "devicePing"] }
 }
-preferences {
-  page(name: "pageDiscovery",   install: false, uninstall: true, content: "pageDiscovery", nextPage: "pageConfiguration" )
+preferences {  
+  page(name: "pageWelcome",       install: false, uninstall: true, content: "pageWelcome",   nextPage: "pageDiscovery"     )
+  page(name: "pageDiscovery",     install: false, uninstall: true, content: "pageDiscovery", nextPage: "pageConfiguration" )
   page(name: "pageConfiguration", install: true,  uninstall: true, content: "pageConfiguration")
 }
 def installed() { 
@@ -70,7 +72,49 @@ def initialize() {
   state.pageConfigurationRefresh = 2
 }
 
-//Page : 1 : Discovery page - search and select devices
+//Page : 1 : Welcome page - Manuals & links to devices
+def pageWelcome() {
+  dynamicPage(name: "pageWelcome", nextPage: "pageDiscovery") {
+    def configuredAlarmPanels = [] + getSelectedAlarmPanel()
+    section("Welcome! To proceed, go to the next page and the app will search for your devices that's konnected to your network") {
+      href(
+        name:        "pageWelcomeManual", 
+        title:       "Instruction manual",
+        description: "If you need help setting up Konnected Alarm Panel, you can find the instruction manual here. Tap to view the manual",
+        required:    false,
+        image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Manual.png",
+        url:         "http://docs.konnected.io/"
+      )
+    }
+    section("") {
+      href(
+        name:        "pageWelcomeDonate", 
+        title:       "Donate to us!",
+        description: "This is an open source project. If you love this, show your support to the developers. Tap to donate!",
+        required:    false,
+        image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Donate.png",
+        url:         "http://donate.konnected.io/"
+      )
+    }
+    
+    if (configuredAlarmPanels) {
+      section("Alarm Panel Status. You must be konnected within your own local network to be able to view your device") {
+        configuredAlarmPanels.each {
+          href(
+            name:        "device_" + it.mac, 
+            title:       "AlarmPanel_" + it.mac[-6..-1],
+            description: "Tap to view status of the alarm panel",
+            required:    false,
+            image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Device.png",
+            url:         "http://" + it.host
+          )
+        }
+      }
+    }
+  }
+}
+
+//Page : 2 : Discovery page - search and select devices
 def pageDiscovery() {
   //create accessToken
   if(!state.accessToken) { createAccessToken() }  
@@ -97,7 +141,7 @@ Map pageDiscoveryGetAlarmPanels() {
   return alarmPanels
 }
 
-//Page : 2 : Configure sensors and alarms connected to the panel
+//Page : 3 : Configure sensors and alarms connected to the panel
 def pageConfiguration() {
   //Get all selected devices
   def configuredAlarmPanels = [] + getSelectedAlarmPanel()
@@ -129,24 +173,24 @@ Map pageConfigurationGetDeviceType() {
 }
 
 //Retrieve selected device
-def getSelectedAlarmPanel(mac) {
-  if (mac) {
-    return state.alarmPanel.find { it.mac == mac } 
-  } else {
-    state.alarmPanel = []
-    def configuredAlarmPanels = [] + settings.selectedAlarmPanels
+def getSelectedAlarmPanel() {
+  state.alarmPanel = []
+  def configuredAlarmPanels = [] + settings.selectedAlarmPanels
+  if (configuredAlarmPanels) {
     configuredAlarmPanels.each { alarmPanel ->
       def selectedAlarmPanel = getAlarmPanels().find { it.value.mac == alarmPanel }
-      state.alarmPanel = state.alarmPanel + [
-        mac : selectedAlarmPanel.value.mac,
-        ip  : selectedAlarmPanel.value.networkAddress,
-        port: selectedAlarmPanel.value.deviceAddress,
-        hub : selectedAlarmPanel.value.hub,
-        host: "${convertHexToIP(selectedAlarmPanel.value.networkAddress)}:${convertHexToInt(selectedAlarmPanel.value.deviceAddress)}"
-      ]
+      if (selectedAlarmPanel) {
+        state.alarmPanel = state.alarmPanel + [
+          mac : selectedAlarmPanel.value.mac,
+          ip  : selectedAlarmPanel.value.networkAddress,
+          port: selectedAlarmPanel.value.deviceAddress,
+          hub : selectedAlarmPanel.value.hub,
+          host: "${convertHexToIP(selectedAlarmPanel.value.networkAddress)}:${convertHexToInt(selectedAlarmPanel.value.deviceAddress)}"
+        ]
+      }
     }
-    return state.alarmPanel
   }
+  return state.alarmPanel  
 }
 
 //Retrieve devices saved in state
@@ -220,15 +264,17 @@ def childDeviceConfiguration() {
       def deviceChild = getChildDevice(deviceDNI)      
       if (!deviceChild) { 
         if (deviceType != "") {
-          addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType ]) 
+          addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ]) 
         }
       } else {
+        //Change name if it's set here
         if (deviceChild.label != deviceLabel) 
           deviceChild.label = deviceLabel
+        //Change Type, you will lose the history of events. delete and add back the child
         if (deviceChild.name != deviceType) {
           deleteChildDevice(deviceDNI)
           if (deviceType != "") {
-            addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType ]) 
+            addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ]) 
           }
         }
       }
@@ -243,24 +289,41 @@ def childDeviceStateUpdate() {
   if (device) device.setStatus(params.deviceState)
 }
 
+//Device: Ping from device
+def devicePing() {
+  return ""
+}
+
 //Device : update NodeMCU with token, url, sensors, actuators from SmartThings 
 def deviceUpdateSettings() {
   if(!state.accessToken) { createAccessToken() }  
-  def body = [
-    token : state.accessToken,
-    apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
-    sensors : [],
-    actuators : []
-  ]
+  def sensors = [:]
+  def actuators = [:]
+  def selectedAlarmPanel = [] + getSelectedAlarmPanel()
+  
+  //initialize map for sensors/actuators
+  selectedAlarmPanel.each { 
+    sensors[it.mac] = []
+    actuators[it.mac] = []
+  }
+  //compile pins into respective sensors/actuators by mac
   getAllChildDevices().each {
+    def mac = it.deviceNetworkId.split("\\|")[0]
+    def pin = it.deviceNetworkId.split("\\|")[1]
     if (it.name != "Konnected Siren/Strobe") { 
-      body.sensors = body.sensors + [ pin : it.deviceNetworkId.split("\\|")[1] ] 
+      sensors[mac] = sensors[mac] + [ pin : pin ] 
     } else {
-      body.actuators = body.actuators + [ pin : it.deviceNetworkId.split("\\|")[1] ] 
+      actuators[mac] = actuators[mac] + [ pin : pin ] 
     }
   }
-  def selectedAlarmPanel = [] + getSelectedAlarmPanel()
+  //send information to each devices
   selectedAlarmPanel.each { 
+    def body = [
+      token : state.accessToken,
+      apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
+      sensors : sensors[it.mac],
+      actuators : actuators[it.mac]
+    ]
     sendHubCommand(new physicalgraph.device.HubAction([
       method: "PUT", 
       path: "/settings", 
