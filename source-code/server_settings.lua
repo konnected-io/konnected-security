@@ -1,3 +1,5 @@
+local restartTimer = tmr.create()
+restartTimer:register(2000, tmr.ALARM_SINGLE, function() node.restart() end)
 local me = {
 	process = function (request, response) 
 		if request.method == "GET" then
@@ -6,13 +8,18 @@ local me = {
 			  request.query.force = request.query.force or "false"
 			  request.query.setfactory = request.query.setfactory or "false"
 			  request.query.restart = request.query.restart or "false"
+			  request.query.restore = request.query.restore or "false"
 			end
 			if request.query.update == "true" then 
 			  require("variables_set").set("update_init", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
-			  require("restart")
+			  restartTimer:start()
 			end  
 			if request.query.restart == "true" then
-			  require("restart")
+			  restartTimer:start()
+			end
+      if request.query.restore == "true" then
+			  node.restore()
+        restartTimer:start()
 			end
 			response.send("")
     end
@@ -24,7 +31,7 @@ local me = {
 			  var.set("actuators", require("variables_build").build(request.body.actuators))
 
 			  print('Settings updated! Restarting in 5 seconds...')
-			  require("restart")
+			  restartTimer:start()
 			  
 			  response.send("")
 			end

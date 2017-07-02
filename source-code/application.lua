@@ -9,12 +9,12 @@ local sendTimer = tmr.create()
 timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
 for i, sensor in pairs(sensors) do
-  print('Initializing sensor on pin ' .. sensor.pin)
+  print("Heap:", node.heap(), "Initializing pin:", sensor.pin)
   gpio.mode(sensor.pin, gpio.INPUT, gpio.PULLUP)
 end
 
 for i, actuator in pairs(actuators) do
-  print('Initializing actuator on pin ' .. actuator.pin)
+  print("Heap:", node.heap(), "Initializing pin:", actuator.pin)
   gpio.mode(actuator.pin, gpio.OUTPUT)
   gpio.write(actuator.pin, gpio.LOW)
 end
@@ -39,7 +39,7 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
       "",
       function(code)
         timeout:stop()
-        print("Heap:", node.heap(), "Success:", code)
+        print("Heap:", node.heap(), "HTTP Call:", code, "Pin:", sensor.pin, "State:", gpio.read(sensor.pin))
         table.remove(sensorSend, 1)
         blinktimer:start()
         t:start()
@@ -47,4 +47,3 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
     collectgarbage()
   end
 end)
-
