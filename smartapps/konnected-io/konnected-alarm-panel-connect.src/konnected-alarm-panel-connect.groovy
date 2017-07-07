@@ -179,6 +179,7 @@ def getSelectedAlarmPanel() {
   if (configuredAlarmPanels) {
     configuredAlarmPanels.each { alarmPanel ->
       def selectedAlarmPanel = getAlarmPanels().find { it.value.mac == alarmPanel }
+      log.debug selectedAlarmPanel
       if (selectedAlarmPanel) {
         state.alarmPanel = state.alarmPanel + [
           mac : selectedAlarmPanel.value.mac,
@@ -218,20 +219,26 @@ def discoverySubscribtion(force=false) {
 def discoverySearchHandler(evt) {
   def event = parseLanMessage(evt.description)
   event << ["hub":evt?.hubId]
-  def devices = getAlarmPanels()
   String ssdpUSN = event.ssdpUSN.toString()
-  if (!devices."${ssdpUSN}") { devices << ["${ssdpUSN}": event] }
+  state.devices << ["${ssdpUSN}": event]
   if (state.alarmPanel) {
-    state.alarmPanel.each {
+    def updatedAlarmPanels = state.alarmPanel.collect {
       if (it.mac == event.mac) {
-        if (it.ip != event.networkAddress) or (it.port != event.deviceAddress) {
-          it.ip   = event.networkAddress 
+        log.debug "found a mac"
+        log.debug it.ip + " | " + event.networkAddress
+        log.debug it.port + " | " + event.deviceAddress
+        if (!((it.ip == event.networkAddress) && (it.port == event.deviceAddress))) {
+          log.debug "updating state.alarmPanel for " + it.mac
+          it.ip   = event.networkAddress
           it.port = event.deviceAddress
           it.host = "${convertHexToIP(event.networkAddress)}:${convertHexToInt(event.deviceAddress)}"
         }
       }
+      it
     }
+    state.alarmPanel = updatedAlarmPanels
   }
+  log.debug state.alarmPanel
 }
 //Device Discovery : Verify search response by retrieving XML
 def discoveryVerification() {
@@ -253,11 +260,10 @@ def discoveryVerificationHandler(physicalgraph.device.HubResponse hubResponse) {
 
 //Child Devices : create/delete child devices from SmartThings app selection
 def childDeviceConfiguration() {
-  def selecteAlarmPanels = [] + getSelectedAlarmPanel()
   settings.each { name , value ->
     def nameValue = name.split("\\_")
     if (nameValue[0] == "deviceType") {
-      def selectedAlarmPanel = getSelectedAlarmPanel().find { it.mac == nameValue[1] } 
+      def selectedAlarmPanel = getSelectedAlarmPanel().find { it.mac == nameValue[1] }
       def deviceDNI = [ selectedAlarmPanel.mac, "${nameValue[2]}"].join('|') 
       def deviceLabel = settings."deviceLabel_${nameValue[1]}_${nameValue[2]}"
       def deviceType = value
