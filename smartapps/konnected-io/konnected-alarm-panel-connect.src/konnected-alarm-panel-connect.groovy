@@ -106,7 +106,7 @@ def pageWelcome() {
             description: "Tap to view status of the alarm panel",
             required:    false,
             image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Device.png",
-            url:         "http://" + it.host
+            url:         "http://" + getDeviceIpAndPort(it)
           )
         }
       }
@@ -208,7 +208,13 @@ def discoverySearchHandler(evt) {
   event << ["hub":evt?.hubId]
   String ssdpUSN = event.ssdpUSN.toString()
   def devices = getDevices()
-  devices[ssdpUSN] = event
+  if (devices[ssdpUSN]) {
+    def d = devices[ssdpUSN]
+    d.networkAddress = event.networkAddress
+    d.deviceAddress = event.deviceAddress
+  } else {
+    devices[ssdpUSN] = event
+  }
 }
 
 //Device Discovery : Verify search response by retrieving XML
@@ -314,13 +320,15 @@ def deviceUpdateDeviceState(deviceDNI, deviceState) {
   def deviceId = deviceDNI.split("\\|")[1]
   def deviceMac = deviceDNI.split("\\|")[0]
   def body = [ pin : deviceId, state : deviceState ]
-  def selectedAlarmPanel = getConfiguredDevices().find { it.mac == deviceMac }
+  def device = getConfiguredDevices().find { it.mac == deviceMac }
+  if (device) {
   sendHubCommand(new physicalgraph.device.HubAction([
     method: "PUT",
     path: "/device",
-    headers: [ HOST: getDeviceIpAndPort(selectedAlarmPanel), "Content-Type": "application/json" ],
+    headers: [ HOST: getDeviceIpAndPort(device), "Content-Type": "application/json" ],
     body : groovy.json.JsonOutput.toJson(body)
-  ], getDeviceIpAndPort(selectedAlarmPanel)))
+  ], getDeviceIpAndPort(device)))
+  }
 }
 
 private Integer convertHexToInt(hex) { Integer.parseInt(hex,16) }
