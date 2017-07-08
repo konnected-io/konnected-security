@@ -53,7 +53,7 @@ def uninstalled() {
     sensors : [],
     actuators : []
   ]
-  def selectedAlarmPanel = [] + getSelectedAlarmPanel()
+  def selectedAlarmPanel = [] + getConfiguredDevices()
   selectedAlarmPanel.each { 
     sendHubCommand(new physicalgraph.device.HubAction([
       method: "PUT", 
@@ -75,7 +75,7 @@ def initialize() {
 //Page : 1 : Welcome page - Manuals & links to devices
 def pageWelcome() {
   dynamicPage(name: "pageWelcome", nextPage: "pageDiscovery") {
-    def configuredAlarmPanels = [] + getSelectedAlarmPanel()
+    def configuredAlarmPanels = [] + getConfiguredDevices()
     section("Welcome! To proceed, go to the next page and the app will search for your devices that's konnected to your network") {
       href(
         name:        "pageWelcomeManual", 
@@ -100,7 +100,6 @@ def pageWelcome() {
     if (configuredAlarmPanels) {
       section("Alarm Panel Status. You must be konnected within your own local network to be able to view your device") {
         configuredAlarmPanels.each {
-        log.debug "it: " + it
           href(
             name:        "device_" + it.mac,
             title:       "AlarmPanel_" + it.mac[-6..-1],
@@ -137,7 +136,7 @@ def pageDiscovery() {
 
 Map pageDiscoveryGetAlarmPanels() {
   def alarmPanels = [:]
-  def verifiedAlarmPanels = getAlarmPanels().findAll{ it.value.verified == true }
+  def verifiedAlarmPanels = getDevices().findAll{ it.value.verified == true }
   verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "AlarmPanel_${it.value.mac[-6..-1]}" }
   return alarmPanels
 }
@@ -145,7 +144,7 @@ Map pageDiscoveryGetAlarmPanels() {
 //Page : 3 : Configure sensors and alarms connected to the panel
 def pageConfiguration() {
   //Get all selected devices
-  def configuredAlarmPanels = [] + getSelectedAlarmPanel()
+  def configuredAlarmPanels = [] + getConfiguredDevices()
 
   dynamicPage(name: "pageConfiguration") {
     configuredAlarmPanels.each { alarmPanel ->
@@ -174,14 +173,13 @@ Map pageConfigurationGetDeviceType() {
 }
 
 //Retrieve selected device
-def getSelectedAlarmPanel() {
-  getAlarmPanels().findAll { settings.selectedAlarmPanels.contains(it.value.mac) }.collect { it.value }
+def getConfiguredDevices() {
+  getDevices().findAll { settings.selectedAlarmPanels.contains(it.value.mac) }.collect { it.value }
 }
 
 //Retrieve devices saved in state
-def getAlarmPanels() {
+def getDevices() {
   if (!state.devices) { state.devices = [:] }
-  log.debug "devices: " + state.devices
   return state.devices
 }
 
@@ -209,33 +207,33 @@ def discoverySearchHandler(evt) {
   def event = parseLanMessage(evt.description)
   event << ["hub":evt?.hubId]
   String ssdpUSN = event.ssdpUSN.toString()
-  def devices = getAlarmPanels()
+  def devices = getDevices()
   devices[ssdpUSN] = event
 }
+
 //Device Discovery : Verify search response by retrieving XML
 def discoveryVerification() {
-  def alarmPanels = getAlarmPanels().findAll { it?.value?.verified != true }
+  def alarmPanels = getDevices().findAll { it?.value?.verified != true }
   alarmPanels.each {
     String host = getDeviceIpAndPort(it.value)
     sendHubCommand(new physicalgraph.device.HubAction("""GET ${it.value.ssdpPath} HTTP/1.1\r\nHOST: ${host}\r\n\r\n""", physicalgraph.device.Protocol.LAN, host, [callback: discoveryVerificationHandler]))
   }
 }
+
 //Device Discovery : Handle verification response
 def discoveryVerificationHandler(physicalgraph.device.HubResponse hubResponse) {
   def body = hubResponse.xml
-  def devices = getAlarmPanels()
+  def devices = getDevices()
   def device = devices.find { it?.key?.contains(body?.device?.UDN?.text()) }
   if (device) { device.value << [name: body?.device?.roomName?.text(), model:body?.device?.modelName?.text(), serialNumber:body?.device?.serialNum?.text(), verified: true] }
 }
-
-
 
 //Child Devices : create/delete child devices from SmartThings app selection
 def childDeviceConfiguration() {
   settings.each { name , value ->
     def nameValue = name.split("\\_")
     if (nameValue[0] == "deviceType") {
-      def selectedAlarmPanel = getSelectedAlarmPanel().find { it.mac == nameValue[1] }
+      def selectedAlarmPanel = getConfiguredDevices().find { it.mac == nameValue[1] }
       def deviceDNI = [ selectedAlarmPanel.mac, "${nameValue[2]}"].join('|')
       def deviceLabel = settings."deviceLabel_${nameValue[1]}_${nameValue[2]}"
       def deviceType = value
@@ -277,7 +275,7 @@ def deviceUpdateSettings() {
   if(!state.accessToken) { createAccessToken() }
   def sensors = [:]
   def actuators = [:]
-  def selectedAlarmPanel = [] + getSelectedAlarmPanel()
+  def selectedAlarmPanel = [] + getConfiguredDevices()
 
   //initialize map for sensors/actuators
   selectedAlarmPanel.each {
@@ -302,7 +300,7 @@ def deviceUpdateSettings() {
       sensors : sensors[it.mac],
       actuators : actuators[it.mac]
     ]
-    log.debug "Updating AlarmPanel " + it.mac + " at " + getDeviceIpAndPort(it)
+
     sendHubCommand(new physicalgraph.device.HubAction([
       method: "PUT",
       path: "/settings",
@@ -316,7 +314,7 @@ def deviceUpdateDeviceState(deviceDNI, deviceState) {
   def deviceId = deviceDNI.split("\\|")[1]
   def deviceMac = deviceDNI.split("\\|")[0]
   def body = [ pin : deviceId, state : deviceState ]
-  def selectedAlarmPanel = getSelectedAlarmPanel().find { it.mac == deviceMac }
+  def selectedAlarmPanel = getConfiguredDevices().find { it.mac == deviceMac }
   sendHubCommand(new physicalgraph.device.HubAction([
     method: "PUT",
     path: "/device",
