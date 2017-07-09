@@ -150,18 +150,36 @@ Map pageDiscoveryGetAlarmPanels() {
 
 //Page : 3 : Configure sensors and alarms connected to the panel
 def pageConfiguration() {
-  //Get all selected devices
+  // Get all selected devices
   def configuredAlarmPanels = [] + getConfiguredDevices()
 
   dynamicPage(name: "pageConfiguration") {
     configuredAlarmPanels.each { alarmPanel ->
       section(hideable: true, "AlarmPanel_${alarmPanel.mac[-6..-1]}") {
-        for ( i in [1, 2, 5, 6, 7]) {
+        for ( i in [1, 2, 5, 6, 7, 8, 9]) {
           def deviceTypeDefaultValue = (settings."deviceType_${alarmPanel.mac}_${i}") ? settings."deviceType_${alarmPanel.mac}_${i}" : ""
           def deviceLabelDefaultValue = (settings."deviceLabel_${alarmPanel.mac}_${i}") ? settings."deviceLabel_${alarmPanel.mac}_${i}" : ""
-          input(name: "deviceType_${alarmPanel.mac}_${i}", type: "enum", title:"Pin ${i} Device Type", required: false, multiple: false, options: pageConfigurationGetDeviceType(), defaultValue: deviceTypeDefaultValue, submitOnChange: true)
+
+          input(
+            name: "deviceType_${alarmPanel.mac}_${i}",
+            type: "enum",
+            title: "Pin ${pinLabel(i)}",
+            required: false,
+            multiple: false,
+            options: pageConfigurationGetDeviceType(i),
+            defaultValue: deviceTypeDefaultValue,
+            submitOnChange: true
+          )
+
           if (settings."deviceType_${alarmPanel.mac}_${i}") {
-            input(name: "deviceLabel_${alarmPanel.mac}_${i}", type: "text", title:"Pin ${i} Device Label", required: false, defaultValue: deviceLabelDefaultValue)
+            input(
+              name: "deviceLabel_${alarmPanel.mac}_${i}",
+              type: "text",
+              title: "Pin ${pinLabel(i)} Name",
+              description: "Name the device connected to ${pinLabel(i)}",
+              required: (settings."deviceType_${alarmPanel.mac}_${i}" != null),
+              defaultValue: deviceLabelDefaultValue
+            )
           }
         }
       }
@@ -169,14 +187,25 @@ def pageConfiguration() {
   }
 }
 
-Map pageConfigurationGetDeviceType() {
-  return [
-    "Konnected Contact Sensor" : "Open/Close Sensor",
-    "Konnected Motion Sensor"  : "Motion Sensor",
-    "Konnected Smoke Sensor"   : "Smoke Detector",
-    "Konnected Siren/Strobe"   : "Siren/Strobe",
-    "Konnected Panic Button"   : "Panic Button"
-  ]
+private Map pageConfigurationGetDeviceType(Integer i) {
+  def deviceTypes = [:]
+  def sensorPins = [1,2,5,6,7,9]
+  def actuatorPins = [1,2,5,6,7,8]
+
+  if (sensorPins.contains(i)) {
+    deviceTypes << [
+      "Konnected Contact Sensor" : "Open/Close Sensor",
+      "Konnected Motion Sensor"  : "Motion Sensor",
+      "Konnected Smoke Sensor"   : "Smoke Detector",
+      "Konnected Panic Button"   : "Panic Button"
+    ]
+  }
+
+  if (actuatorPins.contains(i)) {
+    deviceTypes << ["Konnected Siren/Strobe"   : "Siren/Strobe"]
+  }
+
+  return deviceTypes
 }
 
 //Retrieve selected device
@@ -343,6 +372,14 @@ def deviceUpdateDeviceState(deviceDNI, deviceState) {
       headers: [ HOST: getDeviceIpAndPort(device), "Content-Type": "application/json" ],
       body : groovy.json.JsonOutput.toJson(body)
     ], getDeviceIpAndPort(device)))
+  }
+}
+
+private String pinLabel(Integer i) {
+  if (i == 9) {
+    return "RX"
+  } else {
+    return "D$i"
   }
 }
 
