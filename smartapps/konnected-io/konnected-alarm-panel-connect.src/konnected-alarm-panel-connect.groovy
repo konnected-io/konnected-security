@@ -1,5 +1,5 @@
 /**
- *  Konnected Alarm Panel (Connect)
+ *  Konnected Alarm
  *
  *  Copyright 2017 konnected.io
  *
@@ -14,10 +14,10 @@
  *
  */
 definition(
-  name:        "Konnected Alarm Panel(Connect)",
+  name:        "Konnected Alarm",
   namespace:   "konnected-io",
   author:      "konnected.io",
-  description: "Konnected Alarm Panel",
+  description: "Convert your wired home alarm system into a SmartThings smart alarm",
   category:    "Safety & Security",
   iconUrl:     "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/KonnectedAlarmPanel.png",
   iconX2Url:   "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/KonnectedAlarmPanel@2x.png",
@@ -28,59 +28,66 @@ mappings {
   path("/device/:mac/:id/:deviceState") { action: [ PUT: "childDeviceStateUpdate"] }
   path("/ping") { action: [ GET: "devicePing"] }
 }
-preferences {  
+
+preferences {
   page(name: "pageWelcome",       install: false, uninstall: true, content: "pageWelcome",   nextPage: "pageDiscovery"     )
   page(name: "pageDiscovery",     install: false, uninstall: true, content: "pageDiscovery", nextPage: "pageConfiguration" )
   page(name: "pageConfiguration", install: true,  uninstall: true, content: "pageConfiguration")
 }
-def installed() { 
-  log.info "installed(): Installing SmartApp"
+
+def installed() {
+  log.info "installed(): Installing Konnected Alarm SmartApp"
   initialize() 
   runEvery3Hours(discoverySearch)
 }
-def updated() { 
-  log.info "updated(): Updating SmartApp"
+
+def updated() {
+  log.info "updated(): Updating Konnected Alarm SmartApp"
   initialize() 
 }
+
 def uninstalled() {
-  log.info "uninstall(): Uninstalling SmartApp"
+  log.info "uninstall(): Uninstalling Konnected Alarm SmartApp"
   revokeAccessToken()
-  //Uninstall SmartApp, tell device that access is revoked and remove all the settings
-  log.info "uninstall(): Removing device settings"
+
+  // Uninstall SmartApp, tell device that access is revoked and remove all the settings
+  log.info "uninstall(): Removing Konnected Alarm device settings"
   def body = [
     token : "",
     apiUrl : "",
     sensors : [],
     actuators : []
   ]
-  def selectedAlarmPanel = [] + getSelectedAlarmPanel()
+
+  def selectedAlarmPanel = [] + getConfiguredDevices()
   selectedAlarmPanel.each { 
     sendHubCommand(new physicalgraph.device.HubAction([
       method: "PUT", 
       path: "/settings", 
-      headers: [ HOST: it.host, "Content-Type": "application/json" ], 
+      headers: [ HOST: getDeviceIpAndPort(it), "Content-Type": "application/json" ],
       body : groovy.json.JsonOutput.toJson(body)
-    ], it.host )) 
+    ], getDeviceIpAndPort(it) ))
   }
 }
+
 def initialize() {
   unsubscribe()
   unschedule()
-  discoverySubscribtion(true)  
+  discoverySubscription(true)  
   childDeviceConfiguration()
   deviceUpdateSettings()
   state.pageConfigurationRefresh = 2
 }
 
-//Page : 1 : Welcome page - Manuals & links to devices
+// Page : 1 : Welcome page - Manuals & links to devices
 def pageWelcome() {
   dynamicPage(name: "pageWelcome", nextPage: "pageDiscovery") {
-    def configuredAlarmPanels = [] + getSelectedAlarmPanel()
-    section("Welcome! To proceed, go to the next page and the app will search for your devices that's konnected to your network") {
+    def configuredAlarmPanels = [] + getConfiguredDevices()
+    section("Tap Next to add or configure your Konnected device, or view the links below:") {
       href(
         name:        "pageWelcomeManual", 
-        title:       "Instruction manual",
-        description: "If you need help setting up Konnected Alarm Panel, you can find the instruction manual here. Tap to view the manual",
+        title:       "Instructions & Documentation",
+        description: "Tap to view the online documentation, or view on your computer at http://docs.konnected.io",
         required:    false,
         image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Manual.png",
         url:         "http://docs.konnected.io/"
@@ -89,24 +96,24 @@ def pageWelcome() {
     section("") {
       href(
         name:        "pageWelcomeDonate", 
-        title:       "Donate to us!",
-        description: "This is an open source project. If you love this, show your support to the developers. Tap to donate!",
+        title:       "Donate to Konnected!",
+        description: "Konnected Alarm is an open source project. Your donations help fund future enhancements and products.",
         required:    false,
         image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Donate.png",
-        url:         "http://donate.konnected.io/"
+        url:         "https://store.konnected.io/products/donate-to-this-project"
       )
     }
     
     if (configuredAlarmPanels) {
-      section("Alarm Panel Status. You must be konnected within your own local network to be able to view your device") {
+      section("Device Status: You must be connected within your local area network to be able to view device status.") {
         configuredAlarmPanels.each {
           href(
-            name:        "device_" + it.mac, 
+            name:        "device_" + it.mac,
             title:       "AlarmPanel_" + it.mac[-6..-1],
-            description: "Tap to view status of the alarm panel",
+            description: "Tap to view device status",
             required:    false,
             image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Device.png",
-            url:         "http://" + it.host
+            url:         "http://" + getDeviceIpAndPort(it)
           )
         }
       }
@@ -117,14 +124,14 @@ def pageWelcome() {
 //Page : 2 : Discovery page - search and select devices
 def pageDiscovery() {
   //create accessToken
-  if(!state.accessToken) { createAccessToken() }  
-      
+  if(!state.accessToken) { createAccessToken() }
+
   //This is a workaround to prevent page to refresh too fast.
   if(!state.pageConfigurationRefresh) { state.pageConfigurationRefresh = 2 }
-  
+
   dynamicPage(name: "pageDiscovery", nextPage: "pageConfiguration", refreshInterval: state.pageConfigurationRefresh) {
     state.pageConfigurationRefresh =  state.pageConfigurationRefresh + 3
-    discoverySubscribtion()
+    discoverySubscription()
     discoverySearch()
     discoveryVerification()
     def alarmPanels = pageDiscoveryGetAlarmPanels()
@@ -136,7 +143,7 @@ def pageDiscovery() {
 
 Map pageDiscoveryGetAlarmPanels() {
   def alarmPanels = [:]
-  def verifiedAlarmPanels = getAlarmPanels().findAll{ it.value.verified == true }
+  def verifiedAlarmPanels = getDevices().findAll{ it.value.verified == true }
   verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "AlarmPanel_${it.value.mac[-6..-1]}" }
   return alarmPanels
 }
@@ -144,8 +151,8 @@ Map pageDiscoveryGetAlarmPanels() {
 //Page : 3 : Configure sensors and alarms connected to the panel
 def pageConfiguration() {
   //Get all selected devices
-  def configuredAlarmPanels = [] + getSelectedAlarmPanel()
-  
+  def configuredAlarmPanels = [] + getConfiguredDevices()
+
   dynamicPage(name: "pageConfiguration") {
     configuredAlarmPanels.each { alarmPanel ->
       section(hideable: true, "AlarmPanel_${alarmPanel.mac[-6..-1]}") {
@@ -155,56 +162,44 @@ def pageConfiguration() {
           input(name: "deviceType_${alarmPanel.mac}_${i}", type: "enum", title:"Pin ${i} Device Type", required: false, multiple: false, options: pageConfigurationGetDeviceType(), defaultValue: deviceTypeDefaultValue, submitOnChange: true)
           if (settings."deviceType_${alarmPanel.mac}_${i}") {
             input(name: "deviceLabel_${alarmPanel.mac}_${i}", type: "text", title:"Pin ${i} Device Label", required: false, defaultValue: deviceLabelDefaultValue)
-          } 
+          }
         }
       }
     }
   }
 }
 
-Map pageConfigurationGetDeviceType() { 
+Map pageConfigurationGetDeviceType() {
   return [
-    "Konnected Contact Sensor" : "Open/Close Sensor", 
-    "Konnected Motion Sensor"  : "Motion Sensor", 
+    "Konnected Contact Sensor" : "Open/Close Sensor",
+    "Konnected Motion Sensor"  : "Motion Sensor",
     "Konnected Smoke Sensor"   : "Smoke Detector",
     "Konnected Siren/Strobe"   : "Siren/Strobe",
     "Konnected Panic Button"   : "Panic Button"
-  ] 
+  ]
 }
 
 //Retrieve selected device
-def getSelectedAlarmPanel() {
-  state.alarmPanel = []
-  def configuredAlarmPanels = [] + settings.selectedAlarmPanels
-  if (configuredAlarmPanels) {
-    configuredAlarmPanels.each { alarmPanel ->
-      def selectedAlarmPanel = getAlarmPanels().find { it.value.mac == alarmPanel }
-      if (selectedAlarmPanel) {
-        state.alarmPanel = state.alarmPanel + [
-          mac : selectedAlarmPanel.value.mac,
-          ip  : selectedAlarmPanel.value.networkAddress,
-          port: selectedAlarmPanel.value.deviceAddress,
-          hub : selectedAlarmPanel.value.hub,
-          host: "${convertHexToIP(selectedAlarmPanel.value.networkAddress)}:${convertHexToInt(selectedAlarmPanel.value.deviceAddress)}"
-        ]
-      }
-    }
-  }
-  return state.alarmPanel  
+def getConfiguredDevices() {
+  getDevices().findAll { settings.selectedAlarmPanels.contains(it.value.mac) }.collect { it.value }
 }
 
 //Retrieve devices saved in state
-def getAlarmPanels() {
+def getDevices() {
   if (!state.devices) { state.devices = [:] }
   return state.devices
 }
 
-//Device Discovery : Device Type 
+def getDeviceIpAndPort(device) {
+  "${convertHexToIP(device.networkAddress)}:${convertHexToInt(device.deviceAddress)}"
+}
+
+//Device Discovery : Device Type
 def discoveryDeviceType() { return "urn:schemas-konnected-io:device:AlarmPanel:1" }
 //Device Discovery : Send M-Search to multicast
 def discoverySearch() { sendHubCommand(new physicalgraph.device.HubAction("lan discovery ${discoveryDeviceType()}", physicalgraph.device.Protocol.LAN)) }
 //Device Discovery : Subscribe to SSDP events
-def discoverySubscribtion(force=false) {
+def discoverySubscription(force=false) {
   if (force) {
     unsubscribe()
     state.subscribe = false
@@ -214,74 +209,71 @@ def discoverySubscribtion(force=false) {
     state.subscribe = true
   }
 }
-//Device Discovery : Handle search response
+
+// Device Discovery : Handle search response
 def discoverySearchHandler(evt) {
   def event = parseLanMessage(evt.description)
   event << ["hub":evt?.hubId]
-  def devices = getAlarmPanels()
   String ssdpUSN = event.ssdpUSN.toString()
-  if (!devices."${ssdpUSN}") { devices << ["${ssdpUSN}": event] }
-  if (state.alarmPanel) {
-    state.alarmPanel.each {
-      if (it.mac == event.mac) {
-        if (it.ip != event.networkAddress) or (it.port != event.deviceAddress) {
-          it.ip   = event.networkAddress 
-          it.port = event.deviceAddress
-          it.host = "${convertHexToIP(event.networkAddress)}:${convertHexToInt(event.deviceAddress)}"
-        }
-      }
-    }
+  def devices = getDevices()
+  if (devices[ssdpUSN]) {
+    log.debug "Refreshing network attributes of device $event.mac"
+    def d = devices[ssdpUSN]
+    d.networkAddress = event.networkAddress
+    d.deviceAddress = event.deviceAddress
+  } else {
+    log.debug "Discovered new device $event.mac"
+    devices[ssdpUSN] = event
   }
 }
+
 //Device Discovery : Verify search response by retrieving XML
 def discoveryVerification() {
-  def alarmPanels = getAlarmPanels().findAll { it?.value?.verified != true }
+  def alarmPanels = getDevices().findAll { it?.value?.verified != true }
   alarmPanels.each {
-    String host = "${convertHexToIP(it.value.networkAddress)}:${convertHexToInt(it.value.deviceAddress)}"
+    String host = getDeviceIpAndPort(it.value)
     sendHubCommand(new physicalgraph.device.HubAction("""GET ${it.value.ssdpPath} HTTP/1.1\r\nHOST: ${host}\r\n\r\n""", physicalgraph.device.Protocol.LAN, host, [callback: discoveryVerificationHandler]))
   }
 }
+
 //Device Discovery : Handle verification response
 def discoveryVerificationHandler(physicalgraph.device.HubResponse hubResponse) {
   def body = hubResponse.xml
-  def devices = getAlarmPanels()
+  def devices = getDevices()
   def device = devices.find { it?.key?.contains(body?.device?.UDN?.text()) }
   if (device) { device.value << [name: body?.device?.roomName?.text(), model:body?.device?.modelName?.text(), serialNumber:body?.device?.serialNum?.text(), verified: true] }
 }
 
-
-
 //Child Devices : create/delete child devices from SmartThings app selection
 def childDeviceConfiguration() {
-  def selecteAlarmPanels = [] + getSelectedAlarmPanel()
   settings.each { name , value ->
     def nameValue = name.split("\\_")
     if (nameValue[0] == "deviceType") {
-      def selectedAlarmPanel = getSelectedAlarmPanel().find { it.mac == nameValue[1] } 
-      def deviceDNI = [ selectedAlarmPanel.mac, "${nameValue[2]}"].join('|') 
+      def selectedAlarmPanel = getConfiguredDevices().find { it.mac == nameValue[1] }
+      def deviceDNI = [ selectedAlarmPanel.mac, "${nameValue[2]}"].join('|')
       def deviceLabel = settings."deviceLabel_${nameValue[1]}_${nameValue[2]}"
       def deviceType = value
-      def deviceChild = getChildDevice(deviceDNI)      
-      if (!deviceChild) { 
+      def deviceChild = getChildDevice(deviceDNI)
+      if (!deviceChild) {
         if (deviceType != "") {
-          addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ]) 
+          addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ])
         }
       } else {
         //Change name if it's set here
-        if (deviceChild.label != deviceLabel) 
+        if (deviceChild.label != deviceLabel)
           deviceChild.label = deviceLabel
         //Change Type, you will lose the history of events. delete and add back the child
         if (deviceChild.name != deviceType) {
           deleteChildDevice(deviceDNI)
           if (deviceType != "") {
-            addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ]) 
+            addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ])
           }
         }
       }
     }
   }
   def deleteChildDevices = getAllChildDevices().findAll { settings."deviceType_${it.deviceNetworkId.split("\\|")[0]}_${it.deviceNetworkId.split("\\|")[1]}" == "" }
-  deleteChildDevices.each { deleteChildDevice(it.deviceNetworkId) }  
+  deleteChildDevices.each { deleteChildDevice(it.deviceNetworkId) }
 }
 //Child Devices : update state of child device sent from nodemcu
 def childDeviceStateUpdate() {
@@ -294,15 +286,15 @@ def devicePing() {
   return ""
 }
 
-//Device : update NodeMCU with token, url, sensors, actuators from SmartThings 
+//Device : update NodeMCU with token, url, sensors, actuators from SmartThings
 def deviceUpdateSettings() {
-  if(!state.accessToken) { createAccessToken() }  
+  if(!state.accessToken) { createAccessToken() }
   def sensors = [:]
   def actuators = [:]
-  def selectedAlarmPanel = [] + getSelectedAlarmPanel()
-  
+  def selectedAlarmPanel = [] + getConfiguredDevices()
+
   //initialize map for sensors/actuators
-  selectedAlarmPanel.each { 
+  selectedAlarmPanel.each {
     sensors[it.mac] = []
     actuators[it.mac] = []
   }
@@ -310,40 +302,48 @@ def deviceUpdateSettings() {
   getAllChildDevices().each {
     def mac = it.deviceNetworkId.split("\\|")[0]
     def pin = it.deviceNetworkId.split("\\|")[1]
-    if (it.name != "Konnected Siren/Strobe") { 
-      sensors[mac] = sensors[mac] + [ pin : pin ] 
+    if (it.name != "Konnected Siren/Strobe") {
+      sensors[mac] = sensors[mac] + [ pin : pin ]
     } else {
-      actuators[mac] = actuators[mac] + [ pin : pin ] 
+      actuators[mac] = actuators[mac] + [ pin : pin ]
     }
   }
-  //send information to each devices
-  selectedAlarmPanel.each { 
+
+  // send information to each devices
+  selectedAlarmPanel.each {
     def body = [
       token : state.accessToken,
       apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
       sensors : sensors[it.mac],
       actuators : actuators[it.mac]
     ]
+
+    log.debug "Updating settings on device $it.mac at " + getDeviceIpAndPort(it)
     sendHubCommand(new physicalgraph.device.HubAction([
-      method: "PUT", 
-      path: "/settings", 
-      headers: [ HOST: it.host, "Content-Type": "application/json" ], 
+      method: "PUT",
+      path: "/settings",
+      headers: [ HOST: getDeviceIpAndPort(it), "Content-Type": "application/json" ],
       body : groovy.json.JsonOutput.toJson(body)
-    ], it.host )) 
+    ], getDeviceIpAndPort(it) ))
   }
 }
-//Device: update NodeMCU with state of device changed from SmartThings
+
+// Device: update NodeMCU with state of device changed from SmartThings
 def deviceUpdateDeviceState(deviceDNI, deviceState) {
   def deviceId = deviceDNI.split("\\|")[1]
   def deviceMac = deviceDNI.split("\\|")[0]
   def body = [ pin : deviceId, state : deviceState ]
-  def selectedAlarmPanel = getSelectedAlarmPanel(deviceMac)
-  sendHubCommand(new physicalgraph.device.HubAction([
-    method: "PUT", 
-    path: "/device", 
-    headers: [ HOST: selectedAlarmPanel.host, "Content-Type": "application/json" ], 
-    body : groovy.json.JsonOutput.toJson(body)
-  ], selectedAlarmPanel.host))
+  def device = getConfiguredDevices().find { it.mac == deviceMac }
+
+  if (device) {
+    log.debug "Updating device $deviceMac pin $deviceId to $deviceState at " + getDeviceIpAndPort(device)
+    sendHubCommand(new physicalgraph.device.HubAction([
+      method: "PUT",
+      path: "/device",
+      headers: [ HOST: getDeviceIpAndPort(device), "Content-Type": "application/json" ],
+      body : groovy.json.JsonOutput.toJson(body)
+    ], getDeviceIpAndPort(device)))
+  }
 }
 
 private Integer convertHexToInt(hex) { Integer.parseInt(hex,16) }
