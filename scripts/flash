@@ -4,4 +4,5 @@ IMAGE_NAME=konnected-security-2-0-beta1
 PORT=/dev/cu.wchusbserial1410
 
 esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${IMAGE_NAME}.bin
+sleep 2
 cd source-code && nodemcu-uploader --port=${PORT} upload * --verify=raw

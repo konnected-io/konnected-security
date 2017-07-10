@@ -86,7 +86,7 @@ def pageWelcome() {
     def configuredAlarmPanels = [] + getConfiguredDevices()
     section("Tap Next to add or configure your Konnected device, or view the links below:") {
       href(
-        name:        "pageWelcomeManual", 
+        name:        "pageWelcomeManual",
         title:       "Instructions & Documentation",
         description: "Tap to view the online documentation, or view on your computer at http://docs.konnected.io",
         required:    false,
@@ -96,7 +96,7 @@ def pageWelcome() {
     }
     section("") {
       href(
-        name:        "pageWelcomeDonate", 
+        name:        "pageWelcomeDonate",
         title:       "Donate to Konnected!",
         description: "Konnected Alarm is an open source project. Your donations help fund future enhancements and products.",
         required:    false,
@@ -104,13 +104,13 @@ def pageWelcome() {
         url:         "https://store.konnected.io/products/donate-to-this-project"
       )
     }
-    
+
     if (configuredAlarmPanels) {
       section("Device Status: You must be connected within your local area network to be able to view device status.") {
         configuredAlarmPanels.each {
           href(
             name:        "device_" + it.mac,
-            title:       "konnected-" + it.mac[-6..-1],
+            title:       "konnected-security-" + it.mac[-6..-1],
             description: "Tap to view device status",
             required:    false,
             image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Device.png",
@@ -154,7 +154,7 @@ def pageDiscovery() {
 Map pageDiscoveryGetAlarmPanels() {
   def alarmPanels = [:]
   def verifiedAlarmPanels = getDevices().findAll{ it.value.verified == true }
-  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "konnected-${it.value.mac[-6..-1]}" }
+  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "konnected-security-${it.value.mac[-6..-1]}" }
   return alarmPanels
 }
 
@@ -165,7 +165,7 @@ def pageConfiguration() {
 
   dynamicPage(name: "pageConfiguration") {
     configuredAlarmPanels.each { alarmPanel ->
-      section(hideable: true, "AlarmPanel_${alarmPanel.mac[-6..-1]}") {
+      section(hideable: true, "konnected-security-${alarmPanel.mac[-6..-1]}") {
         for ( i in [1, 2, 5, 6, 7, 8, 9]) {
           def deviceTypeDefaultValue = (settings."deviceType_${alarmPanel.mac}_${i}") ? settings."deviceType_${alarmPanel.mac}_${i}" : ""
           def deviceLabelDefaultValue = (settings."deviceLabel_${alarmPanel.mac}_${i}") ? settings."deviceLabel_${alarmPanel.mac}_${i}" : ""
@@ -220,7 +220,11 @@ private Map pageConfigurationGetDeviceType(Integer i) {
 
 // Retrieve selected device
 def getConfiguredDevices() {
-  getDevices().findAll { settings.selectedAlarmPanels.contains(it.value.mac) }.collect { it.value }
+  getDevices().findAll {
+    settings.selectedAlarmPanels?.contains(it.value.mac)
+  }.collect {
+    it.value
+  }
 }
 
 // Retrieve devices saved in state
@@ -262,23 +266,36 @@ def discoverySearchHandler(evt) {
   String ssdpUSN = event.ssdpUSN.toString()
   def devices = getDevices()
   if (devices[ssdpUSN]) {
-    log.debug "Refreshing network attributes of device $event.mac"
     def d = devices[ssdpUSN]
     d.networkAddress = event.networkAddress
     d.deviceAddress = event.deviceAddress
+    log.debug "Refreshed attributes of device $d"
   } else {
-    log.debug "Discovered new device $event.mac"
     devices[ssdpUSN] = event
+    log.debug "Discovered new device $event"
+    discoveryVerify(event)
   }
 }
 
 //Device Discovery : Verify search response by retrieving XML
 def discoveryVerification() {
-  def alarmPanels = getDevices().findAll { it?.value?.verified != true }
-  alarmPanels.each {
-    String host = getDeviceIpAndPort(it.value)
-    sendHubCommand(new physicalgraph.device.HubAction("""GET ${it.value.ssdpPath} HTTP/1.1\r\nHOST: ${host}\r\n\r\n""", physicalgraph.device.Protocol.LAN, host, [callback: discoveryVerificationHandler]))
+  getDevices().findAll { it?.value?.verified != true }.each {
+    discoveryVerify(it.value)
   }
+}
+
+// Device Discovery : Verify a Device
+def discoveryVerify(Map device) {
+  log.debug "Verifying communication with device $device"
+  String host = getDeviceIpAndPort(device)
+  sendHubCommand(
+    new physicalgraph.device.HubAction(
+      """GET ${device.ssdpPath} HTTP/1.1\r\nHOST: ${host}\r\n\r\n""",
+      physicalgraph.device.Protocol.LAN,
+      host,
+      [callback: discoveryVerificationHandler]
+    )
+  )
 }
 
 //Device Discovery : Handle verification response
@@ -286,7 +303,15 @@ def discoveryVerificationHandler(physicalgraph.device.HubResponse hubResponse) {
   def body = hubResponse.xml
   def devices = getDevices()
   def device = devices.find { it?.key?.contains(body?.device?.UDN?.text()) }
-  if (device) { device.value << [name: body?.device?.roomName?.text(), model:body?.device?.modelName?.text(), serialNumber:body?.device?.serialNum?.text(), verified: true] }
+  if (device) {
+    log.debug "Verification Success: $body"
+    device.value << [
+      name: body?.device?.roomName?.text(),
+      model:body?.device?.modelName?.text(),
+      serialNumber:body?.device?.serialNum?.text(),
+      verified: true
+    ]
+  }
 }
 
 //Child Devices : create/delete child devices from SmartThings app selection

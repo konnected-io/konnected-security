@@ -9,7 +9,7 @@ local deviceXML = { "<?xml version=\"1.0\"?>\r\n", "<root xmlns=\"urn:schemas-up
   table.insert(deviceXML, "\t\t<friendlyName>" .. device.name .. "</friendlyName>\r\n" )
   table.insert(deviceXML, "\t\t<manufacturer>konnected.io</manufacturer>\r\n" )
   table.insert(deviceXML, "\t\t<manufacturerURL>http://konnected.io/</manufacturerURL>\r\n" )
-  table.insert(deviceXML, "\t\t<modelDescription>Alarm Panel</modelDescription>\r\n" )
+  table.insert(deviceXML, "\t\t<modelDescription>Konnected Security</modelDescription>\r\n" )
   table.insert(deviceXML, "\t\t<modelName>" .. device.name .. "</modelName>\r\n" )
   table.insert(deviceXML, "\t\t<modelNumber>" .. device.hwVersion .. "</modelNumber>\r\n" )
   table.insert(deviceXML, "\t\t<serialNumber>" .. node.chipid() .. "</serialNumber>\r\n" )
