@@ -1,5 +1,5 @@
 /**
- *  Konnected Alarm
+ *  Konnected Security (Connect)
  *
  *  Copyright 2017 konnected.io
  *
@@ -14,7 +14,7 @@
  *
  */
 definition(
-  name:        "Konnected Alarm",
+  name:        "Konnected Security (Connect)",
   namespace:   "konnected-io",
   author:      "konnected.io",
   description: "Convert your wired home alarm system into a SmartThings smart alarm",
@@ -24,6 +24,7 @@ definition(
   iconX3Url:   "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/KonnectedAlarmPanel@3x.png",
   singleInstance: true
 )
+
 mappings {
   path("/device/:mac/:id/:deviceState") { action: [ PUT: "childDeviceStateUpdate"] }
   path("/ping") { action: [ GET: "devicePing"] }
@@ -36,18 +37,18 @@ preferences {
 }
 
 def installed() {
-  log.info "installed(): Installing Konnected Alarm SmartApp"
+  log.info "installed(): Installing Konnected Security SmartApp"
   initialize() 
   runEvery3Hours(discoverySearch)
 }
 
 def updated() {
-  log.info "updated(): Updating Konnected Alarm SmartApp"
+  log.info "updated(): Updating Konnected Security SmartApp"
   initialize() 
 }
 
 def uninstalled() {
-  log.info "uninstall(): Uninstalling Konnected Alarm SmartApp"
+  log.info "uninstall(): Uninstalling Konnected Security SmartApp"
   revokeAccessToken()
 
   // Uninstall SmartApp, tell device that access is revoked and remove all the settings
@@ -109,7 +110,7 @@ def pageWelcome() {
         configuredAlarmPanels.each {
           href(
             name:        "device_" + it.mac,
-            title:       "AlarmPanel_" + it.mac[-6..-1],
+            title:       "konnected-" + it.mac[-6..-1],
             description: "Tap to view device status",
             required:    false,
             image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Device.png",
@@ -136,7 +137,16 @@ def pageDiscovery() {
     discoveryVerification()
     def alarmPanels = pageDiscoveryGetAlarmPanels()
     section("Please wait while we discover your device") {
-      input(name: "selectedAlarmPanels", type: "enum", title: "Select Alarm Panel (${alarmPanels.size() ?: 0} found)", required: true, multiple: true, options: alarmPanels, defaultValue: settings.selectedAlarmPanels, submitOnChange: true)
+      input(
+        name: "selectedAlarmPanels",
+        type: "enum",
+        title: "Select devices (${alarmPanels.size() ?: 0} found)",
+        required: true,
+        multiple: true,
+        options: alarmPanels,
+        defaultValue: settings.selectedAlarmPanels,
+        submitOnChange: true
+      )
     }
   }
 }
@@ -144,7 +154,7 @@ def pageDiscovery() {
 Map pageDiscoveryGetAlarmPanels() {
   def alarmPanels = [:]
   def verifiedAlarmPanels = getDevices().findAll{ it.value.verified == true }
-  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "AlarmPanel_${it.value.mac[-6..-1]}" }
+  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "konnected-${it.value.mac[-6..-1]}" }
   return alarmPanels
 }
 
@@ -208,12 +218,12 @@ private Map pageConfigurationGetDeviceType(Integer i) {
   return deviceTypes
 }
 
-//Retrieve selected device
+// Retrieve selected device
 def getConfiguredDevices() {
   getDevices().findAll { settings.selectedAlarmPanels.contains(it.value.mac) }.collect { it.value }
 }
 
-//Retrieve devices saved in state
+// Retrieve devices saved in state
 def getDevices() {
   if (!state.devices) { state.devices = [:] }
   return state.devices
@@ -223,11 +233,17 @@ def getDeviceIpAndPort(device) {
   "${convertHexToIP(device.networkAddress)}:${convertHexToInt(device.deviceAddress)}"
 }
 
-//Device Discovery : Device Type
-def discoveryDeviceType() { return "urn:schemas-konnected-io:device:AlarmPanel:1" }
-//Device Discovery : Send M-Search to multicast
-def discoverySearch() { sendHubCommand(new physicalgraph.device.HubAction("lan discovery ${discoveryDeviceType()}", physicalgraph.device.Protocol.LAN)) }
-//Device Discovery : Subscribe to SSDP events
+// Device Discovery : Device Type
+def discoveryDeviceType() {
+  return "urn:schemas-konnected-io:device:Security:1"
+}
+
+// Device Discovery : Send M-Search to multicast
+def discoverySearch() {
+  sendHubCommand(new physicalgraph.device.HubAction("lan discovery ${discoveryDeviceType()}", physicalgraph.device.Protocol.LAN))
+}
+
+// Device Discovery : Subscribe to SSDP events
 def discoverySubscription(force=false) {
   if (force) {
     unsubscribe()

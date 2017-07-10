@@ -1,6 +1,6 @@
 local me = {
-  name = "AlarmPanel",
-  hwVersion = "0.1",
-	swVersion = "0.1"
+  name = "Security",
+  hwVersion = "2.0.beta1",
+  swVersion = "2.0.beta1"
 }
 return me
