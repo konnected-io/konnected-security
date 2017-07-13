@@ -3,6 +3,7 @@ local update = require("update_init")
 local dlist = { }
 local body = ""
 local line = ""
+print("Heap: ", node.heap(), "Updater: Checking version")
 local fw = file.open("manifest.tmp", "w")
 local conn = net.createConnection(net.TCP, 1)
 conn:connect(443, "api.github.com")
@@ -32,6 +33,9 @@ conn:on("disconnection", function(sck)
   fr.close()
   
   local version = body.tag_name or device.swVersion
+  version = string.match(version, "[%d%.]+")
+  print("Heap: ", node.heap(), "Updater: Current version", device.swVersion)
+  print("Heap: ", node.heap(), "Updater: New version", version)
   if (version > device.swVersion) or update.force then
     print("Heap: ", node.heap(), "Updater: Version outdated, retrieving manifest list...")
     local fr = file.open("manifest.tmp", "r")
@@ -77,11 +81,13 @@ conn:on("disconnection", function(sck)
     fupdate:close()
   end
   
-  if file.exists("update_init.lua") then 
-    file.remove("update_init.lua")
-  end
-  if file.exists("update_init.lc") then 
-    file.remove("update_init.lc")
+  if file.exists("manifest") ~= true then
+    if file.exists("update_init.lua") then 
+      file.remove("update_init.lua")
+    end
+    if file.exists("update_init.lc") then 
+      file.remove("update_init.lc")
+    end
   end
   if file.exists("manifest.tmp") then
     file.remove("manifest.tmp")
@@ -91,7 +97,7 @@ conn:on("disconnection", function(sck)
   tmr.create():alarm(3000, tmr.ALARM_SINGLE, function(t) node.restart() end)    
 end)
 conn:on("connection", function(sck)
-  sck:send("GET /repos/konnected-io/"..device.name.."/releases/latest HTTP/1.1\r\nHost: api.github.com\r\nConnection: keep-alive\r\n"..
+  sck:send("GET /repos/konnected-io/konnected-security/releases/latest HTTP/1.1\r\nHost: api.github.com\r\nConnection: keep-alive\r\n"..
            "Accept: */*\r\nUser-Agent: ESP8266\r\n\r\n")
 end)
 
