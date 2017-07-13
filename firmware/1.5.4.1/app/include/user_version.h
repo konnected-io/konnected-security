@@ -8,7 +8,7 @@
 
 #define NODE_VERSION	"NodeMCU 1.5.4.1\r\nKonnected Security 2.0\r\n"
 #ifndef BUILD_DATE
-#define BUILD_DATE	  "20170708"
+#define BUILD_DATE	  "20170712"
 #endif
 
 extern char SDK_VERSION[];
