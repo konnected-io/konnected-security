@@ -1,4 +1,3 @@
-local update = require("update_init")
 local function getHeaderValue(line, headerPattern)
   local l1 = string.match(line, headerPattern .. ": (.*)")
   if l1 then 
@@ -19,7 +18,6 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
     proceed = true
       
     --do not overwrite user's sensors / actuators and smartthings info
-    --if update.setfactory ~= true then
       if  manifest[1].filenm == "smartthings.lua" and file.exists("smartthings.lc") then
         proceed = false
         table.remove(manifest, 1)
@@ -32,7 +30,6 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
         proceed = false
         table.remove(manifest, 1)
       end
-    --end
     --never overwrite device
     if  manifest[1].filenm == "device.lua" and file.exists("device.lc") then
       proceed = false
