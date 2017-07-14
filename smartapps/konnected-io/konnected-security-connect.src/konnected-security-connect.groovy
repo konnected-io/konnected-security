@@ -19,9 +19,9 @@ definition(
   author:      "konnected.io",
   description: "Convert your wired home alarm system into a SmartThings smart alarm",
   category:    "Safety & Security",
-  iconUrl:     "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/KonnectedAlarmPanel.png",
-  iconX2Url:   "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/KonnectedAlarmPanel@2x.png",
-  iconX3Url:   "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/KonnectedAlarmPanel@3x.png",
+  iconUrl:     "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/KonnectedSecurity.png",
+  iconX2Url:   "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/KonnectedSecurity@2x.png",
+  iconX3Url:   "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/KonnectedSecurity@3x.png",
   singleInstance: true
 )
 
@@ -90,8 +90,8 @@ def pageWelcome() {
         title:       "Instructions & Documentation",
         description: "Tap to view the online documentation, or view on your computer at http://docs.konnected.io",
         required:    false,
-        image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Manual.png",
-        url:         "http://docs.konnected.io/"
+        image:       "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/manual-icon.png",
+        url:         "http://docs.konnected.io/security-alarm-system/"
       )
     }
     section("") {
@@ -100,8 +100,8 @@ def pageWelcome() {
         title:       "Donate to Konnected!",
         description: "Konnected Alarm is an open source project. Your donations help fund future enhancements and products.",
         required:    false,
-        image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Donate.png",
-        url:         "https://store.konnected.io/products/donate-to-this-project"
+        image:       "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/donate-icon.png",
+        url:         "http://docs.konnected.io/donate/"
       )
     }
 
@@ -113,7 +113,7 @@ def pageWelcome() {
             title:       "konnected-security-" + it.mac[-6..-1],
             description: "Tap to view device status",
             required:    false,
-            image:       "https://raw.githubusercontent.com/konnected-io/SmartThings/master/images/icons/Device.png",
+            image:       "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/device-icon.png",
             url:         "http://" + getDeviceIpAndPort(it)
           )
         }
