@@ -1,6 +1,6 @@
 local me = {
   name = "Security",
-  hwVersion = "2.0",
-  swVersion = "2.0"
+  hwVersion = "2.0.0",
+  swVersion = "2.0.0"
 }
 return me
