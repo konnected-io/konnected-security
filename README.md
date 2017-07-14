@@ -1,5 +1,6 @@
 <img src="https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/logo-black-small.png" />
-# Security
+
+# Konnected Security
 
 **Konnected Security** is a simple and inexpensive way to connect wired alarm system door/window sensors and motion
  sensors to [SmartThings](https://www.smartthings.com) for use with [Smart Home Monitor](https://support.smartthings.com/hc/en-us/articles/205380154-Smart-Home-Monitor)
