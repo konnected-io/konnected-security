@@ -55,7 +55,7 @@ on which board you have, there are different drivers:
 
 ### Windows Users
 
-Instructions coming soon!
+Coming soon!
 
 ### Donations
 
@@ -68,9 +68,9 @@ achieve that goal.
 
 Thank you for your support,
 
-@heythisisnate and @copy-ninja
+**@heythisisnate** and **@copy-ninja**
 
-#### [Donate Here](http://docs.konnected.io/donate)
+#### [Donate Here with Paypal or Bitcoin](http://docs.konnected.io/donate)
 
 ### [For more information click here for the complete Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
 
