@@ -4,13 +4,21 @@ print("Heap: ", node.heap(), "Loaded: ", "Startup (compiler & blinker)")
 print("Heap: ", node.heap(), "Connecting to Wifi..")
 local startCountDown = 0
 
-if wifi.sta.getconfig() == "" then 
+wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(T)
+  print("Heap: ", node.heap(), "Cannot connect to WiFi")
+  enduser_setup.manual(false)
+  enduser_setup.start()
+  wifi.eventmon.unregister(wifi.eventmon.STA_DISCONNECTED)
+  print("Heap: ", node.heap(), "WiFi Setup started")
+end)
+
+if wifi.sta.getconfig() == "" then
+  print("Heap: ", node.heap(), "WiFi not configured")
   startCountDown = 5
   enduser_setup.manual(false)
   enduser_setup.start()
-  print("Heap: ", node.heap(), "End User Setup started")
+  print("Heap: ", node.heap(), "WiFi Setup started")
 end
-
 
 local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
   require("led_flip").flip()
@@ -27,6 +35,7 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
         startCountDown = nil
         gpio.write(4, gpio.HIGH)
         enduser_setup.stop()
+        wifi.eventmon.unregister(wifi.eventmon.STA_DISCONNECTED)
         require("server")
         print("Heap: ", node.heap(), "Loaded: ", "server")
         require("application")
