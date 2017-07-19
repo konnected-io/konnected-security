@@ -1,5 +1,6 @@
 <img src="https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/logo-black-small.png" />
-[![](https://img.shields.io/github/release/konnected-io/konnected-security.svg?style=flat-square)](https://github.com/konnected-io/konnected-security/releases)
+
+[![GitHub release](https://img.shields.io/github/release/konnected-io/konnected-security.svg?style=flat-square)](https://github.com/konnected-io/konnected-security/releases)
 
 # Konnected Security
 
