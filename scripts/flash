@@ -11,3 +11,5 @@ while true; do
   sleep 2
   nodemcu-uploader --port=${PORT} upload * --verify=raw && break
 done
+
+tput bel

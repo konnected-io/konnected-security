@@ -42,22 +42,21 @@ on which board you have, there are different drivers:
 * have the name _Amica_ on the back
 * the small component on the board near the USB port is engraved with SiLABS CP2102
 
-### Mac & Linux Users
+### Preparing the Device
 
- 1. You must have Python installed with `pip`. Mac users: I recommend using [Homebrew](https://brew.sh/) and `brew install python`
- 1. Install `esptool` and `nodemcu-uploader` packages:
+ 1. You must have Python 2 installed with `pip`. 
+    * **Mac users**: I recommend using [Homebrew](https://brew.sh/) and `brew install python`
+    * **Windows users**: Download and install the [latest Python 2 release](https://www.python.org/downloads/windows/)  
+ 
+ 1. Open up a terminal and install `esptool` and `nodemcu-uploader` packages:
      
         pip install esptool
         pip install nodemcu-uploader
         
  1. Run the script in `scripts/flash` to flash and upload the files. You may need to edit the variables
- at the top as your serial port may be different depending on the type of
- NodeMCU development board you have.
-
-
-### Windows Users
-
-Coming soon!
+ at the top of the script as your serial port may be different depending on your operating system and the type of NodeMCU development
+ board you have.
+ 
 
 ### Donations
 
