@@ -8,10 +8,13 @@ local me = {
       heap = node.heap(),
       uptime = tmr.time(),
       ip = ip,
+      port = math.floor(node.chipid()/1000) + 8000,
       nm = nm,
       gw = gw,
       mac = wifi.sta.getmac(),
-      rssi = wifi.sta.getrssi()
+      rssi = wifi.sta.getrssi(),
+      sensors = require("sensors"),
+      actuators = require("actuators")
     }
     response.send(cjson.encode(body))
   end
