@@ -314,7 +314,7 @@ def discoveryVerificationHandler(physicalgraph.device.HubResponse hubResponse) {
   }
 }
 
-//Child Devices : create/delete child devices from SmartThings app selection
+// Child Devices : create/delete child devices from SmartThings app selection
 def childDeviceConfiguration() {
   settings.each { name , value ->
     def nameValue = name.split("\\_")
@@ -324,15 +324,17 @@ def childDeviceConfiguration() {
       def deviceLabel = settings."deviceLabel_${nameValue[1]}_${nameValue[2]}"
       def deviceType = value
       def deviceChild = getChildDevice(deviceDNI)
+
       if (!deviceChild) {
         if (deviceType != "") {
           addChildDevice("konnected-io", deviceType, deviceDNI, selectedAlarmPanel.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ])
         }
       } else {
-        //Change name if it's set here
+        // Change name if it's set here
         if (deviceChild.label != deviceLabel)
           deviceChild.label = deviceLabel
-        //Change Type, you will lose the history of events. delete and add back the child
+
+        // Change Type, you will lose the history of events. delete and add back the child
         if (deviceChild.name != deviceType) {
           deleteChildDevice(deviceDNI)
           if (deviceType != "") {
@@ -342,13 +344,26 @@ def childDeviceConfiguration() {
       }
     }
   }
-  def deleteChildDevices = getAllChildDevices().findAll { settings."deviceType_${it.deviceNetworkId.split("\\|")[0]}_${it.deviceNetworkId.split("\\|")[1]}" == "" }
-  deleteChildDevices.each { deleteChildDevice(it.deviceNetworkId) }
+
+  def deleteChildDevices = getAllChildDevices().findAll {
+    settings."deviceType_${it.deviceNetworkId.split("\\|")[0]}_${it.deviceNetworkId.split("\\|")[1]}" == null
+  }
+
+  deleteChildDevices.each {
+    log.debug "Deleting device $it.deviceNetworkId"
+    deleteChildDevice(it.deviceNetworkId)
+  }
 }
-//Child Devices : update state of child device sent from nodemcu
+// Child Devices : update state of child device sent from nodemcu
 def childDeviceStateUpdate() {
-  def device = getChildDevice(params.mac.toUpperCase() + "|" + params.id)
-  if (device) device.setStatus(params.deviceState)
+  def deviceId = params.mac.toUpperCase() + "|" + params.id
+  log.debug "Received sensor update from Konnected device: $deviceId = $params.deviceState"
+  def device = getChildDevice(deviceId)
+  if (device) {
+    device.setStatus(params.deviceState)
+  } else {
+    log.warn "Device $deviceId not found!"
+  }
 }
 
 //Device: Ping from device
@@ -378,6 +393,9 @@ def deviceUpdateSettings() {
       actuators[mac] = actuators[mac] + [ pin : pin ]
     }
   }
+
+  log.debug "Configured sensors: $sensors"
+  log.debug "Configured actuators: $actuators"
 
   // send information to each devices
   selectedAlarmPanel.each {

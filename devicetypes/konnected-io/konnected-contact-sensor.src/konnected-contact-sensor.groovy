@@ -34,10 +34,12 @@ metadata {
 def setStatus(state) { 
   switch(state) {
     case "0" :
-      sendEvent(name: "contact", value: "closed") 
+      sendEvent(name: "contact", value: "closed")
+      log.debug "$device.label is closed"
       break
     case "1" :
-      sendEvent(name: "contact", value: "open") 
+      sendEvent(name: "contact", value: "open")
+      log.debug "$device.label is open"
       break
     default:
       sendEvent(name: "contact", value: "open") 

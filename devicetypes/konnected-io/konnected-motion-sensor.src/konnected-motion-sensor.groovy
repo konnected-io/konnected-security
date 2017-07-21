@@ -34,10 +34,12 @@ metadata {
 def setStatus(state) { 
   switch(state) {
     case "0" :
-      sendEvent(name: "motion", value: "inactive") 
+      sendEvent(name: "motion", value: "inactive")
+      log.debug "$device.label motion inactive"
       break
     case "1" :
       sendEvent(name: "motion", value: "active") 
+      log.debug "$device.label motion detected"
       break
     default:
       sendEvent(name: "motion", value: "inactive") 
