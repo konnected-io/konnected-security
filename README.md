@@ -33,7 +33,7 @@ the developers who have worked hard on this project.
 Windows and Mac users will need to download drivers so your computer can talk to the ESP8266 chip over USB. Depending
 on which board you have, there are different drivers: 
 
-**[WeMos CH340 drivers](https://www.wemos.cc/downloads)** for boards that:
+**[WeMos CH340 drivers](https://wiki.wemos.cc/downloads)** for boards that:
 * have the name _LoLin_ on the back or front
 * the small rectangular component on the board near the USB port is engraved with CH340G
 * **Mac OS X Sierra users**: [use this driver](http://kig.re/2014/12/31/how-to-use-arduino-nano-mini-pro-with-CH340G-on-mac-osx-yosemite.html)
@@ -42,11 +42,10 @@ on which board you have, there are different drivers:
 * have the name _Amica_ on the back
 * the small component on the board near the USB port is engraved with SiLABS CP2102
 
-### Preparing the Device
+### Mac & Linux Users
 
  1. You must have Python 2 installed with `pip`. 
-    * **Mac users**: I recommend using [Homebrew](https://brew.sh/) and `brew install python`
-    * **Windows users**: Download and install the [latest Python 2 release](https://www.python.org/downloads/windows/)  
+    * **Mac users**: I recommend using [Homebrew](https://brew.sh/) and `brew install python`  
  
  1. Open up a terminal and install `esptool` and `nodemcu-uploader` packages:
      
@@ -56,6 +55,19 @@ on which board you have, there are different drivers:
  1. Run the script in `scripts/flash` to flash and upload the files. You may need to edit the variables
  at the top of the script as your serial port may be different depending on your operating system and the type of NodeMCU development
  board you have.
+ 
+ 
+### Windows Users
+
+ 1. Download and install the [NodeMCU PyFlasher tool](https://github.com/marcelstoer/nodemcu-pyflasher)
+ 1. Using PyFlasher, flash the latest firmware in the `firmware` directory of this repo at 115200 baud using flash mode `dio`.
+ 1. Now you need to upload all the files in the `source-code` directory of this repo on to the device. If you're comfortable
+ using Python, I recommend `nodemcu-uploader`. The command would look something like this:
+   
+    `C:\Python27\python.exe nodemcu-uploader --port=COM3 upload * --verify=raw`
+   
+    If you prefer a GUI tool, download and run [ESPlorer](https://esp8266.ru/esplorer/) and connect to your device at baud
+    115200. Then use the _Upload_ button to upload the files to the device.
  
 
 ### Donations
