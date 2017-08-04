@@ -6,15 +6,20 @@ local dni = wifi.sta.getmac():gsub("%:", "")
 local timeout = tmr.create()
 local sensorTimer = tmr.create()
 local sendTimer = tmr.create()
+
+-- hack to ensure pin D8 stays low after boot so it can be used with a high-level trigger relay
+gpio.mode(8, gpio.OUTPUT)
+gpio.write(8, gpio.LOW)
+
 timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
 for i, sensor in pairs(sensors) do
-  print("Heap:", node.heap(), "Initializing pin:", sensor.pin)
+  print("Heap:", node.heap(), "Initializing sensor pin:", sensor.pin)
   gpio.mode(sensor.pin, gpio.INPUT, gpio.PULLUP)
 end
 
 for i, actuator in pairs(actuators) do
-  print("Heap:", node.heap(), "Initializing pin:", actuator.pin)
+  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin)
   gpio.mode(actuator.pin, gpio.OUTPUT)
   gpio.write(actuator.pin, gpio.LOW)
 end
