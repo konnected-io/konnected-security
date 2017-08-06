@@ -1,5 +1,5 @@
 /**
- *  Konnected Siren/Strobe
+ *  Konnected Switch
  *
  *  Copyright 2017 konnected.io
  *
@@ -14,8 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Siren/Strobe", namespace: "konnected-io", author: "konnected.io") {
-    capability "Alarm"
+  definition (name: "Konnected Switch", namespace: "konnected-io", author: "konnected.io") {
     capability "Switch"
     capability "Actuator"
   }
@@ -26,9 +25,9 @@ metadata {
 
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.alarm", key: "PRIMARY_CONTROL") {
-        attributeState ("off",  label: "Off",    icon:"st.security.alarm.clear", action:"alarm.both", backgroundColor:"#ffffff")
-        attributeState ("both", label: "Alarm!", icon:"st.security.alarm.alarm", action:"alarm.off",  backgroundColor:"#e86d13")
+      tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
+        attributeState ("off",  label: "Off",    icon:"st.switches.switch.off", action:"switch.on",   backgroundColor:"#ffffff")
+        attributeState ("on",   label: "On",     icon:"st.switches.switch.on",  action:"switch.off",  backgroundColor:"#00a0dc")
       }
     }
     main "main"
@@ -37,21 +36,13 @@ metadata {
 }
 
 def off() {
-  sendEvent([name: "switch", value: "off", displayed: false])
-  sendEvent([name: "alarm", value: "off"])
+  sendEvent([name: "switch", value: "off"])
   def val = triggerLevel == "Low Level Trigger" ? 1 : 0
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 
 def on() {
-  sendEvent([name: "switch", value: "on", displayed: false])
-  sendEvent([name: "alarm", value: "both"])
+  sendEvent([name: "switch", value: "on"])
   def val = triggerLevel == "Low Level Trigger" ? 0 : 1
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
-
-def both() { on() }
-
-def strobe() { on() }
-
-def siren() { on() }
