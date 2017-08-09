@@ -1,0 +1,11 @@
+#!/bin/bash
+
+FILE=src/manifest.json
+echo "{" > ${FILE}
+
+for file in src/*
+do
+  echo "  \"${file}\":\"$(git ls-files -s ${file} | awk '{print $2}')\"," >> ${FILE}
+done
+echo "  \"updated_at\":\"$(date -u +%Y-%m-%d:%H:%M:%S)\"" >> ${FILE}
+echo "}" >> ${FILE}

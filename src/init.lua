@@ -5,7 +5,7 @@ print("Heap: ", node.heap(), "Connecting to Wifi..")
 local startCountDown = 0
 
 wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(T)
-  print("Heap: ", node.heap(), "Cannot connect to WiFi")
+  print("Heap: ", node.heap(), "Cannot connect to WiFi:", T.SSID, T.BSSID, T.reason)
   enduser_setup.manual(false)
   enduser_setup.start()
   wifi.eventmon.unregister(wifi.eventmon.STA_DISCONNECTED)

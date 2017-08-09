@@ -5,7 +5,7 @@ PORT=/dev/cu.wchusbserial1410
 
 esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${IMAGE_NAME}.bin
 
-cd source-code
+cd src
 
 while true; do
   sleep 2

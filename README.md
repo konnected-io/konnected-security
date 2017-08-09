@@ -8,7 +8,7 @@
  board and (optional) relay. This project consists of a few components:
  
  1. [NodeMCU](http://nodemcu.com/index_en.html) firmware for an ESP8266 development board in `firmware`
- 1. Lua and HTML source code for the NodeMCU in `source-code`. All these files should be uploaded to the NodeMCU's 
+ 1. Lua and HTML source code for the NodeMCU in `src`. All these files should be uploaded to the NodeMCU's 
  internal file system
  1. [SmartThings](https://www.smartthings.com/) platform code in `smartapps` and `devicetypes`
  
@@ -24,7 +24,7 @@ the developers who have worked hard on this project.
 
  1. Install device drivers for your NodeMCU device.
  1. Flash the device with the included firmware [firmware/konnected-security-2-0.bin](firmware/konnected-security-2-0.bin)
- 1. Upload all the code in `source-code` to the device and reboot the device.
+ 1. Upload all the code in `src` to the device and reboot the device.
  1. Connect to the WiFi network `konnected-security_XXXXXX` to set up WiFi
  1. Follow wiring instructions and SmartThings application setup instructions in the [Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
 
@@ -61,7 +61,7 @@ on which board you have, there are different drivers:
 
  1. Download and install the [NodeMCU PyFlasher tool](https://github.com/marcelstoer/nodemcu-pyflasher)
  1. Using PyFlasher, flash the latest firmware in the `firmware` directory of this repo at 115200 baud using flash mode `dio`.
- 1. Now you need to upload all the files in the `source-code` directory of this repo on to the device. If you're comfortable
+ 1. Now you need to upload all the files in the `src` directory of this repo on to the device. If you're comfortable
  using Python, I recommend `nodemcu-uploader`. The command would look something like this:
    
     `C:\Python27\python.exe nodemcu-uploader --port=COM3 upload * --verify=raw`
