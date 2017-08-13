@@ -23,6 +23,8 @@ metadata {
   preferences {
     input name: "invertTrigger", type: "bool", title: "Low Level Trigger",
           description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
+    input name: "momentaryDelay", type: "number", title: "Momentary Delay",
+          description: "Off delay (in milliseconds)"
   }
 
   tiles {
@@ -38,15 +40,11 @@ metadata {
 }
 
 def off() {
-  sendEvent([name: "switch", value: "off"])
-  def val = invertTrigger ? 1 : 0
-  parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
+  push()
 }
 
 def on() {
-  sendEvent([name: "switch", value: "on"])
-  def val = invertTrigger ? 0 : 1
-  parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
+  push()
 }
 
 def push() {
@@ -54,5 +52,5 @@ def push() {
   sendEvent([name: "switch", value: "off", isStateChange: true, display: false])
   sendEvent([name: "momentary", value: "pushed", isStateChange: true])
   def val = invertTrigger ? 0 : 1
-  parent.deviceUpdateDeviceState(device.deviceNetworkId, val, 300)
+  parent.deviceUpdateDeviceState(device.deviceNetworkId, val, momentaryDelay ?: 500)
 }

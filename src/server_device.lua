@@ -20,7 +20,17 @@ local me = {
         response.send(cjson.encode(body))
       end
       if request.method == "PUT" then
+        print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "State:", request.body.state)
         gpio.write(request.body.pin, request.body.state)
+        if request.body.momentary then
+          print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "Momentary:", request.body.momentary)
+          tmr.create():alarm(request.body.momentary, tmr.ALARM_SINGLE, function()
+            local off
+            if request.body.state == 0 then off = 1 else off = 0 end
+            print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "State:", off)
+            gpio.write(request.body.pin, off)
+          end)
+        end
         blinktimer:start()
         response.send("")
       end
