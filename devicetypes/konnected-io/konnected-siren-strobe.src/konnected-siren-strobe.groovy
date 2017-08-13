@@ -21,7 +21,8 @@ metadata {
   }
 
   preferences {
-  	input name: "triggerLevel", type: "enum", title: "Relay Trigger Type", options: ["High Level Trigger","Low Level Trigger"]
+  	input name: "invertTrigger", type: "bool", title: "Low Level Trigger",
+  	      description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
   }
 
   tiles {
@@ -39,14 +40,14 @@ metadata {
 def off() {
   sendEvent([name: "switch", value: "off", displayed: false])
   sendEvent([name: "alarm", value: "off"])
-  def val = triggerLevel == "Low Level Trigger" ? 1 : 0
+  def val = invertTrigger ? 1 : 0
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 
 def on() {
   sendEvent([name: "switch", value: "on", displayed: false])
   sendEvent([name: "alarm", value: "both"])
-  def val = triggerLevel == "Low Level Trigger" ? 0 : 1
+  def val = invertTrigger ? 0 : 1
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 

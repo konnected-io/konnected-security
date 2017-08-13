@@ -203,16 +203,11 @@ private Map pageConfigurationGetDeviceType(Integer i) {
   def actuatorPins = [1,2,5,6,7,8]
 
   if (sensorPins.contains(i)) {
-    deviceTypes << [
-      "Konnected Contact Sensor" : "Open/Close Sensor",
-      "Konnected Motion Sensor"  : "Motion Sensor",
-      "Konnected Smoke Sensor"   : "Smoke Detector",
-      "Konnected Panic Button"   : "Panic Button"
-    ]
+    deviceTypes << sensorsMap()
   }
 
   if (actuatorPins.contains(i)) {
-    deviceTypes << ["Konnected Siren/Strobe"   : "Siren/Strobe"]
+    deviceTypes << actuatorsMap()
   }
 
   return deviceTypes
@@ -387,7 +382,8 @@ def deviceUpdateSettings() {
   getAllChildDevices().each {
     def mac = it.deviceNetworkId.split("\\|")[0]
     def pin = it.deviceNetworkId.split("\\|")[1]
-    if (it.name != "Konnected Siren/Strobe") {
+    
+    if (sensorsMap()[it.name]) {
       sensors[mac] = sensors[mac] + [ pin : pin ]
     } else {
       actuators[mac] = actuators[mac] + [ pin : pin ]
@@ -417,10 +413,10 @@ def deviceUpdateSettings() {
 }
 
 // Device: update NodeMCU with state of device changed from SmartThings
-def deviceUpdateDeviceState(deviceDNI, deviceState) {
+def deviceUpdateDeviceState(deviceDNI, deviceState, momentary = false) {
   def deviceId = deviceDNI.split("\\|")[1]
   def deviceMac = deviceDNI.split("\\|")[0]
-  def body = [ pin : deviceId, state : deviceState ]
+  def body = [ pin : deviceId, state : deviceState, momentary : momentary ]
   def device = getConfiguredDevices().find { it.mac == deviceMac }
 
   if (device) {
@@ -440,6 +436,23 @@ private String pinLabel(Integer i) {
   } else {
     return "D$i"
   }
+}
+
+private Map actuatorsMap() {
+  return [
+    "Konnected Siren/Strobe"      : "Siren/Strobe",
+    "Konnected Switch"            : "Switch",
+    "Konnected Momentary Switch"  : "Momentary Switch"
+  ]
+}
+
+private Map sensorsMap() {
+  return [
+    "Konnected Contact Sensor" : "Open/Close Sensor",
+    "Konnected Motion Sensor"  : "Motion Sensor",
+    "Konnected Smoke Sensor"   : "Smoke Detector",
+    "Konnected Panic Button"   : "Panic Button"
+  ]
 }
 
 private Integer convertHexToInt(hex) { Integer.parseInt(hex,16) }

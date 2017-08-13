@@ -14,9 +14,10 @@
  *
  */
 metadata {
-  definition (name: "Konnected Switch", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Momentary Switch", namespace: "konnected-io", author: "konnected.io") {
     capability "Switch"
     capability "Actuator"
+    capability "Momentary"
   }
 
   preferences {
@@ -27,8 +28,8 @@ metadata {
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-        attributeState ("off",  label: '${name}',    icon:"st.switches.switch.off", action:"switch.on",   backgroundColor:"#ffffff")
-        attributeState ("on",   label: '${name}',    icon:"st.switches.switch.on",  action:"switch.off",  backgroundColor:"#00A0DC")
+        attributeState "off", label: 'Push', action: "momentary.push", backgroundColor: "#ffffff", nextState: "on"
+        attributeState "on", label: 'Push', action: "momentary.push", backgroundColor: "#53a7c0"
       }
     }
     main "main"
@@ -46,4 +47,12 @@ def on() {
   sendEvent([name: "switch", value: "on"])
   def val = invertTrigger ? 0 : 1
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
+}
+
+def push() {
+  sendEvent([name: "switch", value: "on", isStateChange: true, display: false])
+  sendEvent([name: "switch", value: "off", isStateChange: true, display: false])
+  sendEvent([name: "momentary", value: "pushed", isStateChange: true])
+  def val = invertTrigger ? 0 : 1
+  parent.deviceUpdateDeviceState(device.deviceNetworkId, val, 300)
 }
