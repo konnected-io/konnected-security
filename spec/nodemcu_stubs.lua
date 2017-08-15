@@ -19,7 +19,8 @@ nodemcu = {
 
 _G.node = {
   heap = function() return 0 end,
-  chipid = function() return 0 end
+  chipid = function() return 0 end,
+  restart = function() end
 }
 
 _G.tmr = {
@@ -65,11 +66,15 @@ _G.wifi = {
   eventmon = {
     STA_DISCONNECTED = 'STA_DISCONNECTED',
     register = function(key, fn)
+      print(key)
       nodemcu.wifi.eventmon[key] = fn
     end,
     unregister = function(key)
       nodemcu.wifi.eventmon[key] = nil
-    end
+    end,
+    reason = {
+      AUTH_EXPIRE = 2
+    }
   },
 
   sta = {
