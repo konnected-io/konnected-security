@@ -1,15 +1,15 @@
 {
   "src/actuators.lua":"47a1a50c0c8cfb547554ded22a8134eaed76c0a3",
-  "src/application.lua":"19861db05c155e56fb5ae5676f5ba807847304d2",
+  "src/application.lua":"efc200a36de373147b950dcaaaeb9013a0e3c2dc",
   "src/device.lua":"e64c4ea6dd1a98042a579069f381f06c70482cad",
   "src/enduser_setup.html.gz":"fbf730b33c309ceab15e88f162f43c232593f7da",
   "src/http_favicon.ico.gz":"483f371c590b0407c380d019bcc6938cf1d62f0a",
   "src/http_index.html.gz":"e1149f19e459500c32273dbdacbcfa978db16364",
   "src/httpd_req.lua":"80053674f20f087e58e1cfd490fc71e6cdd92acf",
   "src/httpd_res.lua":"7226f19699168e171970cda73b953a49450b7aa8",
-  "src/init.lua":"885845a1021082ac1c2421e7221696e46b45a2cf",
+  "src/init.lua":"0b1ff195c16e723517de7a97f771566ff30f0ad0",
   "src/led_flip.lua":"590e7be1afe686f4213d097d0e9dba9e7a3910a0",
-  "src/manifest.json":"2dfbfeb917d06f146035c6269b78f945f2c05f31",
+  "src/manifest.json":"0c859af04bcf717d7fd601fef2753dcb7e3b4ced",
   "src/sensors.lua":"d0d94fa73f713dcf2c517da9262f59f306b81d2b",
   "src/server.lua":"636843d3464b5aaba720b6eabe265b53580ed780",
   "src/server_device.lua":"dca5e6501b4836d120cadc20538999387c9c54d1",
@@ -23,5 +23,5 @@
   "src/update_process.lua":"ed66480f96c6b7631c93279b7a8a7dd0429d5a56",
   "src/variables_build.lua":"0029cb028698822ee981c35bcf84710c19e21486",
   "src/variables_set.lua":"2c2d9c13c8acb577d80f40e4b513c7cd23ffdd1f",
-  "updated_at":"2017-08-09:06:50:14"
+  "updated_at":"2017-08-15:07:09:42"
 }

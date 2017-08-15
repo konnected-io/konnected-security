@@ -39,7 +39,7 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
     local sensor = sensors[sensorSend[1]]
     timeout:start()
     http.put(
-      table.concat({ smartthings.apiUrl, "\/device\/", dni, "\/", sensor.pin, "\/", gpio.read(sensor.pin) }),
+      table.concat({ smartthings.apiUrl, "/device/", dni, "/", sensor.pin, "/", gpio.read(sensor.pin) }),
       table.concat({ "Authorization: Bearer ", smartthings.token, "\r\n" }),
       "",
       function(code)
