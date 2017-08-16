@@ -27,8 +27,10 @@ metadata {
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-        attributeState ("off",  label: '${name}',    icon:"st.switches.switch.off", action:"switch.on",   backgroundColor:"#ffffff")
-        attributeState ("on",   label: '${name}',    icon:"st.switches.switch.on",  action:"switch.off",  backgroundColor:"#00A0DC")
+        attributeState ("off",  label: '${name}',    icon:"st.switches.switch.off", action:"switch.on",   backgroundColor:"#ffffff", nextState: "turningOn")
+        attributeState ("on",   label: '${name}',    icon:"st.switches.switch.on",  action:"switch.off",  backgroundColor:"#00A0DC", nextState: "turningOff")
+        attributeState ("turningOn", label:'Turning on', icon:"st.switches.switch.on", action:"switch.off", backgroundColor:"#00a0dc", nextState: "turningOff")
+        attributeState ("turningOff", label:'Turning off', icon:"st.switches.switch.off", action:"switch.on", backgroundColor:"#ffffff", nextState: "turningOn")
       }
     }
     main "main"
@@ -36,14 +38,25 @@ metadata {
   }
 }
 
+def updatePinState(Integer state) {
+  def val
+  if (state == 0) {
+    val = invertTrigger ? "on" : "off"
+  } else {
+    val = invertTrigger ? "off" : "on"
+  }
+  log.debug "$device is $val"
+  sendEvent(name: "switch", value: val)
+}
+
 def off() {
-  sendEvent([name: "switch", value: "off"])
   def val = invertTrigger ? 1 : 0
+  log.debug "Turning off $device.label (state = $val)"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 
 def on() {
-  sendEvent([name: "switch", value: "on"])
   def val = invertTrigger ? 0 : 1
+  log.debug "Turning on $device.label (state = $val)"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }

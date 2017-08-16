@@ -30,13 +30,19 @@ metadata {
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-        attributeState "off", label: 'Push', action: "momentary.push", backgroundColor: "#ffffff", nextState: "on"
-        attributeState "on", label: 'Push', action: "momentary.push", backgroundColor: "#53a7c0"
+        attributeState "off", label: 'Push', action: "momentary.push", backgroundColor: "#ffffff", nextState: "pushed"
+        attributeState "on", label: 'Push', action: "momentary.push", backgroundColor: "#00a0dc"
+        attributeState "pushed", label:'pushed', action: "momentary.push", backgroundColor:"#00a0dc", nextState: "off"
       }
     }
     main "main"
     details "main"
   }
+}
+
+def updatePinState(Integer state) {
+  sendEvent(name: "switch", value: "on", isStateChange: true, display: false)
+  sendEvent(name: "switch", value: "off", isStateChange: true, display: false)
 }
 
 def off() {
@@ -48,9 +54,6 @@ def on() {
 }
 
 def push() {
-  sendEvent([name: "switch", value: "on", isStateChange: true, display: false])
-  sendEvent([name: "switch", value: "off", isStateChange: true, display: false])
-  sendEvent([name: "momentary", value: "pushed", isStateChange: true])
   def val = invertTrigger ? 0 : 1
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val, momentaryDelay ?: 500)
 }

@@ -426,8 +426,13 @@ def deviceUpdateDeviceState(deviceDNI, deviceState, momentary = false) {
       path: "/device",
       headers: [ HOST: getDeviceIpAndPort(device), "Content-Type": "application/json" ],
       body : groovy.json.JsonOutput.toJson(body)
-    ], getDeviceIpAndPort(device)))
+    ], getDeviceIpAndPort(device), [callback: "syncChildPinState"]))
   }
+}
+
+void syncChildPinState(physicalgraph.device.HubResponse hubResponse) {
+  def device = getAllChildDevices().find { it.deviceNetworkId == hubResponse.mac + '|' + hubResponse.json.pin }
+  device?.updatePinState(hubResponse.json.state)
 }
 
 private String pinLabel(Integer i) {

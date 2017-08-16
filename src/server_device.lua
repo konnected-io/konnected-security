@@ -24,15 +24,18 @@ local me = {
         gpio.write(request.body.pin, request.body.state)
         if request.body.momentary then
           print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "Momentary:", request.body.momentary)
+          local off
+          if request.body.state == 0 then off = 1 else off = 0 end
           tmr.create():alarm(request.body.momentary, tmr.ALARM_SINGLE, function()
-            local off
-            if request.body.state == 0 then off = 1 else off = 0 end
             print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "State:", off)
             gpio.write(request.body.pin, off)
           end)
+          response.send(cjson.encode({ pin = request.body.pin, state = off }))
+        else
+          response.send(cjson.encode({ pin = request.body.pin, state = request.body.state }))
         end
         blinktimer:start()
-        response.send("")
+
       end
     end
   end
