@@ -14,13 +14,15 @@ nodemcu = {
       config = { ssid = 'test' },
       ip = nil
     }
-  }
+  },
+  upnp_responder = nil
 }
 
 _G.node = {
   heap = function() return 0 end,
   chipid = function() return 0 end,
-  restart = function() end
+  restart = function() end,
+  info = function() return 1, 5, 4 end
 }
 
 _G.tmr = {

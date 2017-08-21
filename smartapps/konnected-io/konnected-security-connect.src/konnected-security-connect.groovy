@@ -39,7 +39,7 @@ preferences {
 def installed() {
   log.info "installed(): Installing Konnected Security SmartApp"
   initialize() 
-  runEvery3Hours(discoverySearch)
+  runEvery1Hour(discoverySearch)
 }
 
 def updated() {
