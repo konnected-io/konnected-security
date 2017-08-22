@@ -18,24 +18,19 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
     proceed = true
       
     --do not overwrite user's sensors / actuators and smartthings info
-      if  manifest[1].filenm == "smartthings.lua" and file.exists("smartthings.lc") then
-        proceed = false
-        table.remove(manifest, 1)
-      end
-      if  manifest[1].filenm == "sensors.lua" and file.exists("sensors.lc") then
-        proceed = false
-        table.remove(manifest, 1)
-      end
-      if  manifest[1].filenm == "actuators.lua" and file.exists("actuators.lc") then
-        proceed = false
-        table.remove(manifest, 1)
-      end
-    --never overwrite device
-    if  manifest[1].filenm == "device.lua" and file.exists("device.lc") then
+    if  manifest[1].filenm == "smartthings.lua" and file.exists("smartthings.lc") then
       proceed = false
       table.remove(manifest, 1)
     end
-    
+    if  manifest[1].filenm == "sensors.lua" and file.exists("sensors.lc") then
+      proceed = false
+      table.remove(manifest, 1)
+    end
+    if  manifest[1].filenm == "actuators.lua" and file.exists("actuators.lc") then
+      proceed = false
+      table.remove(manifest, 1)
+    end
+
     if proceed then
       local fw = file.open(manifest[1].filenm .. ".tmp", "w")
       local conn = net.createConnection(net.TCP, 1)
@@ -58,11 +53,11 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
           if fr_line == nil then
             break
           end
-          if string.find(fr_line, "Status: 302 Found") then
+          if string.find(fr_line, "^Status: 302") then
             redirect = true
           end
           if redirect then
-            if string.match(fr_line, "Location: (.*)") then  
+            if string.match(fr_line, "^Location: (.*)") then
               fr:seek("set", (fr:seek("cur") - #fr_line))
               fr_line = fr:read(1024)
               local host, port, path = findAttr(getHeaderValue(fr_line, "Location"))
@@ -135,7 +130,7 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
         t:start()
       end)
       conn:on("connection", function(sck)
-        sck:send("GET " .. manifest[1].path .. " HTTP/1.1\r\nHost: ".. manifest[1].host .."\r\nConnection: keep-alive\r\n"..
+        sck:send("GET " .. manifest[1].path .. " HTTP/1.1\r\nHost: ".. manifest[1].host .."\r\nConnection: close\r\n"..
                  "Accept: */*\r\nUser-Agent: ESP8266\r\n\r\n")
       end)
     else

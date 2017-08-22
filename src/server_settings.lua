@@ -9,9 +9,10 @@ local me = {
 			  request.query.setfactory = request.query.setfactory or "false"
 			  request.query.restart = request.query.restart or "false"
 			  request.query.restore = request.query.restore or "false"
+				request.query.commitish = request.query.commitish or "master"
 			end
-			if request.query.update == "true" then 
-			  require("variables_set").set("update_init", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory.." }")
+			if request.query.update == "true" then
+			  require("variables_set").set("update_init", "{ force = "..request.query.force..", setfactory = "..request.query.setfactory..", commitish = \""..request.query.commitish.."\" }")
 			  restartTimer:start()
 			end  
 			if request.query.restart == "true" then
