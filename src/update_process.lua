@@ -1,3 +1,4 @@
+local proceed
 local function getHeaderValue(line, headerPattern)
   local l1 = string.match(line, headerPattern .. ": (.*)")
   if l1 then 
@@ -8,7 +9,6 @@ local function getHeaderValue(line, headerPattern)
   end
 end
 
-local proceed
 dofile("manifest")
 print("Heap: ", node.heap(), "Updater: Loaded manifest", #manifest)
 tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
@@ -18,16 +18,12 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
     proceed = true
       
     --do not overwrite user's sensors / actuators and smartthings info
-    if  manifest[1].filenm == "smartthings.lua" and file.exists("smartthings.lc") then
+    if (manifest[1].filenm == "smartthings.lua" and file.exists("smartthings.lc")) or
+       (manifest[1].filenm == "sensors.lua" and file.exists("sensors.lc")) or
+       (manifest[1].filenm == "actuators.lua" and file.exists("actuators.lc")) or
+       (manifest[1].filenm == "update_process.lua" and file.exists("update_process.lc")) then
       proceed = false
-      table.remove(manifest, 1)
-    end
-    if  manifest[1].filenm == "sensors.lua" and file.exists("sensors.lc") then
-      proceed = false
-      table.remove(manifest, 1)
-    end
-    if  manifest[1].filenm == "actuators.lua" and file.exists("actuators.lc") then
-      proceed = false
+      print("Heap: ", node.heap(), "Updater: Skipping", manifest[1].filenm)
       table.remove(manifest, 1)
     end
 
@@ -111,22 +107,11 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
           fw:close()
           collectgarbage()
           file.remove(manifest[1].filenm .. ".tmp")
+          if file.exists(manifest[1].filenm) then file.remove(manifest[1].filenm) end
           file.rename(manifest[1].filenm .. ".bak.tmp", manifest[1].filenm)
           table.remove(manifest, 1)
         end
-              
-        local fw = file.open("manifest", "w")
-        fw.writeline("manifest = { ")
-        for i, dl in pairs(manifest) do
-          fw.write(table.concat({"{ host = \"",dl.host,"\", port = \"",dl.port,"\", path = \"", dl.path, "\", filenm = \"",dl.filenm,"\" }"}))
-          if i < #manifest then
-            fw.writeline(",")
-          end
-        end
-        fw.writeline("}")
-        fw.close()
-        collectgarbage()
-        
+
         t:start()
       end)
       conn:on("connection", function(sck)
@@ -134,7 +119,6 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
                  "Accept: */*\r\nUser-Agent: ESP8266\r\n\r\n")
       end)
     else
-      print("Heap: ", node.heap(), "Updater: Skipping", manifest[1].filenm)
       t:start()
     end
   else
