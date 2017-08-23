@@ -1,6 +1,6 @@
 local proceed
 local function getHeaderValue(line, headerPattern)
-  local l1 = string.match(line, headerPattern .. ": (.*)")
+  local l1 = string.match(line, "^" .. headerPattern .. ": (.*)")
   if l1 then 
     local l2 = string.sub(l1, 1, ( string.find(l1, "\r\n") - 1 ))
     return l2

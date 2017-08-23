@@ -12,7 +12,7 @@ local download_new_manifest = function()
       local new_manifest = cjson.decode(data)
       print("Heap: ", node.heap(), "downloaded updated manifest.json")
       local file_size = file.list()['manifest.json']
-      local current_manifest
+      local current_manifest = {}
 
       -- open the existing manifest.json on the device for comparing file SHAs
       if file.open("manifest.json") then
