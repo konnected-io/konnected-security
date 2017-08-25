@@ -386,7 +386,7 @@ def deviceUpdateSettings() {
     if (sensorsMap()[it.name]) {
       sensors[mac] = sensors[mac] + [ pin : pin ]
     } else {
-      actuators[mac] = actuators[mac] + [ pin : pin ]
+      actuators[mac] = actuators[mac] + [ pin : pin, trigger : it.triggerLevel() ]
     }
   }
 

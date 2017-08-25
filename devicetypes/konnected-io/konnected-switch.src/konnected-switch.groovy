@@ -60,3 +60,7 @@ def on() {
   log.debug "Turning on $device.label (state = $val)"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
+
+def triggerLevel() {
+  return invertTrigger ? 0 : 1
+}

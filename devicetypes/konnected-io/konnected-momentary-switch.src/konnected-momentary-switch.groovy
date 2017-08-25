@@ -57,3 +57,7 @@ def push() {
   def val = invertTrigger ? 0 : 1
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val, momentaryDelay ?: 500)
 }
+
+def triggerLevel() {
+  return invertTrigger ? 0 : 1
+}

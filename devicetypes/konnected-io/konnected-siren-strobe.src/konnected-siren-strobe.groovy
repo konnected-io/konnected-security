@@ -67,3 +67,7 @@ def both() { on() }
 def strobe() { on() }
 
 def siren() { on() }
+
+def triggerLevel() {
+  return invertTrigger ? 0 : 1
+}

@@ -3,14 +3,13 @@ local me = {
     local out = {}
     table.insert(out, "{ ")
     for i, object in pairs(objects) do
-       table.insert(out, "\r\n{ pin = ")
-       table.insert(out, object.pin)
-       table.insert(out, " }")
-      if i < #objects then
-        table.insert(out, ",")
+      table.insert(out, "\r\n{ ")
+      for key, value in pairs(object) do
+       table.insert(out, key .. " = " .. value .. ", ")
       end
+      table.insert(out, "},")
     end
-    table.insert(out, " }")
+    table.insert(out, "}")
     return table.concat(out)
   end
 }
