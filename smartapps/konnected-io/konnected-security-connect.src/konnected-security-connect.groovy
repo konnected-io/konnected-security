@@ -1,5 +1,5 @@
 /**
- *  Konnected Security (Connect)
+ *  Konnected (Connect)
  *
  *  Copyright 2017 konnected.io
  *
@@ -14,7 +14,7 @@
  *
  */
 definition(
-  name:        "Konnected Security (Connect)",
+  name:        "Konnected (Connect)",
   namespace:   "konnected-io",
   author:      "konnected.io",
   description: "Convert your wired home alarm system into a SmartThings smart alarm",
@@ -37,18 +37,18 @@ preferences {
 }
 
 def installed() {
-  log.info "installed(): Installing Konnected Security SmartApp"
+  log.info "installed(): Installing Konnected SmartApp"
   initialize() 
   runEvery1Hour(discoverySearch)
 }
 
 def updated() {
-  log.info "updated(): Updating Konnected Security SmartApp"
+  log.info "updated(): Updating Konnected SmartApp"
   initialize() 
 }
 
 def uninstalled() {
-  log.info "uninstall(): Uninstalling Konnected Security SmartApp"
+  log.info "uninstall(): Uninstalling Konnected SmartApp"
   revokeAccessToken()
 
   // Uninstall SmartApp, tell device that access is revoked and remove all the settings
