@@ -369,47 +369,52 @@ def devicePing() {
 //Device : update NodeMCU with token, url, sensors, actuators from SmartThings
 def deviceUpdateSettings() {
   if(!state.accessToken) { createAccessToken() }
-  def sensors = [:]
-  def actuators = [:]
   def selectedAlarmPanel = [] + getConfiguredDevices()
 
-  //initialize map for sensors/actuators
+  // send information to each device
   selectedAlarmPanel.each {
-    sensors[it.mac] = []
-    actuators[it.mac] = []
+    updateSettingsOnDevice(it)
   }
-  //compile pins into respective sensors/actuators by mac
-  getAllChildDevices().each {
-    def mac = it.deviceNetworkId.split("\\|")[0]
+}
+
+def updateSettingsOnDevice(device) {
+  def sensors   = []
+  def actuators = []
+  def ip        = getDeviceIpAndPort(device)
+  def mac       = device.mac
+
+  getAllChildDevices().findAll { mac == it.deviceNetworkId.split("\\|")[0] }.each {
     def pin = it.deviceNetworkId.split("\\|")[1]
-    
+
     if (sensorsMap()[it.name]) {
-      sensors[mac] = sensors[mac] + [ pin : pin ]
+      sensors = sensors + [ pin : pin ]
     } else {
-      actuators[mac] = actuators[mac] + [ pin : pin, trigger : it.triggerLevel() ]
+      actuators = actuators + [ pin : pin, trigger : it.triggerLevel() ]
     }
   }
 
-  log.debug "Configured sensors: $sensors"
-  log.debug "Configured actuators: $actuators"
+  log.debug "Configured sensors on $mac: $sensors"
+  log.debug "Configured actuators on $mac: $actuators"
 
-  // send information to each devices
-  selectedAlarmPanel.each {
-    def body = [
-      token : state.accessToken,
-      apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
-      sensors : sensors[it.mac],
-      actuators : actuators[it.mac]
-    ]
+  def body = [
+    token : state.accessToken,
+    apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
+    sensors : sensors,
+    actuators : actuators
+  ]
 
-    log.debug "Updating settings on device $it.mac at " + getDeviceIpAndPort(it)
-    sendHubCommand(new physicalgraph.device.HubAction([
-      method: "PUT",
-      path: "/settings",
-      headers: [ HOST: getDeviceIpAndPort(it), "Content-Type": "application/json" ],
-      body : groovy.json.JsonOutput.toJson(body)
-    ], getDeviceIpAndPort(it) ))
-  }
+  log.debug "Updating settings on device $mac at $ip"
+  sendHubCommand(new physicalgraph.device.HubAction([
+    method: "PUT",
+    path: "/settings",
+    headers: [ HOST: ip, "Content-Type": "application/json" ],
+    body : groovy.json.JsonOutput.toJson(body)
+  ], ip ))
+}
+
+def updateSettingsOnChildDevice(deviceDNI) {
+  def device = getConfiguredDevices().find { deviceDNI.split("\\|")[0] == it.mac }
+  updateSettingsOnDevice(device)
 }
 
 // Device: update NodeMCU with state of device changed from SmartThings

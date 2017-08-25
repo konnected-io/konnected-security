@@ -39,6 +39,10 @@ metadata {
   }
 }
 
+def updated() {
+  parent.updateSettingsOnChildDevice(device.deviceNetworkId)
+}
+
 def updatePinState(Integer state) {
   def val
   if (state == 0) {

@@ -40,6 +40,10 @@ metadata {
   }
 }
 
+def updated() {
+  parent.updateSettingsOnChildDevice(device.deviceNetworkId)
+}
+
 def updatePinState(Integer state) {
   sendEvent(name: "switch", value: "on", isStateChange: true, display: false)
   sendEvent(name: "switch", value: "off", isStateChange: true, display: false)
