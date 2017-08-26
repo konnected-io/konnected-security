@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FIRMWARE_PATH=${PWD}/../nodemcu-firmware
-IMAGE_NAME=konnected-security-2-0-beta1
+IMAGE_NAME=konnected-security-2-0-5
 
 cp firmware/1.5.4.1/app/include/* $FIRMWARE_PATH/app/include/
  docker run -e "INTEGER_ONLY=1" \

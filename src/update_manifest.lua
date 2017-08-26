@@ -35,7 +35,7 @@ local download_new_manifest = function()
 
           fw.writeline(table.concat({
             "{ host = \"github.com\", port = \"443\", path = \"/", repo, "/raw/",
-            tag_name, "/", key, "\", filenm = \"", fname, "\" },"
+            tag_name, "/", key, "\", filenm = \"", fname, "\", checksum = \"".. sha .."\" },"
           }))
         end
       end
