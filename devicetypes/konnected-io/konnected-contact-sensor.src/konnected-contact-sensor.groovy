@@ -18,16 +18,27 @@ metadata {
     capability "Contact Sensor"
     capability "Sensor"
   }
+  preferences {
+    section("prefs") {
+      input(name: "openDisplayLabel", type: "text", title: "Enter the text to display when the contact is open.",  required: true)
+      input(name: "closedDisplayLabel", type: "text", title: "Enter the text to display when the contact is closed.", required: true)
+    }
+  }
   tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.contact", key: "PRIMARY_CONTROL") {
-        attributeState ("closed", label: "Closed", icon:"st.contact.contact.closed", backgroundColor:"#00a0dc")
-        attributeState ("open",   label: "Open",   icon:"st.contact.contact.open",   backgroundColor:"#e86d13")
+    multiAttributeTile(name:"contact", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+      tileAttribute ("device.contactDisplay", key: "PRIMARY_CONTROL") {
+	attributeState "Open", label:'${currentValue}', icon:"st.contact.contact.open", backgroundColor:"#e86d13"
+	attributeState "Closed", label:'${currentValue}', icon:"st.contact.contact.closed", backgroundColor:"#00a0dc"
       }
     }
-    main "main"
-    details "main"
+    main "contact"
+    details "contact"
   }
+}
+
+def updated() {
+	// log.debug("Updated called.  Make sure to update labels.")
+  updateLabels(device.currentValue("contact"))
 }
 
 //Update state sent from parent app
@@ -35,14 +46,24 @@ def setStatus(state) {
   switch(state) {
     case "0" :
       sendEvent(name: "contact", value: "closed")
-      log.debug "$device.label is closed"
       break
     case "1" :
       sendEvent(name: "contact", value: "open")
-      log.debug "$device.label is open"
       break
     default:
       sendEvent(name: "contact", value: "open") 
       break
   }
+  log.debug("$device.label is " + device.currentValue("contact"))
+  updateLabels(device.currentValue("contact"))
+}
+
+def updateLabels (String value) {
+	// log.debug("updateLabels called.  Passed value is $value.  openDisplayLabel is $openDisplayLabel.  closedDisplayLabel is $closedDisplayLabel.")
+	// Update tile with custom labels
+  if (value.equals("open")) {
+    sendEvent(name: "contactDisplay", value: openDisplayLabel, isStateChange: true);
+	} else {
+		sendEvent(name: "contactDisplay", value: closedDisplayLabel, isStateChange: true)
+	}
 }
