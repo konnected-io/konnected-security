@@ -112,7 +112,7 @@ end
 if update.force then
   tag_name = update.commitish or 'master'
   print("Heap: ", node.heap(), "Forcing software update to branch/tag: ", tag_name)
-  download_new_manifest()
+  download_new_manifest(tag_name)
 else
   check_for_version_update()
 end
