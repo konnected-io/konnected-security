@@ -19,30 +19,23 @@ metadata {
     capability "Sensor"
   }
   tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+    multiAttributeTile(name:"motion", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.motion", key: "PRIMARY_CONTROL") {
         attributeState ("inactive", label: "No Motion", icon:"st.motion.motion.inactive", backgroundColor:"#ffffff")
         attributeState ("active",   label: "Motion",    icon:"st.motion.motion.active",   backgroundColor:"#00a0dc")
       }
     }
-    main "main"
-    details "main"
+    main "motion"
+    details "motion"
   }
 }
 
 //Update state sent from parent app
 def setStatus(state) { 
-  switch(state) {
-    case "0" :
+  if (state == 1) { 
+      sendEvent(name: "motion", value: "active")
+  } else { 
       sendEvent(name: "motion", value: "inactive")
-      log.debug "$device.label motion inactive"
-      break
-    case "1" :
-      sendEvent(name: "motion", value: "active") 
-      log.debug "$device.label motion detected"
-      break
-    default:
-      sendEvent(name: "motion", value: "inactive") 
-      break
   }
+  log.debug("$device.label motion is " + device.currentValue("motion"))
 }
