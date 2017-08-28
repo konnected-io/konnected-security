@@ -1,10 +1,9 @@
 local device = require("device")
 local update = require("update_init")
 local repo = "konnected-io/konnected-security"
-local tag_name
 print("Heap: ", node.heap(), "Updater: Checking version")
 
-local download_new_manifest = function()
+local download_new_manifest = function(tag_name)
   http.get(
     "https://github.com/" .. repo .. "/raw/" .. tag_name .. "/src/manifest.json",
     "Accept-Encoding: deflate\r\n",
@@ -35,7 +34,7 @@ local download_new_manifest = function()
 
           fw.writeline(table.concat({
             "{ host = \"github.com\", port = \"443\", path = \"/", repo, "/raw/",
-            tag_name, "/", key, "\", filenm = \"", fname, "\" },"
+            tag_name, "/", key, "\", filenm = \"", fname, "\", checksum = \"".. sha .."\" },"
           }))
         end
       end
@@ -54,11 +53,9 @@ local download_new_manifest = function()
   )
 end
 
-local compare_github_release = function(code, data)
+local compare_github_release = function(tag_name)
   local restart = false
-  if (code == 200) then
-    body = cjson.decode(data)
-    tag_name = body.tag_name
+  if tag_name then
     local version = tag_name or device.swVersion
     version = string.match(version, "[%d%.]+")
     print("Heap: ", node.heap(), "Updater: Current version", device.swVersion)
@@ -76,7 +73,7 @@ local compare_github_release = function(code, data)
       restart = true
     end
   else
-    print("Error connecting to GitHub:", code, data)
+    print("Error connecting to GitHub")
     restart = true
   end
 
@@ -96,10 +93,20 @@ local compare_github_release = function(code, data)
 end
 
 local check_for_version_update = function()
-  http.get(
-    "https://api.github.com/repos/" .. repo .. "/releases/latest",
-    "Accept-Encoding: deflate\r\n", compare_github_release
-  )
+  local conn = net.createConnection(net.TCP, 1)
+  local latest_release_tag
+  conn:connect(443, "api.github.com")
+  conn:on("receive", function(sck, data)
+    local tag_name = data:match([["tag_name":"([%w%.%-]+)"]])
+    if tag_name then latest_release_tag = tag_name end
+  end)
+  conn:on("disconnection", function()
+    compare_github_release(latest_release_tag)
+  end)
+  conn:on("connection", function(sck)
+    sck:send("GET /repos/" .. repo .. "/releases/latest HTTP/1.1\r\nHost: api.github.com\r\nConnection: close\r\n"..
+      "Accept: */*\r\nUser-Agent: ESP8266\r\n\r\n")
+  end)
 end
 
 if update.force then

@@ -20,8 +20,7 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
     --do not overwrite user's sensors / actuators and smartthings info
     if (manifest[1].filenm == "smartthings.lua" and file.exists("smartthings.lc")) or
        (manifest[1].filenm == "sensors.lua" and file.exists("sensors.lc")) or
-       (manifest[1].filenm == "actuators.lua" and file.exists("actuators.lc")) or
-       (manifest[1].filenm == "update_process.lua" and file.exists("update_process.lc")) then
+       (manifest[1].filenm == "actuators.lua" and file.exists("actuators.lc")) then
       proceed = false
       print("Heap: ", node.heap(), "Updater: Skipping", manifest[1].filenm)
       table.remove(manifest, 1)
@@ -34,6 +33,9 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
       conn:on("receive", function(sck, c)
         print("Heap: ", node.heap(), "Updater: Downloading", manifest[1].filenm)
         fw:write(c) 
+      end)
+      conn:on("reconnection", function(sck, code)
+        print("Heap: ", node.heap(), "Updater: Disconnected with code", code)
       end)
       conn:on("disconnection", function(sck)
         fw:close()
@@ -57,7 +59,7 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
               fr:seek("set", (fr:seek("cur") - #fr_line))
               fr_line = fr:read(1024)
               local host, port, path = findAttr(getHeaderValue(fr_line, "Location"))
-              manifest[1] = { host = host, port = port, path = path, filenm = manifest[1].filenm }
+              manifest[1] = { host = host, port = port, path = path, filenm = manifest[1].filenm, checksum = manifest[1].checksum }
               print("Heap: ", node.heap(), "Updater: File redirection", manifest[1].filenm, "\r\nhttps:\/\/".. host .. path)
               break
             end
@@ -87,18 +89,26 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
               break
             end
           end
-          fr_len = nil
+
           fr_line = nil
           collectgarbage()
-          
-          local fr_line = ""
+
           local fw = file.open(manifest[1].filenm .. ".bak.tmp", "w")
+          local checksum
+
+          if crypto then
+            checksum = crypto.new_hash('SHA1')
+            -- this is some tricky Git magic: http://alblue.bandlem.com/2011/08/git-tip-of-week-objects.html
+            checksum:update("blob " .. fr_len .. "\0")
+          end
+          fr_len = nil
           if fr_body_pos > 0 then
             print("Heap: ", node.heap(), "Updater: Finalizing file", manifest[1].filenm)
             while fr:seek("set", fr_body_pos) do
               fr_body_pos = fr_body_pos + 512
               fr_line = fr:read(512)
               fw:write(fr_line)
+              if crypto then checksum:update(fr_line) end
             end
           end
           fr_line = nil
@@ -109,7 +119,17 @@ tmr.create():alarm(200, tmr.ALARM_AUTO, function(t)
           file.remove(manifest[1].filenm .. ".tmp")
           if file.exists(manifest[1].filenm) then file.remove(manifest[1].filenm) end
           file.rename(manifest[1].filenm .. ".bak.tmp", manifest[1].filenm)
-          table.remove(manifest, 1)
+
+          if crypto and manifest[1].checksum then
+            if manifest[1].checksum == crypto.toHex(checksum:finalize()) then
+              print("Heap: ", node.heap(), "Updater: Checksums verified")
+              table.remove(manifest, 1)
+            else
+              print("Heap: ", node.heap(), "Updater: Checksums failed! Retrying ", manifest[1].filenm)
+            end
+          else
+            table.remove(manifest, 1)
+          end
         end
 
         t:start()
