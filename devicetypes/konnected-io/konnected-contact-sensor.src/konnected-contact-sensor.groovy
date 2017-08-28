@@ -27,8 +27,8 @@ metadata {
   tiles {
     multiAttributeTile(name:"contact", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.contactDisplay", key: "PRIMARY_CONTROL") {
-        attributeState ("closed", label: "Closed", icon:"st.contact.contact.closed", backgroundColor:"#00a0dc")
-        attributeState ("open",   label: "Open",   icon:"st.contact.contact.open",   backgroundColor:"#e86d13")
+	attributeState "Open", label:'${currentValue}', icon:"st.contact.contact.open", backgroundColor:"#e86d13"
+	attributeState "Closed", label:'${currentValue}', icon:"st.contact.contact.closed", backgroundColor:"#00a0dc"
       }
     }
     main "contact"
