@@ -418,10 +418,10 @@ def updateSettingsOnChildDevice(deviceDNI) {
 }
 
 // Device: update NodeMCU with state of device changed from SmartThings
-def deviceUpdateDeviceState(deviceDNI, deviceState, momentary = false) {
+def deviceUpdateDeviceState(deviceDNI, deviceState, Map actuatorOptions = [:]) {
   def deviceId = deviceDNI.split("\\|")[1]
   def deviceMac = deviceDNI.split("\\|")[0]
-  def body = [ pin : deviceId, state : deviceState, momentary : momentary ]
+  def body = [ pin : deviceId, state : deviceState ] << actuatorOptions
   def device = getConfiguredDevices().find { it.mac == deviceMac }
 
   if (device) {
@@ -452,7 +452,8 @@ private Map actuatorsMap() {
   return [
     "Konnected Siren/Strobe"      : "Siren/Strobe",
     "Konnected Switch"            : "Switch",
-    "Konnected Momentary Switch"  : "Momentary Switch"
+    "Konnected Momentary Switch"  : "Momentary Switch",
+    "Konnected Beep"              : "Beep Tone"
   ]
 }
 
