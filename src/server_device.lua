@@ -47,9 +47,7 @@ local me = {
           local off = on_state == 0 and 1 or 0
           response.send(cjson.encode({ pin = request.body.pin, state = off }))
         else
-          local json = cjson.encode({ pin = request.body.pin, state = request.body.state })
-          print(json)
-          response.send(json)
+          response.send(cjson.encode({ pin = request.body.pin, state = request.body.state }))
         end
         blinktimer:start()
       end
