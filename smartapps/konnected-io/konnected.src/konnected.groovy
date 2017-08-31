@@ -453,7 +453,7 @@ private Map actuatorsMap() {
     "Konnected Siren/Strobe"      : "Siren/Strobe",
     "Konnected Switch"            : "Switch",
     "Konnected Momentary Switch"  : "Momentary Switch",
-    "Konnected Beep"              : "Beep Tone"
+    "Konnected Beep/Blink"        : "Beep/Blink Switch"
   ]
 }
 
