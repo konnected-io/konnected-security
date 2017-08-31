@@ -23,6 +23,8 @@ metadata {
   }
 
   preferences {
+    input name: "invertTrigger", type: "bool", title: "Low Level Trigger",
+          description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
     input name: "beepDuration", type: "number", title: "Pulse (ms)",
           description: "Each beep or blink duration"
     input name: "beepPause", type: "number", title: "Pause (ms)",
@@ -44,6 +46,10 @@ metadata {
   }
 }
 
+def updated() {
+  parent.updateSettingsOnChildDevice(device.deviceNetworkId)
+}
+
 def updatePinState(Integer state) {
   sendEvent(name: "switch", value: "on", isStateChange: true, display: false)
   sendEvent(name: "switch", value: "off", isStateChange: true, display: false)
@@ -62,9 +68,14 @@ def push() {
 }
 
 def beep() {
-  parent.deviceUpdateDeviceState(device.deviceNetworkId, 1, [
+  def val = invertTrigger ? 0 : 1
+  parent.deviceUpdateDeviceState(device.deviceNetworkId, val, [
     momentary : beepDuration ?: 250,
     pause     : beepPause ?: 150,
     times     : beepRepeat ?: 3
   ])
+}
+
+def triggerLevel() {
+  return invertTrigger ? 0 : 1
 }
