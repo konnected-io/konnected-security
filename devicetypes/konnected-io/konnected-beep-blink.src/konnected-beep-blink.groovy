@@ -1,5 +1,5 @@
 /**
- *  Konnected Beep
+ *  Konnected Beep/Blink
  *
  *  Copyright 2017 konnected.io
  *
