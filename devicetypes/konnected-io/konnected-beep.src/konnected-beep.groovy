@@ -15,7 +15,7 @@
  */
 
 metadata {
-  definition (name: "Konnected Beep", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Beep/Blink", namespace: "konnected-io", author: "konnected.io") {
     capability "Switch"
     capability "Actuator"
     capability "Momentary"
@@ -23,12 +23,12 @@ metadata {
   }
 
   preferences {
-    input name: "beepDuration", type: "number", title: "Beep Duration",
-          description: "Duration of each beep tone (in milliseconds)"
-    input name: "beepPause", type: "number", title: "Beep Pause",
-          description: "Duration of each pause between beep tones (in milliseconds)"
-    input name: "beepRepeat", type: "number", title: "Beep Repeat",
-          description: "Number of times to repeat the tone"
+    input name: "beepDuration", type: "number", title: "Pulse (ms)",
+          description: "Each beep or blink duration"
+    input name: "beepPause", type: "number", title: "Pause (ms)",
+          description: "Pause between beeps/blinks in milliseconds"
+    input name: "beepRepeat", type: "number", title: "Repeat",
+          description: "Times to repeat the pulse"
   }
 
   tiles {
@@ -63,8 +63,8 @@ def push() {
 
 def beep() {
   parent.deviceUpdateDeviceState(device.deviceNetworkId, 1, [
-    momentary : beepDuration ?: 500,
-    times     : beepRepeat ?: 3,
-    pause     : beepPause ?: 500
+    momentary : beepDuration ?: 250,
+    pause     : beepPause ?: 150,
+    times     : beepRepeat ?: 3
   ])
 }

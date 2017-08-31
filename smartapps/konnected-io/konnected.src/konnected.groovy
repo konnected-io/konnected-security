@@ -1,5 +1,5 @@
 /**
- *  Konnected (Connect)
+ *  Konnected
  *
  *  Copyright 2017 konnected.io
  *
@@ -14,10 +14,10 @@
  *
  */
 definition(
-  name:        "Konnected (Connect)",
+  name:        "Konnected",
   namespace:   "konnected-io",
   author:      "konnected.io",
-  description: "Convert your wired home alarm system into a SmartThings smart alarm",
+  description: "Konnected devices bridge wired things with SmartThings",
   category:    "Safety & Security",
   iconUrl:     "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/KonnectedSecurity.png",
   iconX2Url:   "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/KonnectedSecurity@2x.png",
@@ -110,7 +110,7 @@ def pageWelcome() {
         configuredAlarmPanels.each {
           href(
             name:        "device_" + it.mac,
-            title:       "konnected-security-" + it.mac[-6..-1],
+            title:       "konnected-" + it.mac[-6..-1],
             description: "Tap to view device status",
             required:    false,
             image:       "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/device-icon.png",
@@ -154,7 +154,7 @@ def pageDiscovery() {
 Map pageDiscoveryGetAlarmPanels() {
   def alarmPanels = [:]
   def verifiedAlarmPanels = getDevices().findAll{ it.value.verified == true }
-  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "konnected-security-${it.value.mac[-6..-1]}" }
+  verifiedAlarmPanels.each { alarmPanels["${it.value.mac}"] = it.value.name ?: "konnected-${it.value.mac[-6..-1]}" }
   return alarmPanels
 }
 
@@ -165,7 +165,7 @@ def pageConfiguration() {
 
   dynamicPage(name: "pageConfiguration") {
     configuredAlarmPanels.each { alarmPanel ->
-      section(hideable: true, "konnected-security-${alarmPanel.mac[-6..-1]}") {
+      section(hideable: true, "konnected-${alarmPanel.mac[-6..-1]}") {
         for ( i in [1, 2, 5, 6, 7, 8, 9]) {
           def deviceTypeDefaultValue = (settings."deviceType_${alarmPanel.mac}_${i}") ? settings."deviceType_${alarmPanel.mac}_${i}" : ""
           def deviceLabelDefaultValue = (settings."deviceLabel_${alarmPanel.mac}_${i}") ? settings."deviceLabel_${alarmPanel.mac}_${i}" : ""

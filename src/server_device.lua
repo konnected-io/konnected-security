@@ -44,12 +44,14 @@ local me = {
         gpio.write(request.body.pin, request.body.state)
         if request.body.momentary then
           turnOffIn(request.body.pin, request.body.state, request.body.momentary, request.body.times, request.body.pause)
+          local off = on_state == 0 and 1 or 0
           response.send(cjson.encode({ pin = request.body.pin, state = off }))
         else
-          response.send(cjson.encode({ pin = request.body.pin, state = request.body.state }))
+          local json = cjson.encode({ pin = request.body.pin, state = request.body.state })
+          print(json)
+          response.send(json)
         end
         blinktimer:start()
-
       end
     end
   end
