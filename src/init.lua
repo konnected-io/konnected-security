@@ -1,7 +1,6 @@
-local device = require("device")
-print("Heap: ", node.heap(), "Initializing Konnected", "Version:", device.swVersion)
+print("Heap: ", node.heap(), "Initializing Konnected")
 require("start")
-print("Heap: ", node.heap(), "Loaded: ", "Startup (compiler & blinker)")
+print("Heap: ", node.heap(), "Version: ", require("device").swVersion)
 print("Heap: ", node.heap(), "Connecting to Wifi..")
 
 local startWifiSetup = function()
