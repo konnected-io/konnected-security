@@ -23,7 +23,7 @@ the developers who have worked hard on this project.
 ## Installation Overview
 
  1. Install device drivers for your NodeMCU device.
- 1. Flash the device with the included firmware [firmware/konnected-security-2-0.bin](firmware/konnected-security-2-0.bin)
+ 1. Flash the device with the included firmware [firmware/konnected-security-2-0-5.bin](firmware/konnected-security-2-0-5.bin)
  1. Upload all the code in `src` to the device and reboot the device.
  1. Connect to the WiFi network `konnected-security_XXXXXX` to set up WiFi
  1. Follow wiring instructions and SmartThings application setup instructions in the [Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
