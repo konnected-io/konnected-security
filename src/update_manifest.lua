@@ -64,7 +64,7 @@ local compare_github_release = function(tag_name)
     if (version > device.swVersion) then
       collectgarbage()
       print("Heap: ", node.heap(), "Updater:", "Version outdated, retrieving manifest list")
-      tmr.create():alarm(1000, tmr.ALARM_SINGLE, download_new_manifest)
+      tmr.create():alarm(1000, tmr.ALARM_SINGLE, function() download_new_manifest(tag_name) end)
     else
       print("Heap: ", node.heap(), "Updater:", "Software version up to date, cancelling update")
       local fupdate = file.open("var_update.lua", "w")
@@ -77,16 +77,14 @@ local compare_github_release = function(tag_name)
     restart = true
   end
 
-  if file.exists("manifest") ~= true then
+  if restart then
     if file.exists("update_init.lua") then
       file.remove("update_init.lua")
     end
     if file.exists("update_init.lc") then
       file.remove("update_init.lc")
     end
-  end
 
-  if restart then
     print("Heap: ", node.heap(), "Updater:", "restarting in 3 seconds")
     tmr.create():alarm(3000, tmr.ALARM_SINGLE, function() node.restart() end)
   end

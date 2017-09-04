@@ -9,7 +9,7 @@
   "src/httpd_res.lua":"7226f19699168e171970cda73b953a49450b7aa8",
   "src/init.lua":"6f145587fef8616a5446a1e3f953789a0470278f",
   "src/led_flip.lua":"590e7be1afe686f4213d097d0e9dba9e7a3910a0",
-  "src/manifest.json":"7f96f8b0427dfc98c8e0531241af5c5555a1e12a",
+  "src/manifest.json":"bb9dd56363a824a8bcf0079ab2c4b07c85719c5b",
   "src/sensors.lua":"d0d94fa73f713dcf2c517da9262f59f306b81d2b",
   "src/server.lua":"c7f09f0a626587ced6399948fc1719dd248f3f01",
   "src/server_device.lua":"21bdbc50f7ba48f2261af622edd8dfae724b9d60",
@@ -19,9 +19,9 @@
   "src/ssdp.lua":"f2776ae2c333093e3d954950f13d77b3d880aee1",
   "src/start.lua":"af90c766d9afa65c6cbcddacb7ab91124b3598c6",
   "src/update.lua":"3d2f52af3873583b08e387759b9e32b4f659c357",
-  "src/update_manifest.lua":"e8d5e2dc99e44a070eee36637082e843ec3e00d8",
+  "src/update_manifest.lua":"f83d118142a4739d462d96ebbb750456a8351b93",
   "src/update_process.lua":"b6ac63039a0edf5e816bcd17b44704f9deb6000d",
   "src/variables_build.lua":"fce4b2ce56bef0f50b09e0341cdf5eb7b9be0241",
   "src/variables_set.lua":"2c2d9c13c8acb577d80f40e4b513c7cd23ffdd1f",
-  "updated_at":"2017-09-04:05:27:03"
+  "updated_at":"2017-09-04:06:00:03"
 }
