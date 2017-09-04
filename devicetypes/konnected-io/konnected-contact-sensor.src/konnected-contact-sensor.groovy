@@ -18,16 +18,53 @@ metadata {
     capability "Contact Sensor"
     capability "Sensor"
   }
+  preferences {
+    section("prefs") {
+      input(name: "displayLabel", type: "ENUM", title: "Select the text to display for the contact.  First value is when Closed, second when Open", multiple: false, 
+      		required: true, options: ["Closed/Open", "On/Off", "True/False", "Yes/No", "Active/Inactive", "Running/Off", "Heating/Off", "Cooling/Off"])
+      input(name: "invertColors", type: "boolean", title: "Invert the background colors and default contact icon if used.  Useful for when you want to show Open with a blue background and Closed with orange")
+  }
   tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.contact", key: "PRIMARY_CONTROL") {
-        attributeState ("closed", label: "Closed", icon:"st.contact.contact.closed", backgroundColor:"#00a0dc")
-        attributeState ("open",   label: "Open",   icon:"st.contact.contact.open",   backgroundColor:"#e86d13")
+    multiAttributeTile(name:"contact", type: "generic", width: 6, height: 4, canChangeIcon: true) {
+      tileAttribute ("device.contactDisplay", key: "PRIMARY_CONTROL") {
+        // Regular
+        attributeState("open", label:"Open", icon:"st.contact.contact.open", backgroundColor: "#e86d13")
+        attributeState("closed", label:"Closed", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        attributeState("off", label:"Off", icon:"st.contact.contact.open", backgroundColor: "#e86d13")
+        attributeState("on", label:"On", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        attributeState("false", label:"False", icon:"st.contact.contact.open", backgroundColor: "#e86d13")
+        attributeState("true", label:"True", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        attributeState("no", label:"No", icon:"st.contact.contact.open", backgroundColor: "#e86d13")
+        attributeState("yes", label:"Yes", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        attributeState("inactive", label:"Inactive", icon:"st.contact.contact.open", backgroundColor: "#e86d13")
+        attributeState("active", label:"Active", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        attributeState("running", label:"Running", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        attributeState("heating", label:"Heating", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        attributeState("cooling", label:"Cooling", icon:"st.contact.contact.closed", backgroundColor: "#00a0dc")
+        // Inverted
+        attributeState("openInverted", label:"Open", icon:"st.contact.contact.open", backgroundColor: "#00a0dc")
+        attributeState("closedInverted", label:"Closed", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
+        attributeState("offInverted", label:"Off", icon:"st.contact.contact.open", backgroundColor: "#00a0dc")
+        attributeState("onInverted", label:"On", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
+        attributeState("falseInverted", label:"False", icon:"st.contact.contact.open", backgroundColor: "#00a0dc")
+        attributeState("trueInverted", label:"True", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
+        attributeState("noInverted", label:"No", icon:"st.contact.contact.open", backgroundColor: "#00a0dc")
+        attributeState("yesInverted", label:"Yes", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
+        attributeState("inactiveInverted", label:"Inactive", icon:"st.contact.contact.open", backgroundColor: "#00a0dc")
+        attributeState("activeInverted", label:"Active", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
+        attributeState("runningInverted", label:"Running", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
+        attributeState("heatingInverted", label:"Heating", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
+        attributeState("coolingInverted", label:"Cooling", icon:"st.contact.contact.closed", backgroundColor: "#e86d13")
       }
     }
-    main "main"
-    details "main"
+    main "contact"
+    details "contact"
   }
+}
+
+def updated() {
+	// log.debug("Updated called.  Make sure to update labels.")
+  updateLabels(device.currentValue("contact"))
 }
 
 //Update state sent from parent app
@@ -35,14 +72,76 @@ def setStatus(state) {
   switch(state) {
     case "0" :
       sendEvent(name: "contact", value: "closed")
-      log.debug "$device.label is closed"
       break
     case "1" :
       sendEvent(name: "contact", value: "open")
-      log.debug "$device.label is open"
       break
     default:
       sendEvent(name: "contact", value: "open") 
       break
   }
+  log.debug("$device.label is " + device.currentValue("contact"))
+  updateLabels(device.currentValue("contact"))
+}
+    
+def updateLabels (String value) {
+	// log.debug("updateLabels called.  Passed value is $value.  openDisplayLabel is $openDisplayLabel.  closedDisplayLabel is $closedDisplayLabel.")
+	// Update tile with custom labels
+    def myPassedValue
+    
+    if (displayLabel.equals("On/Off")) {
+     	if (value.equals("closed")) {
+    		myPassedValue = "on"    
+      } else {
+        myPassedValue = "off"
+      }  
+    } else if (displayLabel.equals("True/False")) {
+     	if (value.equals("closed")) {
+    		myPassedValue = "true"
+      } else {
+        myPassedValue = "false"
+      }  
+    } else if (displayLabel.equals("Yes/No")) {
+     	if (value.equals("closed")) {
+    		myPassedValue = "yes"
+      } else {
+        myPassedValue = "no"
+      }  
+    } else if (displayLabel.equals("Active/Inactive")) {
+     	if (value.equals("closed")) {
+    		myPassedValue = "active"
+      } else {
+        myPassedValue = "inactive"
+      }  
+    } else if (displayLabel.equals("Running/Off")) {
+     	if (value.equals("closed")) {
+    		myPassedValue = "running"
+      } else {
+        myPassedValue = "off"
+      }  
+    } else if (displayLabel.equals("Heating/Off")) {
+     	if (value.equals("closed")) {
+    		myPassedValue = "heating"
+      } else {
+        myPassedValue = "off"
+      }  
+    } else if (displayLabel.equals("Cooling/Off")) {
+     	if (value.equals("closed")) {
+    		myPassedValue = "cooling"
+      } else {
+        myPassedValue = "off"
+      }  
+    } else {
+     	if (value.equals("closed")) {
+    		myPassedValue = "closed"
+      } else {
+        myPassedValue = "open"
+      }  
+    }
+
+    if (invertColors.equals("true")) {
+    	myPassedValue = myPassedValue + "Inverted"
+    }
+    //log.debug("sendEvent value is " + myPassedValue)
+    sendEvent(name: "contactDisplay", value: myPassedValue, isStateChange: true)
 }
