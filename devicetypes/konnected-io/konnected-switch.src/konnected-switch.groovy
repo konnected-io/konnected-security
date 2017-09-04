@@ -1,5 +1,5 @@
 /**
- *  Konnected Siren/Strobe
+ *  Konnected Switch
  *
  *  Copyright 2017 konnected.io
  *
@@ -14,24 +14,23 @@
  *
  */
 metadata {
-  definition (name: "Konnected Siren/Strobe", namespace: "konnected-io", author: "konnected.io") {
-    capability "Alarm"
+  definition (name: "Konnected Switch", namespace: "konnected-io", author: "konnected.io") {
     capability "Switch"
     capability "Actuator"
   }
 
   preferences {
-  	input name: "invertTrigger", type: "bool", title: "Low Level Trigger",
-  	      description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
+    input name: "invertTrigger", type: "bool", title: "Low Level Trigger",
+          description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
   }
 
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.alarm", key: "PRIMARY_CONTROL") {
-        attributeState ("off",  label: "Off",    icon:"st.security.alarm.clear", action:"alarm.both", backgroundColor:"#ffffff", nextState: "turningOn")
-        attributeState ("both", label: "Alarm!", icon:"st.security.alarm.alarm", action:"alarm.off",  backgroundColor:"#e86d13", nextState: "turningOff")
-        attributeState ("turningOn", label:'Activating', icon:"st.security.alarm.alarm", action:"alarm.off", backgroundColor:"#e86d13", nextState: "turningOff")
-        attributeState ("turningOff", label:'Turning off', icon:"st.security.alarm.clear", action:"alarm.on", backgroundColor:"#ffffff", nextState: "turningOn")
+      tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
+        attributeState ("off",  label: '${name}',    icon:"st.switches.switch.off", action:"switch.on",   backgroundColor:"#ffffff", nextState: "turningOn")
+        attributeState ("on",   label: '${name}',    icon:"st.switches.switch.on",  action:"switch.off",  backgroundColor:"#00A0DC", nextState: "turningOff")
+        attributeState ("turningOn", label:'Turning on', icon:"st.switches.switch.on", action:"switch.off", backgroundColor:"#00a0dc", nextState: "turningOff")
+        attributeState ("turningOff", label:'Turning off', icon:"st.switches.switch.off", action:"switch.on", backgroundColor:"#ffffff", nextState: "turningOn")
       }
     }
     main "main"
@@ -51,26 +50,20 @@ def updatePinState(Integer state) {
     val = invertTrigger ? "off" : "on"
   }
   log.debug "$device is $val"
-  sendEvent(name: "switch", value: val, displayed: false)
-  if (val == "on") { val = "both" }
-  sendEvent(name: "alarm", value: val)
+  sendEvent(name: "switch", value: val)
 }
 
 def off() {
   def val = invertTrigger ? 1 : 0
+  log.debug "Turning off $device.label (state = $val)"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 
 def on() {
   def val = invertTrigger ? 0 : 1
+  log.debug "Turning on $device.label (state = $val)"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
-
-def both() { on() }
-
-def strobe() { on() }
-
-def siren() { on() }
 
 def triggerLevel() {
   return invertTrigger ? 0 : 1

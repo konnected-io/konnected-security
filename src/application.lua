@@ -19,9 +19,9 @@ for i, sensor in pairs(sensors) do
 end
 
 for i, actuator in pairs(actuators) do
-  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin)
+  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin, "Trigger:", actuator.trigger)
   gpio.mode(actuator.pin, gpio.OUTPUT)
-  gpio.write(actuator.pin, gpio.LOW)
+  gpio.write(actuator.pin, actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW)
 end
 
 sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
