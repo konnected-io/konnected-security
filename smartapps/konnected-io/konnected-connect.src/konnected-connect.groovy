@@ -33,17 +33,33 @@ preferences {
   }
 }
 
-
 def installed() {
-  log.info "installed(): Installing Konnected SmartApp"
+  log.info "installed(): Installing Konnected Parent SmartApp"
+  initialize()
 }
 
 def updated() {
   log.info "updated(): Updating Konnected SmartApp"
+  unschedule()
+  initialize()
 }
 
 def uninstalled() {
   log.info "uninstall(): Uninstalling Konnected SmartApp"
+}
+
+def initialize() {
+  runEvery5Minutes(discoverySearch)
+}
+
+// Device Discovery : Send M-Search to multicast
+def discoverySearch() {
+  log.debug "Discovering Konnected devices on the network via SSDP"
+  sendHubCommand(new physicalgraph.device.HubAction("lan discovery ${discoveryDeviceType()}", physicalgraph.device.Protocol.LAN))
+}
+
+def discoveryDeviceType() {
+  return "urn:schemas-konnected-io:device:Security:1"
 }
 
 void registerKnownDevice(mac) {
@@ -58,6 +74,5 @@ void removeKnownDevice(mac) {
 }
 
 Boolean isNewDevice(mac) {
-  log.debug "Known devices: $state.knownDevices"
   return !state.knownDevices?.contains(mac)
 }
