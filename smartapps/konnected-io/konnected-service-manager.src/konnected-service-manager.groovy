@@ -31,7 +31,6 @@ mappings {
   path("/ping") { action: [ GET: "devicePing"] }
 }
 
-
 preferences {
   page(name: "pageWelcome",       install: false, uninstall: true, content: "pageWelcome", nextPage: "pageConfiguration")
   page(name: "pageDiscovery",     install: false, content: "pageDiscovery" )
@@ -39,14 +38,15 @@ preferences {
 }
 
 def installed() {
-  log.info "installed(): Installing Konnected SmartApp"
+  log.info "installed(): Installing Konnected Device: " + state.device?.mac
   parent.registerKnownDevice(state.device.mac)
   initialize()
-  runEvery1Hour(discoverySearch)
 }
 
 def updated() {
-  log.info "updated(): Updating Konnected SmartApp"
+  log.info "updated(): Updating Konnected Device: " + state.device?.mac
+  unsubscribe()
+  unschedule()
   initialize()
 }
 
@@ -74,9 +74,7 @@ def uninstalled() {
 }
 
 def initialize() {
-  unsubscribe()
-  unschedule()
-  discoverySubscription(true)
+  discoverySubscription()
   if (app.label != deviceName()) { app.updateLabel(deviceName()) }
   childDeviceConfiguration()
   deviceUpdateSettings()
@@ -133,7 +131,7 @@ def pageDiscovery() {
   // begin discovery protocol if device has not been found yet
   if (!state.device) {
     discoverySubscription()
-    discoverySearch()
+    parent.discoverySearch()
   }
 
   dynamicPage(name: "pageDiscovery", nextPage: "pageConfiguration", refreshInterval: 3) {
@@ -221,27 +219,10 @@ def getDeviceIpAndPort(device) {
   "${convertHexToIP(device.networkAddress)}:${convertHexToInt(device.deviceAddress)}"
 }
 
-// Device Discovery : Device Type
-def discoveryDeviceType() {
-  return "urn:schemas-konnected-io:device:Security:1"
-}
-
-// Device Discovery : Send M-Search to multicast
-def discoverySearch() {
-  log.debug "Discovering Konnected devices on the network via SSDP"
-  sendHubCommand(new physicalgraph.device.HubAction("lan discovery ${discoveryDeviceType()}", physicalgraph.device.Protocol.LAN))
-}
 
 // Device Discovery : Subscribe to SSDP events
-def discoverySubscription(force=false) {
-  if (force) {
-    unsubscribe()
-    state.subscribe = false
-  }
-  if(!state.subscribe) {
-    subscribe(location, "ssdpTerm.${discoveryDeviceType()}", discoverySearchHandler, [filterEvents:false])
-    state.subscribe = true
-  }
+def discoverySubscription() {
+  subscribe(location, "ssdpTerm.${parent.discoveryDeviceType()}", discoverySearchHandler, [filterEvents:false])
 }
 
 // Device Discovery : Handle search response
@@ -250,11 +231,11 @@ def discoverySearchHandler(evt) {
   event << ["hub":evt?.hubId]
   String ssdpUSN = event.ssdpUSN.toString()
   def device = state.device
-  if (device?.mac == event.mac) {
+  if (device?.ssdpUSN == ssdpUSN) {
     device.networkAddress = event.networkAddress
     device.deviceAddress = event.deviceAddress
     log.debug "Refreshed attributes of device $device"
-  } else if (parent.isNewDevice(event.mac)) {
+  } else if (device == null && parent.isNewDevice(event.mac)) {
     state.device = event
     log.debug "Discovered new device $event"
     unsubscribe()
