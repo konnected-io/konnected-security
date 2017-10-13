@@ -46,3 +46,18 @@ def uninstalled() {
   log.info "uninstall(): Uninstalling Konnected SmartApp"
 }
 
+void registerKnownDevice(mac) {
+  if (state.knownDevices == null) {
+    state.knownDevices = [].toSet()
+  }
+  state.knownDevices.add(mac)
+}
+
+void removeKnownDevice(mac) {
+   state.knownDevices?.remove(mac)
+}
+
+Boolean isNewDevice(mac) {
+  log.debug "Known devices: $state.knownDevices"
+  return !state.knownDevices?.contains(mac)
+}

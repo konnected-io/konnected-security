@@ -40,6 +40,7 @@ preferences {
 
 def installed() {
   log.info "installed(): Installing Konnected SmartApp"
+  parent.registerKnownDevice(state.device.mac)
   initialize()
   runEvery1Hour(discoverySearch)
 }
@@ -50,7 +51,8 @@ def updated() {
 }
 
 def uninstalled() {
-  log.info "uninstall(): Uninstalling Konnected SmartApp"
+  def device = state.device
+  log.info "uninstall(): Removing Konnected Device $device?.mac"
   revokeAccessToken()
 
   def body = [
@@ -60,13 +62,15 @@ def uninstalled() {
     actuators : []
   ]
 
-  def device = state.device
-  sendHubCommand(new physicalgraph.device.HubAction([
-    method: "PUT",
-    path: "/settings",
-    headers: [ HOST: getDeviceIpAndPort(device), "Content-Type": "application/json" ],
-    body : groovy.json.JsonOutput.toJson(body)
-  ], getDeviceIpAndPort(device) ))
+  if (device) {
+    parent.removeKnownDevice(device.mac)
+    sendHubCommand(new physicalgraph.device.HubAction([
+      method: "PUT",
+      path: "/settings",
+      headers: [ HOST: getDeviceIpAndPort(device), "Content-Type": "application/json" ],
+      body : groovy.json.JsonOutput.toJson(body)
+    ], getDeviceIpAndPort(device) ))
+  }
 }
 
 def initialize() {
@@ -76,7 +80,6 @@ def initialize() {
   if (app.label != deviceName()) { app.updateLabel(deviceName()) }
   childDeviceConfiguration()
   deviceUpdateSettings()
-  state.pageConfigurationRefresh = 2
 }
 
 def deviceName() {
@@ -123,20 +126,17 @@ def pageWelcome() {
   }
 }
 
-//Page : 2 : Discovery page - search and select devices
+// Page : 2 : Discovery page
 def pageDiscovery() {
-  //create accessToken
   if(!state.accessToken) { createAccessToken() }
 
-  //This is a workaround to prevent page to refresh too fast.
-  if(!state.pageConfigurationRefresh) { state.pageConfigurationRefresh = 2 }
-
-  dynamicPage(name: "pageDiscovery", nextPage: "pageConfiguration", refreshInterval: state.pageConfigurationRefresh) {
-    state.pageConfigurationRefresh =  state.pageConfigurationRefresh + 3
+  // begin discovery protocol if device has not been found yet
+  if (!state.device) {
     discoverySubscription()
     discoverySearch()
-    discoveryVerification()
+  }
 
+  dynamicPage(name: "pageDiscovery", nextPage: "pageConfiguration", refreshInterval: 3) {
     if (state.device?.verified) {
       section() {
         href(
@@ -154,7 +154,7 @@ def pageDiscovery() {
   }
 }
 
-//Page : 3 : Configure sensors and alarms connected to the panel
+// Page : 3 : Configure things wired to the Konnected board
 def pageConfiguration() {
   // Get all selected devices
   def device = state.device
@@ -165,7 +165,7 @@ def pageConfiguration() {
           type: "text",
           title: "Device name",
           required: false,
-          defaultValue: "konnected-" + device.mac[-6..-1]
+          defaultValue: "konnected-" + device?.mac[-6..-1]
         )
       }
       section(title: "Configure Things wired to each pin") {
@@ -250,21 +250,15 @@ def discoverySearchHandler(evt) {
   event << ["hub":evt?.hubId]
   String ssdpUSN = event.ssdpUSN.toString()
   def device = state.device
-  if (device) {
+  if (device?.mac == event.mac) {
     device.networkAddress = event.networkAddress
     device.deviceAddress = event.deviceAddress
     log.debug "Refreshed attributes of device $device"
-  } else {
+  } else if (parent.isNewDevice(event.mac)) {
     state.device = event
     log.debug "Discovered new device $event"
+    unsubscribe()
     discoveryVerify(event)
-  }
-}
-
-//Device Discovery : Verify search response by retrieving XML
-def discoveryVerification() {
-  if (state.device && !state.device.verified) {
-    discoveryVerify(state.device)
   }
 }
 
@@ -335,6 +329,7 @@ def childDeviceConfiguration() {
     deleteChildDevice(it.deviceNetworkId)
   }
 }
+
 // Child Devices : update state of child device sent from nodemcu
 def childDeviceStateUpdate() {
   def deviceId = params.mac.toUpperCase() + "|" + params.id
