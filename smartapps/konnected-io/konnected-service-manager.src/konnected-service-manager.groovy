@@ -420,10 +420,11 @@ private Map actuatorsMap() {
 
 private Map sensorsMap() {
   return [
-    "Konnected Contact Sensor" : "Open/Close Sensor",
-    "Konnected Motion Sensor"  : "Motion Sensor",
-    "Konnected Smoke Sensor"   : "Smoke Detector",
-    "Konnected Panic Button"   : "Panic Button"
+    "Konnected Contact Sensor"    : "Open/Close Sensor",
+    "Konnected Motion Sensor"     : "Motion Sensor",
+    "Konnected Smoke Sensor"      : "Smoke Detector",
+    "Konnected Panic Button"      : "Panic Button",
+    "Konnected Water Leak Sensor" : "Water Sensor"
   ]
 }
 
