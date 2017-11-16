@@ -7,7 +7,7 @@ upnp:listen(1900, "239.255.255.250")
 upnp:on("receive", function(c, d)
   if string.match(d, "M-SEARCH") then
     local urn = d:match("ST: (urn:[%w%p]*)")
-    if (urn == device.urn) then
+    if (urn == device.urn or string.match(d, "ST: ssdp:all")) then
       local resp =
       "HTTP/1.1 200 OK\r\n" ..
         "Cache-Control: max-age=120\r\n" ..
