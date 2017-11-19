@@ -20,9 +20,9 @@ metadata {
   }
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.contact", key: "PRIMARY_CONTROL") {
-        attributeState ("wet", label: "Wet", icon:"st.contact.contact.closed", backgroundColor:"#e86d13")
-        attributeState ("dry",   label: "Dry",   icon:"st.contact.contact.open",   backgroundColor:"#00a0dc")
+      tileAttribute ("device.water", key: "PRIMARY_CONTROL") {
+      	attributeState ("dry", label: "Dry", icon: "st.alarm.water.dry", backgroundColor: "#ffffff")
+		    attributeState ("wet", label: "Wet", icon: "st.alarm.water.wet", backgroundColor: "#00A0DC")
       }
     }
     main "main"
