@@ -12,4 +12,6 @@ while true; do
   nodemcu-uploader --port=${PORT} upload * --verify=raw && break
 done
 
+nodemcu-uploader --port=${PORT} node restart
+
 tput bel
