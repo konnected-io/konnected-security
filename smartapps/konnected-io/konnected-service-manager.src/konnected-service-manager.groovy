@@ -425,7 +425,7 @@ private Map sensorsMap() {
     "Konnected Smoke Sensor"      : "Smoke Detector",
     "Konnected CO Sensor"         : "Carbon Monoxide Detector",
     "Konnected Panic Button"      : "Panic Button",
-    "Konnected Water Leak Sensor" : "Water Sensor"
+    "Konnected Water Sensor"      : "Water Sensor"
   ]
 }
 

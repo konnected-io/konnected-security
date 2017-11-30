@@ -15,14 +15,15 @@
  */
 metadata {
   definition (name: "Konnected CO Sensor", namespace: "konnected-io", author: "konnected.io") {
+    capability "Smoke Detector"
     capability "Carbon Monoxide Detector"
     capability "Sensor"
   }
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.carbonMonoxide", key: "PRIMARY_CONTROL") {
-        attributeState ("clear",    label: "Clear", icon:"st.alarm.smoke.clear", backgroundColor:"#ffffff")
-        attributeState ("detected", label: "CO detected!", icon:"st.alarm.carbon-monoxide.carbon-monoxide", backgroundColor:"#e86d13")
+        attributeState ("clear",    label: "Clear", icon:"st.alarm.carbon-monoxide.clear", backgroundColor:"#ffffff")
+        attributeState ("detected", label: "Warning", icon:"st.alarm.carbon-monoxide.carbon-monoxide", backgroundColor:"#e86d13")
       }
     }
     main "main"

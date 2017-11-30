@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Water Leak Sensor", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Water Sensor", namespace: "konnected-io", author: "konnected.io") {
     capability "Water Sensor"
     capability "Sensor"
   }
