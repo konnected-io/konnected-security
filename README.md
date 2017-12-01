@@ -54,7 +54,7 @@ on which board you have, there are different drivers:
         
  1. Run the script in `scripts/flash` to flash and upload the files. You may need to edit the variables
  at the top of the script as your serial port may be different depending on your operating system and the type of NodeMCU development
- board you have.
+ board you have. You may also need to make the script executable by running `chmod 755 scripts/flash`. 
  
  
 ### Windows Users
