@@ -41,7 +41,7 @@ metadata {
 }
 
 def updated() {
-  parent.updateSettingsOnChildDevice(device.deviceNetworkId)
+  parent.updateSettingsOnDevice()
 }
 
 def updatePinState(Integer state) {

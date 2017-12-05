@@ -77,7 +77,7 @@ def initialize() {
   discoverySubscription()
   if (app.label != deviceName()) { app.updateLabel(deviceName()) }
   childDeviceConfiguration()
-  deviceUpdateSettings()
+  updateSettingsOnDevice()
 }
 
 def deviceName() {
@@ -329,12 +329,10 @@ def devicePing() {
 }
 
 //Device : update NodeMCU with token, url, sensors, actuators from SmartThings
-def deviceUpdateSettings() {
+def updateSettingsOnDevice() {
   if(!state.accessToken) { createAccessToken() }
-  updateSettingsOnDevice(state.device)
-}
 
-def updateSettingsOnDevice(device) {
+  def device    = state.device
   def sensors   = []
   def actuators = []
   def ip        = getDeviceIpAndPort(device)
@@ -367,15 +365,6 @@ def updateSettingsOnDevice(device) {
     headers: [ HOST: ip, "Content-Type": "application/json" ],
     body : groovy.json.JsonOutput.toJson(body)
   ], ip ))
-}
-
-def getChildDevicesByDeviceId(mac) {
-  return getAllChildDevices().findAll { mac == it.deviceNetworkId.split("\\|")[0] }
-}
-
-def updateSettingsOnChildDevice(deviceDNI) {
-  def device = state.device
-  updateSettingsOnDevice(device)
 }
 
 // Device: update NodeMCU with state of device changed from SmartThings
