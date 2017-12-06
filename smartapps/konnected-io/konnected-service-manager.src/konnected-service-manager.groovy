@@ -153,48 +153,75 @@ def pageDiscovery() {
 }
 
 // Page : 3 : Configure things wired to the Konnected board
-def pageConfiguration() {
-  // Get all selected devices
+def pageConfiguration(params) {
+  def setHwType = params?.hwType
+  if (setHwType) { state.hwType = setHwType }
+  state.hwType ? pageAssignPins() : pageSelectHwType()
+}
+
+private pageSelectHwType() {
+  dynamicPage(name: "pageConfiguration") {
+    section(title: "Which wiring hardware do you have?") {
+      href(
+        name:        "Konnected Alarm Panel",
+        title:       "Konnected Alarm Panel",
+        description: "Tap to select",
+        page:        "pageConfiguration",
+        params:      [hwType: "alarmPanel"],
+        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/icon-alarmpanel.jpg",
+      )
+      href(
+        name:        "NodeMCU Base",
+        title:       "NodeMCU Base",
+        description: "Tap to select",
+        page:        "pageConfiguration",
+        params:      [hwType: "nodemcu"],
+        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/icon-nodemcu.jpg",
+      )
+    }
+  }
+}
+
+private pageAssignPins() {
   def device = state.device
   dynamicPage(name: "pageConfiguration") {
-  	  section() {
-  		input(
-          name: "name",
-          type: "text",
-          title: "Device name",
+    section() {
+      input(
+        name: "name",
+        type: "text",
+        title: "Device name",
+        required: false,
+        defaultValue: "konnected-" + device?.mac[-6..-1]
+      )
+    }
+    section(title: "Configure things wired to each zone or pin") {
+      pinMapping().each { i, label ->
+        def deviceTypeDefaultValue = (settings."deviceType_${i}") ? settings."deviceType_${i}" : ""
+        def deviceLabelDefaultValue = (settings."deviceLabel_${i}") ? settings."deviceLabel_${i}" : ""
+
+        input(
+          name: "deviceType_${i}",
+          type: "enum",
+          title: label,
           required: false,
-          defaultValue: "konnected-" + device?.mac[-6..-1]
+          multiple: false,
+          options: pageConfigurationGetDeviceType(i),
+          defaultValue: deviceTypeDefaultValue,
+          submitOnChange: true
         )
-      }
-      section(title: "Configure Things wired to each pin") {
-        for ( i in [1, 2, 5, 6, 7, 8, 9]) {
-          def deviceTypeDefaultValue = (settings."deviceType_${i}") ? settings."deviceType_${i}" : ""
-          def deviceLabelDefaultValue = (settings."deviceLabel_${i}") ? settings."deviceLabel_${i}" : ""
 
+        if (settings."deviceType_${i}") {
           input(
-            name: "deviceType_${i}",
-            type: "enum",
-            title: "Pin ${pinLabel(i)}",
-            required: false,
-            multiple: false,
-            options: pageConfigurationGetDeviceType(i),
-            defaultValue: deviceTypeDefaultValue,
-            submitOnChange: true
+            name: "deviceLabel_${i}",
+            type: "text",
+            title: "${label} device name",
+            description: "Name the device connected to ${label}",
+            required: (settings."deviceType_${i}" != null),
+            defaultValue: deviceLabelDefaultValue
           )
-
-          if (settings."deviceType_${i}") {
-            input(
-              name: "deviceLabel_${i}",
-              type: "text",
-              title: "Pin ${pinLabel(i)} Name",
-              description: "Name the device connected to ${pinLabel(i)}",
-              required: (settings."deviceType_${i}" != null),
-              defaultValue: deviceLabelDefaultValue
-            )
-          }
         }
       }
-
+    }
   }
 }
 
@@ -214,11 +241,9 @@ private Map pageConfigurationGetDeviceType(Integer i) {
   return deviceTypes
 }
 
-
 def getDeviceIpAndPort(device) {
   "${convertHexToIP(device.networkAddress)}:${convertHexToInt(device.deviceAddress)}"
 }
-
 
 // Device Discovery : Subscribe to SSDP events
 def discoverySubscription() {
@@ -390,11 +415,27 @@ void syncChildPinState(physicalgraph.device.HubResponse hubResponse) {
   device?.updatePinState(hubResponse.json.state)
 }
 
-private String pinLabel(Integer i) {
-  if (i == 9) {
-    return "RX"
+private Map pinMapping() {
+  if (state.hwType == "alarmPanel") {
+    return [
+      1: "Zone 1",
+      2: "Zone 2",
+      5: "Zone 3",
+      6: "Zone 4",
+      7: "Zone 5",
+      9: "Zone 6",
+      8: "ALARM/OUT"
+    ]
   } else {
-    return "D$i"
+    return [
+      1: "Pin D1",
+      2: "Pin D2",
+      5: "Pin D5",
+      6: "Pin D6",
+      7: "Pin D7",
+      8: "Pin D8",
+      9: "Pin RX"
+    ]
   }
 }
 
