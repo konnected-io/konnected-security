@@ -1,5 +1,5 @@
 /**
- *  Konnected Water Leak Sensor
+ *  Konnected CO Sensor
  *
  *  Copyright 2017 konnected.io
  *
@@ -14,15 +14,16 @@
  *
  */
 metadata {
-  definition (name: "Konnected Water Sensor", namespace: "konnected-io", author: "konnected.io") {
-    capability "Water Sensor"
+  definition (name: "Konnected CO Sensor", namespace: "konnected-io", author: "konnected.io") {
+    capability "Smoke Detector"
+    capability "Carbon Monoxide Detector"
     capability "Sensor"
   }
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.water", key: "PRIMARY_CONTROL") {
-      	attributeState ("dry", label: "Dry", icon: "st.alarm.water.dry", backgroundColor: "#ffffff")
-		    attributeState ("wet", label: "Wet", icon: "st.alarm.water.wet", backgroundColor: "#00A0DC")
+      tileAttribute ("device.carbonMonoxide", key: "PRIMARY_CONTROL") {
+        attributeState ("clear",    label: "Clear", icon:"st.alarm.carbon-monoxide.clear", backgroundColor:"#ffffff")
+        attributeState ("detected", label: "Warning", icon:"st.alarm.carbon-monoxide.carbon-monoxide", backgroundColor:"#e86d13")
       }
     }
     main "main"
@@ -34,15 +35,13 @@ metadata {
 def setStatus(state) { 
   switch(state) {
     case "0" :
-      sendEvent(name: "water", value: "wet")
-      log.debug "$device.label is wet"
+      sendEvent(name: "carbonMonoxide", value: "clear")
       break
     case "1" :
-      sendEvent(name: "water", value: "dry")
-      log.debug "$device.label is dry"
+      sendEvent(name: "carbonMonoxide", value: "detected")
       break
     default:
-      sendEvent(name: "water", value: "dry") 
+      sendEvent(name: "carbonMonoxide", value: "detected")
       break
   }
 }
