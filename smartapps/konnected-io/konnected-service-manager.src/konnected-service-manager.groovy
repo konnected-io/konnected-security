@@ -134,7 +134,7 @@ def pageDiscovery() {
     parent.discoverySearch()
   }
 
-  dynamicPage(name: "pageDiscovery", nextPage: "pageConfiguration", refreshInterval: 3) {
+  dynamicPage(name: "pageDiscovery", install: false, refreshInterval: 3) {
     if (state.device?.verified) {
       section() {
         href(

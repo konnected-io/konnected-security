@@ -1,5 +1,5 @@
 /**
- *  Konnected Smoke Sensor
+ *  Konnected CO Sensor
  *
  *  Copyright 2017 konnected.io
  *
