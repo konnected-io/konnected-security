@@ -1,7 +1,7 @@
 {
   "src/actuators.lua":"47a1a50c0c8cfb547554ded22a8134eaed76c0a3",
   "src/application.lua":"758d600770046868d054b7d54bf2144a9fc255e1",
-  "src/device.lua":"99e8a907be2c909a8f87c7abbe80b89f29b8284e",
+  "src/device.lua":"1ea639622b8d599207e7a64a1eeb84e791090f3a",
   "src/enduser_setup.html.gz":"fbf730b33c309ceab15e88f162f43c232593f7da",
   "src/http_favicon.ico.gz":"483f371c590b0407c380d019bcc6938cf1d62f0a",
   "src/http_index.html.gz":"fd636bc1a6080c94949c77953598964493aec2b0",
@@ -9,7 +9,7 @@
   "src/httpd_res.lua":"7226f19699168e171970cda73b953a49450b7aa8",
   "src/init.lua":"6f145587fef8616a5446a1e3f953789a0470278f",
   "src/led_flip.lua":"590e7be1afe686f4213d097d0e9dba9e7a3910a0",
-  "src/manifest.json":"7de56e87b804861ddf45d9c85f5f2a8fc6dc4b76",
+  "src/manifest.json":"b4fa587e191cdf7a05813f0ce8b1190c59948260",
   "src/sensors.lua":"d0d94fa73f713dcf2c517da9262f59f306b81d2b",
   "src/server.lua":"8d23c80551120e6415689b0a08ef9f175bf727a6",
   "src/server_device.lua":"21bdbc50f7ba48f2261af622edd8dfae724b9d60",
@@ -23,5 +23,5 @@
   "src/update_process.lua":"b6ac63039a0edf5e816bcd17b44704f9deb6000d",
   "src/variables_build.lua":"fce4b2ce56bef0f50b09e0341cdf5eb7b9be0241",
   "src/variables_set.lua":"2c2d9c13c8acb577d80f40e4b513c7cd23ffdd1f",
-  "updated_at":"2018-02-01:03:31:42"
+  "updated_at":"2018-02-01:04:07:30"
 }
