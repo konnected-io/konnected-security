@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME=konnected-security-2-0-5
+IMAGE_NAME=konnected-2-1
 PORT=/dev/cu.wchusbserial1420
 
 esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${IMAGE_NAME}.bin

@@ -8,14 +8,14 @@ local download_new_manifest = function(tag_name)
     "https://github.com/" .. repo .. "/raw/" .. tag_name .. "/src/manifest.json",
     "Accept-Encoding: deflate\r\n",
     function(code, data)
-      local new_manifest = cjson.decode(data)
+      local new_manifest = sjson.decode(data)
       print("Heap: ", node.heap(), "downloaded updated manifest.json")
       local file_size = file.list()['manifest.json']
       local current_manifest = {}
 
       -- open the existing manifest.json on the device for comparing file SHAs
       if file.open("manifest.json") then
-        current_manifest = cjson.decode(file.read(file_size))
+        current_manifest = sjson.decode(file.read(file_size))
         file.close()
       end
 
@@ -97,7 +97,7 @@ local check_for_version_update = function()
     function(code, data)
       local latest_release_tag
       if code == 200 then
-        latest_release_tag = cjson.decode(data)["tag_name"]
+        latest_release_tag = sjson.decode(data)["tag_name"]
       end
       compare_github_release(latest_release_tag)
     end

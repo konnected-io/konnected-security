@@ -25,7 +25,7 @@ local httpdRequest = {
     httpdRequestHandler.body = string.sub(data, string.find(data, "\r\n\r\n", 1, true), #data)
     
     if httpdRequestHandler.contentType == "application/json" then
-      httpdRequestHandler.body = cjson.decode(httpdRequestHandler.body)
+      httpdRequestHandler.body = sjson.decode(httpdRequestHandler.body)
     end
     
     return httpdRequestHandler

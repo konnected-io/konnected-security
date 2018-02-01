@@ -16,7 +16,7 @@ local me = {
       sensors = require("sensors"),
       actuators = require("actuators")
     }
-    response.send(cjson.encode(body))
+    response.send(sjson.encode(body))
   end
 }
 return me
