@@ -36,7 +36,7 @@ local me = {
           state = gpio.read(request.query.pin)
         } }
       end
-      response.send(cjson.encode(body))
+      response.send(sjson.encode(body))
     end
 
 		if request.contentType == "application/json" then
@@ -46,9 +46,9 @@ local me = {
         if request.body.momentary then
           turnOffIn(request.body.pin, request.body.state, request.body.momentary, request.body.times, request.body.pause)
           local off = on_state == 0 and 1 or 0
-          response.send(cjson.encode({ pin = request.body.pin, state = off }))
+          response.send(sjson.encode({ pin = request.body.pin, state = off }))
         else
-          response.send(cjson.encode({ pin = request.body.pin, state = request.body.state }))
+          response.send(sjson.encode({ pin = request.body.pin, state = request.body.state }))
         end
         blinktimer:start()
       end

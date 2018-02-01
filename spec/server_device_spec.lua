@@ -2,7 +2,7 @@ describe("server_device", function()
   local server, response
 
   setup(function()
-    _G.cjson = require("cjson")
+    _G.sjson = require("sjson")
     _G.blinktimer = mock({ start = function() end })
     server = require("server_device")
     require("spec/nodemcu_stubs")
@@ -31,7 +31,7 @@ describe("server_device", function()
       end)
 
       it("responds with the new pin state", function()
-        assert.stub(response.send).was.called_with(cjson.encode({ pin = 1, state = 1 }))
+        assert.stub(response.send).was.called_with(sjson.encode({ pin = 1, state = 1 }))
       end)
 
     end)
@@ -58,7 +58,7 @@ describe("server_device", function()
       end)
 
       it("responds with the new pin state", function()
-        assert.stub(response.send).was.called_with(cjson.encode({ pin = 1, state = 0 }))
+        assert.stub(response.send).was.called_with(sjson.encode({ pin = 1, state = 0 }))
       end)
     end)
   end)
