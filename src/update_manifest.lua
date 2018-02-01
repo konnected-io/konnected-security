@@ -91,20 +91,17 @@ local compare_github_release = function(tag_name)
 end
 
 local check_for_version_update = function()
-  local conn = net.createConnection(net.TCP, 1)
-  local latest_release_tag
-  conn:connect(443, "api.github.com")
-  conn:on("receive", function(sck, data)
-    local tag_name = data:match([["tag_name":"([%w%.%-]+)"]])
-    if tag_name then latest_release_tag = tag_name end
-  end)
-  conn:on("disconnection", function()
-    compare_github_release(latest_release_tag)
-  end)
-  conn:on("connection", function(sck)
-    sck:send("GET /repos/" .. repo .. "/releases/latest HTTP/1.1\r\nHost: api.github.com\r\nConnection: close\r\n"..
-      "Accept: */*\r\nUser-Agent: ESP8266\r\n\r\n")
-  end)
+  http.get(
+    "https://api.github.com/repos/" .. repo .. "/releases/latest",
+    "Accept-Encoding: deflate\r\n",
+    function(code, data)
+      local latest_release_tag
+      if code == 200 then
+        latest_release_tag = cjson.decode(data)["tag_name"]
+      end
+      compare_github_release(latest_release_tag)
+    end
+  )
 end
 
 if update.force then
