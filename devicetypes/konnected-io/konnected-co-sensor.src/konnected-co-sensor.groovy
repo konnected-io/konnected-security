@@ -1,7 +1,7 @@
 /**
  *  Konnected CO Sensor
  *
- *  Copyright 2017 konnected.io
+ *  Copyright 2018 Konnected Inc (https://konnected.io)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -19,6 +19,14 @@ metadata {
     capability "Carbon Monoxide Detector"
     capability "Sensor"
   }
+
+  preferences {
+    input name: "normalState", type: "enum", title: "Normal State",
+	    options: ["Normally Closed", "Normally Open"],
+      defaultValue: "Normally Closed",
+      description: "By default, the alarm state is triggered when the sensor circuit is open (NC). Select Normally Open (NO) when a closed circuit indicates an alarm."
+  }
+
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.carbonMonoxide", key: "PRIMARY_CONTROL") {
@@ -31,17 +39,17 @@ metadata {
   }
 }
 
-//Update state sent from parent app
-def setStatus(state) { 
-  switch(state) {
-    case "0" :
-      sendEvent(name: "carbonMonoxide", value: "clear")
-      break
-    case "1" :
-      sendEvent(name: "carbonMonoxide", value: "detected")
-      break
-    default:
-      sendEvent(name: "carbonMonoxide", value: "detected")
-      break
-  }
+def isClosed() {
+  normalState == "Normally Open" ? "detected" : "clear"
+}
+
+def isOpen() {
+  normalState == "Normally Open" ? "clear" : "detected"
+}
+
+// Update state sent from parent app
+def setStatus(state) {
+  def stateValue = state == "1" ? isOpen() : isClosed()
+  sendEvent(name: "carbonMonoxide", value: stateValue)
+  log.debug "$device.label is $stateValue"
 }

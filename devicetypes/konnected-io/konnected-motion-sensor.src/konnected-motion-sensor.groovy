@@ -1,7 +1,7 @@
 /**
  *  Konnected Motion Sensor
  *
- *  Copyright 2017 konnected.io
+ *  Copyright 2018 Konnected Inc (https://konnected.io)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -18,6 +18,14 @@ metadata {
     capability "Motion Sensor"
     capability "Sensor"
   }
+
+  preferences {
+    input name: "normalState", type: "enum", title: "Normal State",
+      options: ["Normally Closed", "Normally Open"],
+      defaultValue: "Normally Closed",
+      description: "Most motion sensors are Normally Closed (NC), meaning that the circuit opens when motion is detected. To reverse this logic, select Normally Open (NO)."
+  }
+
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.motion", key: "PRIMARY_CONTROL") {
@@ -30,19 +38,17 @@ metadata {
   }
 }
 
-//Update state sent from parent app
-def setStatus(state) { 
-  switch(state) {
-    case "0" :
-      sendEvent(name: "motion", value: "inactive")
-      log.debug "$device.label motion inactive"
-      break
-    case "1" :
-      sendEvent(name: "motion", value: "active") 
-      log.debug "$device.label motion detected"
-      break
-    default:
-      sendEvent(name: "motion", value: "inactive") 
-      break
-  }
+def isClosed() {
+  normalState == "Normally Open" ? "active" : "inactive"
+}
+
+def isOpen() {
+  normalState == "Normally Open" ? "inactive" : "active"
+}
+
+// Update state sent from parent app
+def setStatus(state) {
+  def stateValue = state == "1" ? isOpen() : isClosed()
+  sendEvent(name: "motion", value: stateValue)
+  log.debug "$device.label is $stateValue"
 }

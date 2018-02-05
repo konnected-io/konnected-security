@@ -1,7 +1,7 @@
 /**
  *  Konnected Contact Sensor
  *
- *  Copyright 2017 konnected.io
+ *  Copyright 2018 Konnected Inc (https://konnected.io)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -18,6 +18,14 @@ metadata {
     capability "Contact Sensor"
     capability "Sensor"
   }
+
+  preferences {
+    input name: "normalState", type: "enum", title: "Normal State",
+      options: ["Normally Closed", "Normally Open"],
+      defaultValue: "Normally Open",
+      description: "Most door & window sensors are Normally Open (NO), meaning that the circuit closes when the door/window is closed. To reverse this logic, select Normally Closed (NC)."
+  }
+
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.contact", key: "PRIMARY_CONTROL") {
@@ -30,19 +38,17 @@ metadata {
   }
 }
 
-//Update state sent from parent app
-def setStatus(state) { 
-  switch(state) {
-    case "0" :
-      sendEvent(name: "contact", value: "closed")
-      log.debug "$device.label is closed"
-      break
-    case "1" :
-      sendEvent(name: "contact", value: "open")
-      log.debug "$device.label is open"
-      break
-    default:
-      sendEvent(name: "contact", value: "open") 
-      break
-  }
+def isClosed() {
+  normalState == "Normally Closed" ? "open" : "closed"
+}
+
+def isOpen() {
+  normalState == "Normally Closed" ? "closed" : "open"
+}
+
+// Update state sent from parent app
+def setStatus(state) {
+  def stateValue = state == "1" ? isOpen() : isClosed()
+  sendEvent(name: "contact", value: stateValue)
+  log.debug "$device.label is $stateValue"
 }
