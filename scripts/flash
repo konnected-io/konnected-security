@@ -1,17 +1,10 @@
 #!/bin/bash
 
-IMAGE_NAME=konnected-security-2-0-5
-PORT=/dev/cu.wchusbserial1420
+FIRMWARE_NAME=konnected-firmware-2-0-5
+FILESYSTEM_NAME=0x80000-32mb-konnected-2-1-4
+PORT=/dev/cu.wchusbserial1410
 
 esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${IMAGE_NAME}.bin
-
-cd src
-
-while true; do
-  sleep 2
-  nodemcu-uploader --port=${PORT} upload * --verify=raw && break
-done
-
-nodemcu-uploader --port=${PORT} node restart
+esptool.py --port=${PORT} write_flash --flash_mode dio 0x80000 firmware/${FS_NAME}.bin
 
 tput bel

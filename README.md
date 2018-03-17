@@ -23,7 +23,7 @@ the developers who have worked hard on this project.
 ## Installation Overview
 
  1. Install device drivers for your NodeMCU device.
- 1. Flash the device with the included firmware [firmware/konnected-security-2-0-5.bin](firmware/konnected-security-2-0-5.bin)
+ 1. Flash the device with the included firmware [firmware/konnected-firmware-2-0-5.bin](firmware/konnected-firmware-2-0-5.bin)
  1. Upload all the code in `src` to the device and reboot the device.
  1. Connect to the WiFi network `konnected-security_XXXXXX` to set up WiFi
  1. Follow wiring instructions and SmartThings application setup instructions in the [Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
@@ -44,7 +44,7 @@ on which board you have, there are different drivers:
 
 ### Mac & Linux Users
 
- 1. You must have Python 2 installed with `pip`. 
+ 1. You must have Python installed with `pip`. 
     * **Mac users**: I recommend using [Homebrew](https://brew.sh/) and `brew install python`  
  
  1. Open up a terminal and install `esptool` and `nodemcu-uploader` packages:
@@ -81,10 +81,11 @@ achieve that goal.
 
 Thank you for your support,
 
-**@heythisisnate** and **@copy-ninja**
+Nate Clark
+**@heythisisnate**
 
 #### [Donate Here with Paypal or Bitcoin](http://docs.konnected.io/donate)
 
-### [For more information click here for the complete Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
+### [For more information, click here for Konnected Documentation, Help and Community support](http://help.konnected.io)
 
 
