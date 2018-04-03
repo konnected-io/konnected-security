@@ -4,7 +4,7 @@ FIRMWARE_NAME=konnected-firmware-2-0-5
 FILESYSTEM_NAME=0x80000-32mb-konnected-2-1-4
 PORT=/dev/cu.wchusbserial1410
 
-esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${IMAGE_NAME}.bin
-esptool.py --port=${PORT} write_flash --flash_mode dio 0x80000 firmware/${FS_NAME}.bin
+esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${FIRMWARE_NAME}.bin
+esptool.py --port=${PORT} write_flash --flash_mode dio 0x80000 firmware/${FILESYSTEM_NAME}.bin
 
 tput bel
