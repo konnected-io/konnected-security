@@ -44,17 +44,15 @@ on which board you have, there are different drivers:
 
 ### Mac & Linux Users
 
- 1. You must have Python installed with `pip`. 
+ 1. You must have Python installed with `pip` or `pip3`. 
     * **Mac users**: I recommend using [Homebrew](https://brew.sh/) and `brew install python`  
  
- 1. Open up a terminal and install `esptool` and `nodemcu-uploader` packages:
+ 1. Open up a terminal and install `esptool` packages:
      
-        pip install esptool
-        pip install nodemcu-uploader
+        pip3 install esptool
         
- 1. Run the script in `scripts/flash` to flash and upload the files. You may need to edit the variables
- at the top of the script as your serial port may be different depending on your operating system and the type of NodeMCU development
- board you have. You may also need to make the script executable by running `chmod 755 scripts/flash`. 
+ 1. Run the script in `scripts/flash` to flash the firmware and software to the device. You may need to edit the variables
+ at the top of the script as your serial port may be different depending on your operating system and the type of NodeMCU development board you have. You may also need to make the script executable by running `chmod 755 scripts/flash`. 
  
  
 ### Windows Users
