@@ -1,10 +1,10 @@
 #!/bin/bash
 
-FIRMWARE_NAME=konnected-firmware-2-2
+FIRMWARE_NAME=konnected-firmware-2-2-DEBUG
 FILESYSTEM_NAME=0xa0000-32mb
 PORT=/dev/cu.wchusbserial1410
 
 esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${FIRMWARE_NAME}.bin
-esptool.py --port=${PORT} write_flash --flash_mode dio 0xa0000 firmware/${FILESYSTEM_NAME}.bin
+# esptool.py --port=${PORT} write_flash --flash_mode dio 0xa0000 firmware/${FILESYSTEM_NAME}.bin
 
 tput bel
