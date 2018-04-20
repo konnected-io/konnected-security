@@ -30,6 +30,9 @@ preferences {
     section {
       app(name: "childApps", appName: "Konnected Service Manager", namespace: "konnected-io", title: "Add a Konnected device", multiple: true)
     }
+    section("Thermostats") {
+      app(name: "childApps", appName: "Konnected Thermostat", namespace: "konnected-io", title: "Add a Konnected thermostat", multiple: true)
+	}
   }
 }
 
@@ -66,7 +69,11 @@ void registerKnownDevice(mac) {
   if (state.knownDevices == null) {
     state.knownDevices = [].toSet()
   }
-  state.knownDevices.add(mac)
+
+  if (isNewDevice(mac)) {
+    log.debug "Registering Konnected device ${mac}"
+  	state.knownDevices.add(mac)
+  }
 }
 
 void removeKnownDevice(mac) {
@@ -74,5 +81,6 @@ void removeKnownDevice(mac) {
 }
 
 Boolean isNewDevice(mac) {
+  log.debug "Known devices: ${state.knownDevices}"
   return !state.knownDevices?.contains(mac)
 }
