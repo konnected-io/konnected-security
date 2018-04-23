@@ -196,7 +196,6 @@ metadata {
             "heatOn","turnOff","coolOn"
         ])
 
-
   }
 }
 

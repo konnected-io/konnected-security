@@ -29,6 +29,7 @@ definition(
 )
 
 mappings {
+  path("/device/:mac/:id/:deviceState") { action: [ PUT: "childDeviceStatesUpdate"] }
   path("/ping") { action: [ GET: "devicePing"] }
 }
 
@@ -182,8 +183,9 @@ def pageConfiguration(params) {
       )
     }
     section("Temperature input(s)"){
-		input "temperatureSensors", "capability.temperatureMeasurement", title: "Temperature sensor(s)", multiple: true
+		input "temperatureSensors", "capability.temperatureMeasurement", title: "Temperature sensor(s)", multiple: true, required: false
         input "temperatureCalc", "enum", title: "When multiple are selected, use", options: ["Average","Minimum","Maximum","Median"], defaultValue: "Average", required: false
+        input "enableDht", "bool", title: "Enable DHT sensor", defaultValue: false, required: false
 	}
     section("Humidity input(s)"){
 		input "humiditySensors", "capability.relativeHumidityMeasurement", title: "Humidity sensor(s)", multiple: true, required: false
@@ -195,6 +197,9 @@ def pageConfiguration(params) {
     section("Disable heating and cooling when doors/windows are open"){
         input "contactSensors", "capability.contactSensor", title: "Open/close sensor(s)", multiple: true, required: false
         input "openContactTime", "number", title: "For how many minutes?", required: false, defaultValue: 5
+    }
+    section("Short cycle protection: Set a minimum cycle time to prevent wear on equipment"){
+        input "cycleMin", "number", title: "Minimum cycle (minutes)", required: true, defaultValue: 10
     }
   }
 }
@@ -257,10 +262,26 @@ def discoveryVerificationHandler(physicalgraph.device.HubResponse hubResponse) {
 def childDeviceConfiguration() {
   def device = state.device
   def deviceDNI = device.mac
-  def deviceChild = getChildDevice(deviceDNI)
+  def thermostat = getChildDevice(deviceDNI)
+  def dhtSensor = getChildDevice(deviceDNI + "|3")
 
-  if (!deviceChild) {
+  if (!thermostat) {
   	addChildDevice("konnected-io", "Konnected Thermostat", deviceDNI, device.hub, [ "label": "Konnected Thermostat", "completedSetup": true ])
+  }
+  if (!dhtSensor && enableDht) {
+  	addChildDevice("konnected-io", "Konnected Temperature & Humidity Sensor (DHT)", deviceDNI + "|3", device.hub,
+    	[ "label": "Konnected DHT", "completedSetup": true])
+  }
+}
+
+def childDeviceStatesUpdate() {
+  def deviceId = params.mac.toUpperCase() + "|" + params.id
+  log.debug "Received sensor update from Konnected device $deviceId: ${params.deviceState}"
+  def device = getChildDevice(deviceId)
+  if (device) {
+    device.updateStates(params.deviceState)
+  } else {
+    log.warn "Device $deviceId not found!"
   }
 }
 
@@ -285,6 +306,10 @@ def updateSettingsOnDevice() {
     sensors : sensors,
     actuators : actuators
   ]
+
+  if (enableDht) {
+  	body["dht"] = [[pin: 3]]
+  }
 
   log.debug "Updating settings on device $mac at $ip"
   sendHubCommand(new physicalgraph.device.HubAction([
@@ -325,11 +350,15 @@ void syncOpState(physicalgraph.device.HubResponse hubResponse) {
 }
 
 def calculateCurrentTemperature() {
-	return calculateValue(temperatureCalc, temperatureSensors.currentTemperature)
+	if (temperatureSensors) {
+    	return calculateValue(temperatureCalc, temperatureSensors.currentTemperature)
+  }
 }
 
 def calculateCurrentHumidity() {
-	return calculateValue(humidityCalc, humiditySensors.currentHumidity)
+	if (humiditySensors) {
+		return calculateValue(humidityCalc, humiditySensors.currentHumidity)
+  }
 }
 
 def calculateValue(calcMethod, measurements) {
@@ -399,7 +428,12 @@ def evaluateConditions(evt) {
     def coolingSetpoint = thermostat.currentValue("coolingSetpoint")
     log.debug "Konnected Thermostat: evaluating current temperature: ${currentTemperature}"
 
-	if (energySavingModes.contains(locationMode)) {
+	if (isCycleTooShort()) {
+    	log.debug "Konnected Thermostat: Operating state changed less than ${cycleMin} min ago, aborting to prevent short cycle."
+      return
+    }
+
+	if (energySavingModes?.contains(locationMode)) {
     	log.debug "Konnected Thermostat: Mode is ${locationMode}, turn off."
         turnOff()
         return
@@ -439,6 +473,26 @@ def evaluateConditions(evt) {
     if (thermostat.currentValue("thermostatMode") == "off") {
 	    log.debug "Konnected Thermostat: thermostat mode is off, turn off."
         turnOff()
+    }
+}
+
+private Boolean isCycleTooShort() {
+	def minCycleStart
+    use(TimeCategory) {
+    	minCycleStart = new Date() - cycleMin.minutes
+    }
+	  def lastStateChange = thermostat.statesSince('thermostatOperatingState', minCycleStart).find {
+      it.getStringValue() == getThermostat().currentValue("thermostatOperatingState")
+    }
+    if (lastStateChange) {
+	    use(TimeCategory) {
+        	def shortCycleTimerExpires = lastStateChange.getDate() + cycleMin.minutes + 10.seconds
+            log.debug "Konnected Thermostat: Scheduled to re-evaluate at ${shortCycleTimerExpires}"
+    		runOnce(shortCycleTimerExpires, evaluateConditions)
+    	}
+        return true
+    } else {
+    	return false
     }
 }
 

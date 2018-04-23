@@ -1,4 +1,5 @@
 local sensors = require("sensors")
+local dht_sensors = require("dht_sensors")
 local actuators = require("actuators")
 local smartthings = require("smartthings")
 local sensorSend = {}
@@ -24,11 +25,30 @@ for i, actuator in pairs(actuators) do
   gpio.write(actuator.pin, actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW)
 end
 
+if #dht_sensors > 0 then
+  require("dht")
+  local temperatureTimer = tmr.create()
+  local function readDht()
+    for i, sensor in pairs(dht_sensors) do
+      local status, temp, humi, temp_dec, humi_dec = dht.read(sensor.pin)
+      if status == dht.OK then
+        local temperature_string = temp .. "," .. temp_dec
+        local humidity_string = humi .. "," .. humi_dec
+        print("Heap:", node.heap(), "Temperature:", temperature_string, "Humidity:", humidity_string)
+        table.insert(sensorSend, { pin = sensor.pin, val = temperature_string .. "_" .. humidity_string })
+      end
+    end
+  end
+
+  temperatureTimer:alarm(180000, tmr.ALARM_AUTO, readDht)
+  readDht()
+end
+
 sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   for i, sensor in pairs(sensors) do
     if sensor.state ~= gpio.read(sensor.pin) then
       sensor.state = gpio.read(sensor.pin)
-      table.insert(sensorSend, i)
+      table.insert(sensorSend, {pin = sensor.pin, val = sensor.state})
     end
   end
 end)
@@ -36,15 +56,15 @@ end)
 sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   if sensorSend[1] then
     t:stop()
-    local sensor = sensors[sensorSend[1]]
+    local sensor = sensorSend[1]
     timeout:start()
     http.put(
-      table.concat({ smartthings.apiUrl, "/device/", dni, "/", sensor.pin, "/", gpio.read(sensor.pin) }),
+      table.concat({ smartthings.apiUrl, "/device/", dni, "/", sensor.pin, "/", sensor.val }),
       table.concat({ "Authorization: Bearer ", smartthings.token, "\r\n" }),
       "",
       function(code)
         timeout:stop()
-        print("Heap:", node.heap(), "HTTP Call:", code, "Pin:", sensor.pin, "State:", gpio.read(sensor.pin))
+        print("Heap:", node.heap(), "HTTP Call:", code, "Pin:", sensor.pin, "State:", sensor.val)
         table.remove(sensorSend, 1)
         blinktimer:start()
         t:start()

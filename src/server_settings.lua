@@ -30,6 +30,7 @@ local me = {
 			  var.set("smartthings", table.concat({ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\" }" }))
 			  var.set("sensors",   require("variables_build").build(request.body.sensors))
 			  var.set("actuators", require("variables_build").build(request.body.actuators))
+			  var.set("dht_sensors",  require("variables_build").build(request.body.dht))
 
 			  print('Settings updated! Restarting in 5 seconds...')
 			  restartTimer:start()
