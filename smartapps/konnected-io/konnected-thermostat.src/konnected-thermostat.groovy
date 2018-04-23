@@ -345,10 +345,11 @@ def calculateValue(calcMethod, measurements) {
             break
         case "Median":
             def i = (measurements.size() / 2).intValue()
-			if (measurements.size() % 2 == 0) {
-                result = (measurements[i-1] + measurements[i]) / 2
+            def sorted = measurements.sort()
+			      if (measurements.size() % 2 == 0) {
+              result = (sorted[i-1] + sorted[i]) / 2
             } else {
-            	result = measurements[i]
+            	result = sorted[i]
             }
             log.debug "Median is ${result} of ${measurements}"
             break
