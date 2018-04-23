@@ -350,10 +350,11 @@ void syncOpState(physicalgraph.device.HubResponse hubResponse) {
 }
 
 def calculateCurrentTemperature() {
-	if (temperatureSensors) {
-    	return calculateValue(temperatureCalc, temperatureSensors.currentTemperature)
+  if (temperatureSensors) {
+    return calculateValue(temperatureCalc, temperatureSensors.currentTemperature).setScale(1, BigDecimal.ROUND_HALF_UP)
   }
 }
+
 
 def calculateCurrentHumidity() {
 	if (humiditySensors) {
