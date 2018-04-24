@@ -22,7 +22,7 @@ local me = {
 			  node.restore()
         restartTimer:start()
 			end
-			response.send("")
+			return ""
     end
     if request.contentType == "application/json" then
 			if request.method == "PUT" then
@@ -34,7 +34,7 @@ local me = {
 			  print('Settings updated! Restarting in 5 seconds...')
 			  restartTimer:start()
 			  
-			  response.send("")
+			  return ""
 			end
     end
   end

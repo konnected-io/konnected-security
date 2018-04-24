@@ -1,5 +1,5 @@
 local me = {
-  process = function (request, response) 
+  process = function ()
     local ip, nm, gw = wifi.sta.getip()
     local device = require("device")
     local body = {
@@ -16,7 +16,7 @@ local me = {
       sensors = require("sensors"),
       actuators = require("actuators")
     }
-    response.send(sjson.encode(body))
+    return sjson.encode(body)
   end
 }
 return me
