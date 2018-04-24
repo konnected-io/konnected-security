@@ -21,7 +21,7 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 
 // This enables lots of debug output and changes the serial bit rate. This
 // is normally only used by hardcore developers
-#define DEVELOP_VERSION
+//#define DEVELOP_VERSION
 #ifdef DEVELOP_VERSION
 #define NODE_DEBUG
 #define COAP_DEBUG
@@ -61,7 +61,7 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 
 // SSL buffer size used only for espconn-layer secure connections.
 // See https://github.com/nodemcu/nodemcu-firmware/issues/1457 for conversation details.
-#define SSL_BUFFER_SIZE 5120
+#define SSL_BUFFER_SIZE 6178
 
 #define CLIENT_SSL_ENABLE
 //#define MD2_ENABLE
