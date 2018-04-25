@@ -1,3 +1,5 @@
+local module = ...
+
 local function respondWithText(sck, body, ty, st)
   local ty = ty or "application/json"
   local st = st or 200
@@ -56,4 +58,8 @@ local httpdResponse = {
   text = respondWithText,
   file = respondWithFile
 }
-return httpdResponse
+
+return function()
+  package.loaded[module] = nil
+  return httpdResponse
+end

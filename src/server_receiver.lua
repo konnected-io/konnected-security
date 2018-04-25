@@ -1,9 +1,10 @@
+local module = ...
+
 local function httpReceiver(sck, payload)
   print("Heap: ", node.heap(), "Receiving incoming request")
 
-  local request =  require("httpd_req").new(payload)
-  print("Heap: ", node.heap(), "Loaded httpd_req objects")
-  local response = require("httpd_res")
+  local request = require("httpd_req")(payload)
+  local response = require("httpd_res")()
 
   if request.path == "/" then
     print("Heap: ", node.heap(), "HTTP: ", "Index")
@@ -21,25 +22,25 @@ local function httpReceiver(sck, payload)
 
   if request.path == "/settings" then
     print("Heap: ", node.heap(), "HTTP: ", "Settings")
-    response.text(sck, require("server_settings").process(request))
+    response.text(sck, require("server_settings")(request))
   end
 
   if request.path == "/device" then
     print("Heap: ", node.heap(), "HTTP: ", "Device")
-    response.text(sck, require("server_device").process(request))
+    response.text(sck, require("server_device")(request))
   end
 
   if request.path == "/status" then
     print("Heap: ", node.heap(), "HTTP: ", "Status")
-    response.text(sck, require("server_status").process())
-    print("Heap: ", node.heap(), "HTTP: ", "Sent Status")
+    response.text(sck, require("server_status")())
   end
 
   sck, request, response = nil
   collectgarbage()
 end
 
-local me = {
-  receive = httpReceiver
-}
-return me
+return function(sck, payload)
+  package.loaded[module] = nil
+  module = nil
+  httpReceiver(sck, payload)
+end

@@ -26,6 +26,6 @@ end)
 print("Heap: ", node.heap(), "HTTP: ", "Starting server at http://" .. wifi.sta.getip() .. ":" .. device.http_port)
 local http = net.createServer(net.TCP, 10)
 http:listen(device.http_port, function(conn)
-  conn:on("receive", require("server_receiver").receive)
+  conn:on("receive", function(c, payload) require("server_receiver")(c, payload) end)
 end)
 

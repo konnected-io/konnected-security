@@ -1,3 +1,5 @@
+local module = ...
+
 local function turnOffIn(pin, on_state, delay, times, pause)
   local off = on_state == 0 and 1 or 0
   times = times or 1
@@ -18,41 +20,44 @@ local function turnOffIn(pin, on_state, delay, times, pause)
   end)
 end
 
-local me = {
-	process = function (request)
-    if request.method == "GET" then
-      if request.query then
-        request.query.pin = request.query.pin or "all"
-      end
-      local body = {}
-      if request.query.pin == "all" then
-        local sensors = require("sensors")
-        for i, sensor in pairs(sensors) do
-          table.insert(body, { pin = sensor.pin, state = sensor.state })
-        end
-      else
-        body = { {
-          pin = request.query.pin,
-          state = gpio.read(request.query.pin)
-        } }
-      end
-      return sjson.encode(body)
+local function process(request)
+  if request.method == "GET" then
+    if request.query then
+      request.query.pin = request.query.pin or "all"
     end
-
-		if request.contentType == "application/json" then
-      if request.method == "PUT" then
-        print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "State:", request.body.state)
-        gpio.write(request.body.pin, request.body.state)
-        if request.body.momentary then
-          turnOffIn(request.body.pin, request.body.state, request.body.momentary, request.body.times, request.body.pause)
-          local off = on_state == 0 and 1 or 0
-          return sjson.encode({ pin = request.body.pin, state = off })
-        else
-          return sjson.encode({ pin = request.body.pin, state = request.body.state })
-        end
-        blinktimer:start()
+    local body = {}
+    if request.query.pin == "all" then
+      local sensors = require("sensors")
+      for i, sensor in pairs(sensors) do
+        table.insert(body, { pin = sensor.pin, state = sensor.state })
       end
+    else
+      body = { {
+        pin = request.query.pin,
+        state = gpio.read(request.query.pin)
+      } }
+    end
+    return sjson.encode(body)
+  end
+
+  if request.contentType == "application/json" then
+    if request.method == "PUT" then
+      print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "State:", request.body.state)
+      gpio.write(request.body.pin, request.body.state)
+      if request.body.momentary then
+        turnOffIn(request.body.pin, request.body.state, request.body.momentary, request.body.times, request.body.pause)
+        local off = on_state == 0 and 1 or 0
+        return sjson.encode({ pin = request.body.pin, state = off })
+      else
+        return sjson.encode({ pin = request.body.pin, state = request.body.state })
+      end
+      blinktimer:start()
     end
   end
-}
-return me
+end
+
+return function(request)
+  package.loaded[module] = nil
+  module = nil
+  return process(request)
+end
