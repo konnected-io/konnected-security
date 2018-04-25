@@ -8,11 +8,9 @@ local function respondWithText(sck, body, ty, st)
     if sendContent == '' then
       s:close()
       sendContent = nil
-      print("Heap: ", node.heap(), "Done sending text")
     else
       s:send(string.sub(sendContent, 1, 512))
       sendContent = string.sub(sendContent, 513)
-      print("Heap: ", node.heap(), "Sending text content")
     end
   end
 
@@ -43,10 +41,8 @@ local function respondWithFile(sck, filename, ty, st)
       local buf = file.read(512)
       i = i + 512
       s:send(buf)
-      print("Heap: ", node.heap(), "Sending file content")
     else
       s:close()
-      print("Heap: ", node.heap(), "Done sending file content")
     end
     f.close()
   end
