@@ -8,25 +8,6 @@ local httpdRequestHandler = {
   body = nil
 }
 local function httpdRequest(data)
-
-  -- Some clients send POST data in multiple chunks.
-  -- Collect data packets until the size of HTTP body meets the Content-Length stated in header
-  -- this snippet borrowed from https://github.com/marcoskirsch/nodemcu-httpserver/blob/master/httpserver.lua
-  local fullPayload, bBodyMissing
-  if data:find("Content%-Length:") or bBodyMissing then
-    if fullPayload then fullPayload = fullPayload .. data else fullPayload = data end
-    if (tonumber(string.match(fullPayload, "%d+", fullPayload:find("Content%-Length:")+16)) > #fullPayload:sub(fullPayload:find("\r\n\r\n", 1, true)+4, #fullPayload)) then
-      bBodyMissing = true
-      return
-    else
-      data = fullPayload
-      fullPayload, bBodyMissing = nil
-    end
-  end
-  collectgarbage()
-
-  print("Heap: ", node.heap(), "Processed full request payload")
-
   local _, _, method, path, query = string.find(data, '([A-Z]+) (.+)?(.+) HTTP')
   if method == nil then
     _, _, method, path = string.find(data, '([A-Z]+) (.+) HTTP')

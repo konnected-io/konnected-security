@@ -1,7 +1,21 @@
 local module = ...
 
 local function httpReceiver(sck, payload)
-  print("Heap: ", node.heap(), "Receiving incoming request")
+
+  -- Some clients send POST data in multiple chunks.
+  -- Collect data packets until the size of HTTP body meets the Content-Length stated in header
+  -- this snippet borrowed from https://github.com/marcoskirsch/nodemcu-httpserver/blob/master/httpserver.lua
+  if payload:find("Content%-Length:") or bBodyMissing then
+    if fullPayload then fullPayload = fullPayload .. payload else fullPayload = payload end
+    if (tonumber(string.match(fullPayload, "%d+", fullPayload:find("Content%-Length:")+16)) > #fullPayload:sub(fullPayload:find("\r\n\r\n", 1, true)+4, #fullPayload)) then
+      bBodyMissing = true
+      return
+    else
+      payload = fullPayload
+      fullPayload, bBodyMissing = nil
+    end
+  end
+  collectgarbage()
 
   local request = require("httpd_req")(payload)
   local response = require("httpd_res")()
