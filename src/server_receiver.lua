@@ -30,7 +30,7 @@ local function httpReceiver(sck, payload)
   end
 
   if request.path == "/Device.xml" then
-    response.text(sck, dofile("ssdp.lc"), "text/xml")
+    response.text(sck, require("ssdp")(), "text/xml")
     print("Heap: ", node.heap(), "HTTP: ", "Discovery")
   end
 
