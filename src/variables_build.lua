@@ -1,6 +1,8 @@
 local module = ...
 
 local function build(objects)
+  if not objects then return nil end
+
   local out = {}
   table.insert(out, "{ ")
   for i, object in pairs(objects) do

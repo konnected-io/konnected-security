@@ -1,5 +1,6 @@
 local module = ...
 local function set(name, value)
+  if not value then return end
   local fn = name .. '.lua'
   local f = file.open(fn, "w")
   f.writeline("local " .. name .. " = " .. value)

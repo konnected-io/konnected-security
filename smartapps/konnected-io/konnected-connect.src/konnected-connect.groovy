@@ -66,7 +66,11 @@ void registerKnownDevice(mac) {
   if (state.knownDevices == null) {
     state.knownDevices = [].toSet()
   }
-  state.knownDevices.add(mac)
+
+  if (isNewDevice(mac)) {
+    log.debug "Registering Konnected device ${mac}"
+  	state.knownDevices.add(mac)
+  }
 }
 
 void removeKnownDevice(mac) {
