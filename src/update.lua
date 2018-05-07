@@ -24,7 +24,7 @@ end)
 
 if file.exists("update_process.new") then
   file.rename("update_process.new", "update_process.lua")
-  require("variables_set").set("update_init", "{ force = true, commitish = \"v".. require("device").swVersion .. "\" }")
+  require("variables_set")("update_init", "{ force = true, commitish = \"v".. require("device").swVersion .. "\" }")
   node.restart()
 end
 

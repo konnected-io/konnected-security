@@ -1,7 +1,7 @@
 /**
  *  Konnected
  *
- *  Copyright 2017 konnected.io
+ *  Copyright 2018 konnected.io
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -28,6 +28,7 @@ definition(
 
 mappings {
   path("/device/:mac/:id/:deviceState") { action: [ PUT: "childDeviceStateUpdate"] }
+  path("/device/:mac") { action: [ PUT: "childDeviceStateUpdate"] }
   path("/ping") { action: [ GET: "devicePing"] }
 }
 
@@ -59,7 +60,8 @@ def uninstalled() {
     token : "",
     apiUrl : "",
     sensors : [],
-    actuators : []
+    actuators : [],
+    dht_sensors: []
   ]
 
   if (device) {
@@ -228,6 +230,7 @@ private pageAssignPins() {
 private Map pageConfigurationGetDeviceType(Integer i) {
   def deviceTypes = [:]
   def sensorPins = [1,2,5,6,7,9]
+  def digitalSensorPins = [1,2,3,5,6,7,9]
   def actuatorPins = [1,2,5,6,7,8]
 
   if (sensorPins.contains(i)) {
@@ -236,6 +239,10 @@ private Map pageConfigurationGetDeviceType(Integer i) {
 
   if (actuatorPins.contains(i)) {
     deviceTypes << actuatorsMap()
+  }
+
+  if (digitalSensorPins.contains(i)) {
+  	deviceTypes << digitalSensorsMap()
   }
 
   return deviceTypes
@@ -338,11 +345,18 @@ def childDeviceConfiguration() {
 
 // Child Devices : update state of child device sent from nodemcu
 def childDeviceStateUpdate() {
-  def deviceId = params.mac.toUpperCase() + "|" + params.id
-  log.debug "Received sensor update from Konnected device: $deviceId = $params.deviceState"
+  def pin = params.id ?: request.JSON.pin
+  def deviceId = params.mac.toUpperCase() + "|" + pin
   def device = getChildDevice(deviceId)
   if (device) {
-    device.setStatus(params.deviceState)
+  	if (request.JSON?.temp) {
+        log.debug "Temp: $request.JSON"
+    	device.updateStates(request.JSON)
+    } else {
+	    def newState = params.deviceState ?: request.JSON.state.toString()
+        log.debug "Received sensor update from Konnected device: $deviceId = $newState"
+	    device.setStatus(newState)
+    }
   } else {
     log.warn "Device $deviceId not found!"
   }
@@ -360,13 +374,15 @@ def updateSettingsOnDevice() {
   def device    = state.device
   def sensors   = []
   def actuators = []
+  def dht_sensors = []
   def ip        = getDeviceIpAndPort(device)
   def mac       = device.mac
 
   getAllChildDevices().each {
     def pin = it.deviceNetworkId.split("\\|")[1]
-
-    if (sensorsMap()[it.name]) {
+    if (it.name.contains("DHT")) {
+      dht_sensors = dht_sensors + [ pin : pin, poll_interval : it.pollInterval() ]
+    } else if (sensorsMap()[it.name]) {
       sensors = sensors + [ pin : pin ]
     } else {
       actuators = actuators + [ pin : pin, trigger : it.triggerLevel() ]
@@ -380,7 +396,8 @@ def updateSettingsOnDevice() {
     token : state.accessToken,
     apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
     sensors : sensors,
-    actuators : actuators
+    actuators : actuators,
+    dht_sensors : dht_sensors
   ]
 
   log.debug "Updating settings on device $mac at $ip"
@@ -430,6 +447,7 @@ private Map pinMapping() {
     return [
       1: "Pin D1",
       2: "Pin D2",
+      3: "Pin D3",
       5: "Pin D5",
       6: "Pin D6",
       7: "Pin D7",
@@ -456,6 +474,12 @@ private Map sensorsMap() {
     "Konnected CO Sensor"         : "Carbon Monoxide Detector",
     "Konnected Panic Button"      : "Panic Button",
     "Konnected Water Sensor"      : "Water Sensor"
+  ]
+}
+
+private Map digitalSensorsMap() {
+  return [
+	"Konnected Temperature & Humidity Sensor (DHT)" : "Temperature & Humidity Sensor"
   ]
 }
 
