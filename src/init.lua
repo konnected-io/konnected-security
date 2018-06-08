@@ -1,7 +1,11 @@
-print("Heap: ", node.heap(), "Initializing Konnected")
+print("Heap: ", node.heap(), "Initializing Konnected (" .. string.gsub(wifi.sta.getmac(), ":", "") .. ")")
 require("start")
 print("Heap: ", node.heap(), "Version: ", require("device").swVersion)
 print("Heap: ", node.heap(), "Connecting to Wifi..")
+
+-- hack to ensure pin D8 stays low after boot so it can be used with a high-level trigger relay
+gpio.mode(8, gpio.OUTPUT)
+gpio.write(8, gpio.LOW)
 
 local startWifiSetup = function()
   print("Heap: ", node.heap(), "Entering Wifi setup mode")

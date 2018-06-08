@@ -8,10 +8,6 @@ local timeout = tmr.create()
 local sensorTimer = tmr.create()
 local sendTimer = tmr.create()
 
--- hack to ensure pin D8 stays low after boot so it can be used with a high-level trigger relay
-gpio.mode(8, gpio.OUTPUT)
-gpio.write(8, gpio.LOW)
-
 timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
 for i, sensor in pairs(sensors) do
@@ -79,3 +75,5 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
     collectgarbage()
   end
 end)
+
+print("Heap:", node.heap(), "Endpoint:", smartthings.apiUrl)
