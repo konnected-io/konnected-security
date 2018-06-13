@@ -52,7 +52,9 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 
 #define ICACHE_STORE_TYPEDEF_ATTR __attribute__((aligned(4),packed))
 #define ICACHE_STORE_ATTR __attribute__((aligned(4)))
-#define ICACHE_RAM_ATTR __attribute__((section(".iram0.text")))
+#define ICACHE_RAM_STRING(x) ICACHE_RAM_STRING2(x)
+#define ICACHE_RAM_STRING2(x) #x
+#define ICACHE_RAM_ATTR     __attribute__((section(".iram0.text." __FILE__ "." ICACHE_RAM_STRING(__LINE__))))
 #ifdef  GPIO_SAFE_NO_INTR_ENABLE
 #define NO_INTR_CODE ICACHE_RAM_ATTR __attribute__ ((noinline))
 #else
@@ -61,7 +63,7 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 
 // SSL buffer size used only for espconn-layer secure connections.
 // See https://github.com/nodemcu/nodemcu-firmware/issues/1457 for conversation details.
-#define SSL_BUFFER_SIZE 6178
+#define SSL_BUFFER_SIZE 4096
 
 #define CLIENT_SSL_ENABLE
 //#define MD2_ENABLE
@@ -78,7 +80,7 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 // maximum number of open files for SPIFFS
 #define SPIFFS_MAX_OPEN_FILES 4
 
-// Uncomment this next line for fastest startup 
+// Uncomment this next line for fastest startup
 // It reduces the format time dramatically
 // #define SPIFFS_MAX_FILESYSTEM_SIZE	32768
 //
@@ -114,8 +116,8 @@ extern void luaL_assertfail(const char *file, int line, const char *message);
 #define WIFI_SDK_EVENT_MONITOR_ENABLE
 #define WIFI_EVENT_MONITOR_DISCONNECT_REASON_LIST_ENABLE
 
-////#define ENABLE_TIMER_SUSPEND
-//#define PMSLEEP_ENABLE
+//#define PMSLEEP_ENABLE // Enable wifi.suspend() and node.sleep() (NOTE: node.sleep() is dependent on TIMER_SUSPEND_ENABLE)
+//#define TIMER_SUSPEND_ENABLE //Required by node.sleep()
 
 
 #define STRBUF_DEFAULT_INCREMENT 32
