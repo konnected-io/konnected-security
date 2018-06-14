@@ -6,12 +6,12 @@ describe("server", function()
       MAN: "ssdp:discover"
       HOST:239.255.255.250:1900
       ST: urn:schemas-konnected-io:device:Security:1
-    ]])
+    ]], 17234, '192.168.1.111')
   end
 
   setup(function()
     require("spec/nodemcu_stubs")
-    _G.net.createServer = function()
+    _G.net.createUDPSocket = function()
       return {
         listen = function() end,
         on = function(_, event, fn)
@@ -24,7 +24,7 @@ describe("server", function()
   end)
 
   before_each(function()
-    conn = mock({send = function(_, resp) response = resp end})
+    conn = mock({send = function(_, port, ip, resp) response = resp end})
     nodemcu.wifi.sta.ip = '192.168.1.100'
     require("server")
   end)
