@@ -16,6 +16,7 @@ local function process()
     rssi = wifi.sta.getrssi(),
     sensors = require("sensors"),
     actuators = require("actuators"),
+    dht_sensors = require("dht_sensors"),
     endpoint = require("smartthings").apiUrl
   }
   return sjson.encode(body)
