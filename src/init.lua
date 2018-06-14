@@ -57,16 +57,12 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
     failsafeTimer = nil
     print("Heap: ", node.heap(), "Wifi connected with IP: ", wifi.sta.getip())
 
-    if file.exists("update_init.lc") then
-      require("update")
-    else 
-      gpio.write(4, gpio.HIGH)
-      enduser_setup.stop()
-      require("server")
-      print("Heap: ", node.heap(), "Loaded: ", "server")
-      require("application")
-      print("Heap: ", node.heap(), "Loaded: ", "application")
-    end
+    gpio.write(4, gpio.HIGH)
+    enduser_setup.stop()
+    require("server")
+    print("Heap: ", node.heap(), "Loaded: ", "server")
+    require("application")
+    print("Heap: ", node.heap(), "Loaded: ", "application")
   end
 end)
 
