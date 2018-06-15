@@ -13,6 +13,8 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+public static String version() { return "2.2.1" }
+
 definition(
   name:        "Konnected Service Manager",
   parent:      "konnected-io:Konnected (Connect)",
@@ -116,12 +118,13 @@ def pageWelcome() {
     section("Help & Support") {
       href(
         name:        "pageWelcomeManual",
-        title:       "Instructions & Documentation",
-        description: "Tap to view the online documentation at http://docs.konnected.io",
+        title:       "Instructions & Knowledge Base",
+        description: "Tap to view the support portal at help.konnected.io",
         required:    false,
         image:       "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/manual-icon.png",
-        url:         "http://docs.konnected.io/security-alarm-system/"
+        url:         "https://help.konnected.io"
       )
+      paragraph "Konnected Service Manager v${version()}"
     }
   }
 }
@@ -170,7 +173,7 @@ private pageSelectHwType() {
         description: "Tap to select",
         page:        "pageConfiguration",
         params:      [hwType: "alarmPanel"],
-        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/icon-alarmpanel.jpg",
+        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/konnected-alarm-panel-st-icon-t.jpg",
       )
       href(
         name:        "NodeMCU Base",

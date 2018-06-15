@@ -13,6 +13,8 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+public static String version() { return "2.2.1" }
+
 definition(
   name:        "Konnected (Connect)",
   namespace:   "konnected-io",
@@ -29,6 +31,7 @@ preferences {
   page(name: "mainPage", title: "Konnected Devices", install: true, uninstall: true) {
     section {
       app(name: "childApps", appName: "Konnected Service Manager", namespace: "konnected-io", title: "Add a Konnected device", multiple: true)
+      paragraph "Konnected (Connect) v${version()}"
     }
   }
 }
