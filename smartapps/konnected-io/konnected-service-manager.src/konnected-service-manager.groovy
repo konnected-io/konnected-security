@@ -104,6 +104,7 @@ def pageWelcome() {
           name:        "device_" + device.mac,
           image:       "https://docs.konnected.io/assets/favicons/apple-touch-icon.png",
           title:       "Device status",
+          description: getDeviceIpAndPort(device),
           url:         "http://" + getDeviceIpAndPort(device)
         )
       } else {
@@ -228,13 +229,20 @@ private pageAssignPins() {
       }
     }
     section(title: "Advanced settings") {
-      input(
-        name: "blink",
-        type: "bool",
-        title: "Blink LED on transmission",
-        required: false,
-        defaultValue: true
-      )
+    	input(
+          name: "blink",
+          type: "bool",
+          title: "Blink LED on transmission",
+          required: false,
+          defaultValue: true
+        )
+        input(
+          name: "enableDiscovery",
+          type: "bool",
+          title: "Enable device discovery",
+          required: false,
+          defaultValue: true
+        )
     }
   }
 }
@@ -404,10 +412,12 @@ def updateSettingsOnDevice() {
   log.debug "Configured sensors on $mac: $sensors"
   log.debug "Configured actuators on $mac: $actuators"
 
+  log.debug "Blink is: ${settings.blink}"
   def body = [
     token : state.accessToken,
     apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
     blink: settings.blink,
+    discovery: settings.enableDiscovery,
     sensors : sensors,
     actuators : actuators,
     dht_sensors : dht_sensors

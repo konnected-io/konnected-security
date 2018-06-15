@@ -19,8 +19,12 @@ local function process(request)
 	if request.contentType == "application/json" then
 		if request.method == "PUT" then
 			local setVar = require("variables_set")
-			setVar("settings", table.concat(
-				{ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\",\r\n blink = ", tostring(request.body.blink), " }" }))
+			setVar("settings", require("variables_build")({
+				token = request.body.token,
+				apiUrl = request.body.apiUrl,
+				blink = request.body.blink,
+				discovery = request.body.discovery
+			}))
 			setVar("sensors",   require("variables_build")(request.body.sensors))
 			setVar("actuators", require("variables_build")(request.body.actuators))
 			setVar("dht_sensors", require("variables_build")(request.body.dht_sensors))

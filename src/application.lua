@@ -36,7 +36,7 @@ if #dht_sensors > 0 then
 
   for i, sensor in pairs(dht_sensors) do
     local pollInterval = (sensor.poll_interval or 3) * 60 * 1000
-    print("Heap:", node.heap(), "Polling pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
+    print("Heap:", node.heap(), "Polling DHT on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
     tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() readDht(sensor.pin) end)
     readDht(sensor.pin)
   end
