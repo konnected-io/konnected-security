@@ -1,7 +1,7 @@
 local sensors = require("sensors")
 local dht_sensors = require("dht_sensors")
 local actuators = require("actuators")
-local smartthings = require("smartthings")
+local settings = require("settings")
 local sensorSend = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
 local timeout = tmr.create()
@@ -57,8 +57,8 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
     local sensor = sensorSend[1]
     timeout:start()
     http.put(
-      table.concat({ smartthings.apiUrl, "/device/", dni}),
-      table.concat({ "Authorization: Bearer ", smartthings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
+      table.concat({ settings.apiUrl, "/device/", dni}),
+      table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
       sjson.encode(sensor),
       function(code)
         timeout:stop()
@@ -76,4 +76,4 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   end
 end)
 
-print("Heap:", node.heap(), "Endpoint:", smartthings.apiUrl)
+print("Heap:", node.heap(), "Endpoint:", settings.apiUrl)

@@ -17,7 +17,7 @@ local function process()
     sensors = require("sensors"),
     actuators = require("actuators"),
     dht_sensors = require("dht_sensors"),
-    endpoint = require("smartthings").apiUrl
+    endpoint = require("settings").apiUrl
   }
   return sjson.encode(body)
 end

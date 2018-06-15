@@ -19,7 +19,8 @@ local function process(request)
 	if request.contentType == "application/json" then
 		if request.method == "PUT" then
 			local setVar = require("variables_set")
-			setVar("smartthings", table.concat({ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\" }" }))
+			setVar("settings", table.concat(
+				{ "{ token = \"", request.body.token, "\",\r\n apiUrl = \"", request.body.apiUrl, "\",\r\n blink = ", tostring(request.body.blink), " }" }))
 			setVar("sensors",   require("variables_build")(request.body.sensors))
 			setVar("actuators", require("variables_build")(request.body.actuators))
 			setVar("dht_sensors", require("variables_build")(request.body.dht_sensors))
