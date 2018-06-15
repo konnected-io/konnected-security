@@ -227,6 +227,15 @@ private pageAssignPins() {
         }
       }
     }
+    section(title: "Advanced settings") {
+      input(
+        name: "blink",
+        type: "bool",
+        title: "Blink LED on transmission",
+        required: false,
+        defaultValue: true
+      )
+    }
   }
 }
 
@@ -398,6 +407,7 @@ def updateSettingsOnDevice() {
   def body = [
     token : state.accessToken,
     apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
+    blink: settings.blink,
     sensors : sensors,
     actuators : actuators,
     dht_sensors : dht_sensors
