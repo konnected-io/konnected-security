@@ -13,6 +13,8 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+public static String version() { return "2.2.1" }
+
 definition(
   name:        "Konnected Service Manager",
   parent:      "konnected-io:Konnected (Connect)",
@@ -102,6 +104,7 @@ def pageWelcome() {
           name:        "device_" + device.mac,
           image:       "https://docs.konnected.io/assets/favicons/apple-touch-icon.png",
           title:       "Device status",
+          description: getDeviceIpAndPort(device),
           url:         "http://" + getDeviceIpAndPort(device)
         )
       } else {
@@ -116,12 +119,13 @@ def pageWelcome() {
     section("Help & Support") {
       href(
         name:        "pageWelcomeManual",
-        title:       "Instructions & Documentation",
-        description: "Tap to view the online documentation at http://docs.konnected.io",
+        title:       "Instructions & Knowledge Base",
+        description: "Tap to view the support portal at help.konnected.io",
         required:    false,
         image:       "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/manual-icon.png",
-        url:         "http://docs.konnected.io/security-alarm-system/"
+        url:         "https://help.konnected.io"
       )
+      paragraph "Konnected Service Manager v${version()}"
     }
   }
 }
@@ -170,7 +174,7 @@ private pageSelectHwType() {
         description: "Tap to select",
         page:        "pageConfiguration",
         params:      [hwType: "alarmPanel"],
-        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/icon-alarmpanel.jpg",
+        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/konnected-alarm-panel-st-icon-t.jpg",
       )
       href(
         name:        "NodeMCU Base",
@@ -223,6 +227,22 @@ private pageAssignPins() {
           )
         }
       }
+    }
+    section(title: "Advanced settings") {
+    	input(
+          name: "blink",
+          type: "bool",
+          title: "Blink LED on transmission",
+          required: false,
+          defaultValue: true
+        )
+        input(
+          name: "enableDiscovery",
+          type: "bool",
+          title: "Enable device discovery",
+          required: false,
+          defaultValue: true
+        )
     }
   }
 }
@@ -392,9 +412,12 @@ def updateSettingsOnDevice() {
   log.debug "Configured sensors on $mac: $sensors"
   log.debug "Configured actuators on $mac: $actuators"
 
+  log.debug "Blink is: ${settings.blink}"
   def body = [
     token : state.accessToken,
     apiUrl : apiServerUrl + "/api/smartapps/installations/" + app.id,
+    blink: settings.blink,
+    discovery: settings.enableDiscovery,
     sensors : sensors,
     actuators : actuators,
     dht_sensors : dht_sensors

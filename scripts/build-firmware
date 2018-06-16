@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FIRMWARE_PATH=${PWD}/../nodemcu-firmware
-IMAGE_NAME=konnected-firmware-2-2-0
+IMAGE_NAME=konnected-firmware-2-2-1
 
 cp firmware/2.2.0/app/include/* $FIRMWARE_PATH/app/include/
 cp src/* $FIRMWARE_PATH/local/fs

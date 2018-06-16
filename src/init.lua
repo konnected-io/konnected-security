@@ -1,7 +1,11 @@
-print("Heap: ", node.heap(), "Initializing Konnected")
+print("Heap: ", node.heap(), "Initializing Konnected (" .. string.gsub(wifi.sta.getmac(), ":", "") .. ")")
 require("start")
 print("Heap: ", node.heap(), "Version: ", require("device").swVersion)
 print("Heap: ", node.heap(), "Connecting to Wifi..")
+
+-- hack to ensure pin D8 stays low after boot so it can be used with a high-level trigger relay
+gpio.mode(8, gpio.OUTPUT)
+gpio.write(8, gpio.LOW)
 
 local startWifiSetup = function()
   print("Heap: ", node.heap(), "Entering Wifi setup mode")
@@ -53,16 +57,12 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
     failsafeTimer = nil
     print("Heap: ", node.heap(), "Wifi connected with IP: ", wifi.sta.getip())
 
-    if file.exists("update_init.lc") then
-      require("update")
-    else 
-      gpio.write(4, gpio.HIGH)
-      enduser_setup.stop()
-      require("server")
-      print("Heap: ", node.heap(), "Loaded: ", "server")
-      require("application")
-      print("Heap: ", node.heap(), "Loaded: ", "application")
-    end
+    gpio.write(4, gpio.HIGH)
+    enduser_setup.stop()
+    require("server")
+    print("Heap: ", node.heap(), "Loaded: ", "server")
+    require("application")
+    print("Heap: ", node.heap(), "Loaded: ", "application")
   end
 end)
 

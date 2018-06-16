@@ -1,16 +1,12 @@
 local sensors = require("sensors")
 local dht_sensors = require("dht_sensors")
 local actuators = require("actuators")
-local smartthings = require("smartthings")
+local settings = require("settings")
 local sensorSend = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
 local timeout = tmr.create()
 local sensorTimer = tmr.create()
 local sendTimer = tmr.create()
-
--- hack to ensure pin D8 stays low after boot so it can be used with a high-level trigger relay
-gpio.mode(8, gpio.OUTPUT)
-gpio.write(8, gpio.LOW)
 
 timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
@@ -40,7 +36,7 @@ if #dht_sensors > 0 then
 
   for i, sensor in pairs(dht_sensors) do
     local pollInterval = (sensor.poll_interval or 3) * 60 * 1000
-    print("Heap:", node.heap(), "Polling pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
+    print("Heap:", node.heap(), "Polling DHT on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
     tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() readDht(sensor.pin) end)
     readDht(sensor.pin)
   end
@@ -61,8 +57,8 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
     local sensor = sensorSend[1]
     timeout:start()
     http.put(
-      table.concat({ smartthings.apiUrl, "/device/", dni}),
-      table.concat({ "Authorization: Bearer ", smartthings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
+      table.concat({ settings.apiUrl, "/device/", dni}),
+      table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
       sjson.encode(sensor),
       function(code)
         timeout:stop()
@@ -79,3 +75,5 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
     collectgarbage()
   end
 end)
+
+print("Heap:", node.heap(), "Endpoint:", settings.apiUrl)
