@@ -399,7 +399,7 @@ def updateSettingsOnDevice() {
   def mac       = device.mac
 
   getAllChildDevices().each {
-    def pin = it.deviceNetworkId.split("\\|")[1]
+    def pin = Integer.parseInt(it.deviceNetworkId.split("\\|")[1])
     if (it.name.contains("DHT")) {
       dht_sensors = dht_sensors + [ pin : pin, poll_interval : it.pollInterval() ]
     } else if (sensorsMap()[it.name]) {
@@ -411,6 +411,7 @@ def updateSettingsOnDevice() {
 
   log.debug "Configured sensors on $mac: $sensors"
   log.debug "Configured actuators on $mac: $actuators"
+  log.debug "Configured DHT sensors on $mac: $dht_sensors"
 
   log.debug "Blink is: ${settings.blink}"
   def body = [
