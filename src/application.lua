@@ -31,6 +31,8 @@ if #dht_sensors > 0 then
       local humidity_string = humi .. "." .. humi_dec
       print("Heap:", node.heap(), "Temperature:", temperature_string, "Humidity:", humidity_string)
       table.insert(sensorSend, { pin = pin, temp = temperature_string, humi = humidity_string })
+    else
+      print("Heap:", node.heap(), "DHT Status:", status)
     end
   end
 
