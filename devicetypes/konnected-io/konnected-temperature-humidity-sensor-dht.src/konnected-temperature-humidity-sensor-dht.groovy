@@ -13,6 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+
 metadata {
   definition (name: "Konnected Temperature & Humidity Sensor (DHT)", namespace: "konnected-io", author: "konnected.io") {
     capability "Temperature Measurement"
@@ -21,7 +22,7 @@ metadata {
 
   preferences {
     input name: "pollInterval", type: "number", title: "Polling Interval (minutes)",
-      defaultValue: 3,
+      defaultValue: defaultPollInterval(),
       description: "Frequency of sensor updates"
   }
 
@@ -78,5 +79,9 @@ def updateStates(states) {
 }
 
 def pollInterval() {
-  return pollInterval
+  return pollInterval.isNumber() ? pollInterval : defaultPollInterval()
+}
+
+def defaultPollInterval() {
+  return 3 // minutes
 }

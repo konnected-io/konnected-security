@@ -99,6 +99,12 @@ _G.net = {
       listen = function() end,
       on = function() end
     }
+  end,
+  createUDPSocket = function()
+    return {
+      listen = function() end,
+      on = function() end
+    }
   end
 }
 

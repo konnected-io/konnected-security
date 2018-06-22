@@ -5,20 +5,35 @@ describe("variables_build", function()
     return s:gsub('%c','')
   end
 
-  setup(function()
-    variables_build = require('variables_build')
+  it("returns a string that makes a lua list of lists", function()
+    local thing = {{pin=1},{pin=2}}
+    local str = require('variables_build')(thing)
+    assert.same(thing, load("return " .. str)())
   end)
 
-  it("returns a string that makes a lua list", function()
-    local str = variables_build.build({{pin=1},{pin=2}})
-    assert.same("{ { pin = 1, },{ pin = 2, },}", trim(str) )
+  it("returns a sting that makes a lua list", function()
+    local thing = {foo="bar", baz=5}
+    local str = require('variables_build')(thing)
+    assert.same(thing, load("return " ..str)())
   end)
 
   it("allows for any values", function()
     local expected = {{pin=1,trigger=1},{pin=2,trigger=0}}
-    local str = variables_build.build(expected)
-    local result = loadstring("return " .. str)()
+    local str = require('variables_build')(expected)
+    local result = load("return " .. str)()
     assert.same(expected, result)
+  end)
+
+  it("allows for boolean and nil values", function()
+    local thing = {happy=true, tired=false, hungry=nil}
+    local str = require('variables_build')(thing)
+    assert.same(thing, load("return " ..str)())
+  end)
+
+  it("checks for nil", function()
+    local thing
+    local str = tostring(require('variables_build')(thing))
+    assert.same(thing, load("return " ..str)())
   end)
 end)
 

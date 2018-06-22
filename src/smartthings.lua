@@ -1,2 +1,0 @@
-local smartthings = {}
-return smartthings

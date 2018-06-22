@@ -15,7 +15,9 @@ local function process()
     mac = wifi.sta.getmac(),
     rssi = wifi.sta.getrssi(),
     sensors = require("sensors"),
-    actuators = require("actuators")
+    actuators = require("actuators"),
+    dht_sensors = require("dht_sensors"),
+    endpoint = require("settings").apiUrl
   }
   return sjson.encode(body)
 end
