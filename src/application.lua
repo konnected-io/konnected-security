@@ -1,5 +1,6 @@
 local sensors = require("sensors")
 local dht_sensors = require("dht_sensors")
+local ds18b20_sensors = require("ds18b20_sensors")
 local actuators = require("actuators")
 local settings = require("settings")
 local sensorSend = {}
@@ -42,6 +43,26 @@ if #dht_sensors > 0 then
     tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() readDht(sensor.pin) end)
     readDht(sensor.pin)
   end
+end
+
+-- ds18b20 temp sensors
+if #ds18b20_sensors > 0 then
+  local pin = 2
+  ds18b20.setup(pin)
+
+  local function readDS18b20(i,rom,res,temp, temp_dec, par)
+    local temperature_string = temp .. "." .. temp_dec
+    print("Heap:", node.heap(), "Temperature:", temperature_string)
+    table.insert(sensorSend, { pin = pin, temp = temperature_string })
+  end
+
+  for i, sensor in pairs(ds18b20_sensors) do
+    local pollInterval = (sensor.poll_interval > 0 and sensor.poll_interval or 3) * 60 * 1000
+    print("Heap:", node.heap(), "Polling DS18b20 on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
+    tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() ds18b20.read(readDS18b20,{}) end)
+    ds18b20.read(readDS18b20,{})
+  end
+
 end
 
 sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
