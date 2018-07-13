@@ -20,7 +20,7 @@ definition(
   parent:      "konnected-io:Konnected (Connect)",
   namespace:   "konnected-io",
   author:      "konnected.io",
-  description: "Konnected devices bridge wired things with SmartThings",
+  description: "Do not install this directly, use Konnected (Connect) instead",
   category:    "Safety & Security",
   iconUrl:     "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/KonnectedSecurity.png",
   iconX2Url:   "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/KonnectedSecurity@2x.png",
@@ -366,7 +366,9 @@ def childDeviceConfiguration() {
 // Child Devices : update state of child device sent from nodemcu
 def childDeviceStateUpdate() {
   def pin = params.id ?: request.JSON.pin
+  def addr = request.JSON?.addr?.replaceAll(':','')
   def deviceId = params.mac.toUpperCase() + "|" + pin
+  if (addr) { deviceId = "$deviceId|$addr" }
   def device = getChildDevice(deviceId)
   if (device) {
   	if (request.JSON?.temp) {
@@ -374,11 +376,18 @@ def childDeviceStateUpdate() {
     	device.updateStates(request.JSON)
     } else {
 	    def newState = params.deviceState ?: request.JSON.state.toString()
-        log.debug "Received sensor update from Konnected device: $deviceId = $newState"
+      log.debug "Received sensor update from Konnected device: $deviceId = $newState"
 	    device.setStatus(newState)
     }
   } else {
-    log.warn "Device $deviceId not found!"
+  	if (addr) {
+      // New device found at this address, create it
+      log.debug "Found new sensor. Adding $deviceId"
+      device = addChildDevice("konnected-io", settings."deviceType_$pin", deviceId, state.device.hub, [ "label": addr , "completedSetup": true ])
+      device.updateStates(request.JSON)
+    } else {
+	  log.warn "Device $deviceId not found!"
+    }
   }
 }
 
@@ -395,6 +404,7 @@ def updateSettingsOnDevice() {
   def sensors   = []
   def actuators = []
   def dht_sensors = []
+  def ds18b20_sensors = []
   def ip        = getDeviceIpAndPort(device)
   def mac       = device.mac
 
@@ -402,6 +412,8 @@ def updateSettingsOnDevice() {
     def pin = Integer.parseInt(it.deviceNetworkId.split("\\|")[1])
     if (it.name.contains("DHT")) {
       dht_sensors = dht_sensors + [ pin : pin, poll_interval : it.pollInterval() ]
+    } else if (it.name.contains("DS18B20")) {
+      ds18b20_sensors = ds18b20_sensors + [ pin : pin, poll_interval : it.pollInterval() ]
     } else if (sensorsMap()[it.name]) {
       sensors = sensors + [ pin : pin ]
     } else {
@@ -412,6 +424,7 @@ def updateSettingsOnDevice() {
   log.debug "Configured sensors on $mac: $sensors"
   log.debug "Configured actuators on $mac: $actuators"
   log.debug "Configured DHT sensors on $mac: $dht_sensors"
+  log.debug "Configured DS18B20 sensors on $mac: $ds18b20_sensors"
 
   log.debug "Blink is: ${settings.blink}"
   def body = [
@@ -421,7 +434,8 @@ def updateSettingsOnDevice() {
     discovery: settings.enableDiscovery,
     sensors : sensors,
     actuators : actuators,
-    dht_sensors : dht_sensors
+    dht_sensors : dht_sensors,
+    ds18b20_sensors : ds18b20_sensors
   ]
 
   log.debug "Updating settings on device $mac at $ip"
@@ -503,7 +517,8 @@ private Map sensorsMap() {
 
 private Map digitalSensorsMap() {
   return [
-	"Konnected Temperature & Humidity Sensor (DHT)" : "Temperature & Humidity Sensor"
+	  "Konnected Temperature & Humidity Sensor (DHT)" : "Temperature & Humidity Sensor",
+    "Konnected Temperature Probe (DS18B20)" : "Temperature Probe"
   ]
 }
 

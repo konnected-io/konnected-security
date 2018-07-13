@@ -47,20 +47,33 @@ end
 
 -- ds18b20 temp sensors
 if #ds18b20_sensors > 0 then
-  local pin = 2
-  ds18b20.setup(pin)
 
-  local function readDS18b20(i,rom,res,temp, temp_dec, par)
-    local temperature_string = temp .. "." .. temp_dec
-    print("Heap:", node.heap(), "Temperature:", temperature_string)
-    table.insert(sensorSend, { pin = pin, temp = temperature_string })
+  local ds18b20_res = 12
+
+  local function romAddr(romStr)
+    return string.format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+      string.match(romStr,"(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)"))
+  end
+
+  local function ds18b20Callback(pin)
+    local callbackFn = function (i,rom,res,temp, temp_dec, par)
+      local temperature_string = temp .. "." .. temp_dec
+      print("Heap:", node.heap(), "Temperature:", temperature_string, "Resolution:", res)
+      if (res >= ds18b20_res) then
+        table.insert(sensorSend, { pin = pin, temp = temperature_string, addr = romAddr(rom) })
+      end
+    end
+    return callbackFn
   end
 
   for i, sensor in pairs(ds18b20_sensors) do
     local pollInterval = (sensor.poll_interval > 0 and sensor.poll_interval or 3) * 60 * 1000
     print("Heap:", node.heap(), "Polling DS18b20 on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
-    tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() ds18b20.read(readDS18b20,{}) end)
-    ds18b20.read(readDS18b20,{})
+    local callbackFn = ds18b20Callback(sensor.pin)
+    ds18b20.setup(sensor.pin)
+    ds18b20.setting({}, ds18b20_res)
+    tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() ds18b20.read(callbackFn,{},11) end)
+    ds18b20.read(callbackFn,{})
   end
 
 end
