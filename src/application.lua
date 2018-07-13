@@ -52,11 +52,11 @@ if #ds18b20_sensors > 0 then
 
   local function romAddr(romStr)
     return string.format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-      string.match(romStr,"(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)"))
+      string.match(romStr, "(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)"))
   end
 
   local function ds18b20Callback(pin)
-    local callbackFn = function (i,rom,res,temp, temp_dec, par)
+    local callbackFn = function(i, rom, res, temp, temp_dec, par)
       local temperature_string = temp .. "." .. temp_dec
       print("Heap:", node.heap(), "Temperature:", temperature_string, "Resolution:", res)
       if (res >= ds18b20_res) then
@@ -72,17 +72,16 @@ if #ds18b20_sensors > 0 then
     local callbackFn = ds18b20Callback(sensor.pin)
     ds18b20.setup(sensor.pin)
     ds18b20.setting({}, ds18b20_res)
-    tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() ds18b20.read(callbackFn,{},11) end)
-    ds18b20.read(callbackFn,{})
+    tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() ds18b20.read(callbackFn, {}, 11) end)
+    ds18b20.read(callbackFn, {})
   end
-
 end
 
 sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   for i, sensor in pairs(sensors) do
     if sensor.state ~= gpio.read(sensor.pin) then
       sensor.state = gpio.read(sensor.pin)
-      table.insert(sensorSend, {pin = sensor.pin, state = sensor.state})
+      table.insert(sensorSend, { pin = sensor.pin, state = sensor.state })
     end
   end
 end)
@@ -92,13 +91,12 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
     t:stop()
     local sensor = sensorSend[1]
     timeout:start()
-    http.put(
-      table.concat({ settings.apiUrl, "/device/", dni}),
+    http.put(table.concat({ settings.apiUrl, "/device/", dni }),
       table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
       sjson.encode(sensor),
       function(code)
         timeout:stop()
-        local a = {"Heap:", node.heap(), "HTTP Call:", code }
+        local a = { "Heap:", node.heap(), "HTTP Call:", code }
         for k, v in pairs(sensor) do
           table.insert(a, k)
           table.insert(a, v)
