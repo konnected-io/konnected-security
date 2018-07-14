@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-public static String version() { return "2.2.1" }
+public static String version() { return "2.2.2.dev1" }
 
 definition(
   name:        "Konnected Service Manager",
@@ -63,7 +63,8 @@ def uninstalled() {
     apiUrl : "",
     sensors : [],
     actuators : [],
-    dht_sensors: []
+    dht_sensors: [],
+    ds18b20_sensors: []
   ]
 
   if (device) {
@@ -331,8 +332,12 @@ def childDeviceConfiguration() {
       def deviceDNI = [ device.mac, "${nameValue[1]}"].join('|')
       def deviceLabel = settings."deviceLabel_${nameValue[1]}"
       def deviceType = value
-      def deviceChild = getChildDevice(deviceDNI)
 
+	  // multiple ds18b20 sensors can be connected to one pin, so skip creating child devices here
+      // child devices will be created later when they report state for the first time
+	  if (deviceType == "Konnected Temperature Probe (DS18B20)") { return }
+
+      def deviceChild = getChildDevice(deviceDNI)
       if (!deviceChild) {
         if (deviceType != "") {
           addChildDevice("konnected-io", deviceType, deviceDNI, device.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ])
@@ -382,11 +387,11 @@ def childDeviceStateUpdate() {
   } else {
   	if (addr) {
       // New device found at this address, create it
-      log.debug "Found new sensor. Adding $deviceId"
+      log.debug "Adding new thing attached to Konnected: $deviceId"
       device = addChildDevice("konnected-io", settings."deviceType_$pin", deviceId, state.device.hub, [ "label": addr , "completedSetup": true ])
       device.updateStates(request.JSON)
     } else {
-	  log.warn "Device $deviceId not found!"
+	    log.warn "Device $deviceId not found!"
     }
   }
 }
@@ -412,12 +417,17 @@ def updateSettingsOnDevice() {
     def pin = Integer.parseInt(it.deviceNetworkId.split("\\|")[1])
     if (it.name.contains("DHT")) {
       dht_sensors = dht_sensors + [ pin : pin, poll_interval : it.pollInterval() ]
-    } else if (it.name.contains("DS18B20")) {
-      ds18b20_sensors = ds18b20_sensors + [ pin : pin, poll_interval : it.pollInterval() ]
     } else if (sensorsMap()[it.name]) {
       sensors = sensors + [ pin : pin ]
     } else {
       actuators = actuators + [ pin : pin, trigger : it.triggerLevel() ]
+    }
+  }
+
+  settings.each { name , value ->
+    def nameValue = name.split("\\_")
+    if (nameValue[0] == "deviceType" && value.contains("DS18B20")) {
+      ds18b20_sensors = ds18b20_sensors + [ pin : nameValue[1], poll_interval : 3 ]
     }
   }
 
@@ -517,8 +527,8 @@ private Map sensorsMap() {
 
 private Map digitalSensorsMap() {
   return [
-	  "Konnected Temperature & Humidity Sensor (DHT)" : "Temperature & Humidity Sensor",
-    "Konnected Temperature Probe (DS18B20)" : "Temperature Probe"
+	"Konnected Temperature & Humidity Sensor (DHT)" : "Temperature & Humidity Sensor",
+    "Konnected Temperature Probe (DS18B20)" : "Temperature Probe(s)"
   ]
 }
 
