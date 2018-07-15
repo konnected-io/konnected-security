@@ -11,17 +11,20 @@ local sendTimer = tmr.create()
 
 timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
+-- initialize binary sensors
 for i, sensor in pairs(sensors) do
   print("Heap:", node.heap(), "Initializing sensor pin:", sensor.pin)
   gpio.mode(sensor.pin, gpio.INPUT, gpio.PULLUP)
 end
 
+-- initialize actuators
 for i, actuator in pairs(actuators) do
   print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin, "Trigger:", actuator.trigger)
   gpio.mode(actuator.pin, gpio.OUTPUT)
   gpio.write(actuator.pin, actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW)
 end
 
+-- initialize DHT sensors
 if #dht_sensors > 0 then
   require("dht")
 
@@ -45,7 +48,7 @@ if #dht_sensors > 0 then
   end
 end
 
--- ds18b20 temp sensors
+-- initialize ds18b20 temp sensors
 if #ds18b20_sensors > 0 then
 
   local ds18b20_res = 12
@@ -77,6 +80,7 @@ if #ds18b20_sensors > 0 then
   end
 end
 
+-- Poll every configured binary sensor and insert into the request queue when changed
 sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   for i, sensor in pairs(sensors) do
     if sensor.state ~= gpio.read(sensor.pin) then
@@ -86,6 +90,7 @@ sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   end
 end)
 
+-- This loop makes the HTTP requests to the home automation service to update device state
 sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   if sensorSend[1] then
     t:stop()
@@ -96,13 +101,27 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
       sjson.encode(sensor),
       function(code)
         timeout:stop()
+
+        -- print HTTP status line
         local a = { "Heap:", node.heap(), "HTTP Call:", code }
         for k, v in pairs(sensor) do
           table.insert(a, k)
           table.insert(a, v)
         end
         print(unpack(a))
-        table.remove(sensorSend, 1)
+
+
+        -- check for success and retry if necessary
+        if code >= 200 and code < 300 then
+          table.remove(sensorSend, 1)
+        else
+          -- retry up to 10 times then reboot as a failsafe
+          local retry = sensor.retry or 0
+          if retry == 10 then node.restart() end
+          sensor.retry = retry + 1
+          sensorSend[1] = sensor
+        end
+
         blinktimer:start()
         t:start()
       end)
