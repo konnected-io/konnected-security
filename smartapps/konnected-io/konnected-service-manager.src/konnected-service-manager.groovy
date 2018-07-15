@@ -419,7 +419,7 @@ def updateSettingsOnDevice() {
       dht_sensors = dht_sensors + [ pin : pin, poll_interval : it.pollInterval() ]
     } else if (sensorsMap()[it.name]) {
       sensors = sensors + [ pin : pin ]
-    } else {
+    } else if (actuatorsMap()[it.name]) {
       actuators = actuators + [ pin : pin, trigger : it.triggerLevel() ]
     }
   }
