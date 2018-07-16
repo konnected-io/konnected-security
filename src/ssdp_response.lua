@@ -7,14 +7,14 @@ local function ssdpResponse(c, d, port, ip)
     if (urn == device.urn or string.match(d, "ST: ssdp:all")) then
       local resp =
       "HTTP/1.1 200 OK\r\n" ..
-        "Cache-Control: max-age=120\r\n" ..
+        "CACHE-CONTROL: max-age=1800\r\n" ..
         "ST: " .. device.urn .. "\r\n" ..
         "USN: " .. device.id .. "::" .. device.urn .. "\r\n" .. "EXT:\r\n" ..
         "SERVER: NodeMCU/" .. string.format("%d.%d.%d", node.info()) .. " UPnP/1.1 " .. device.name .. "/" .. device.swVersion .. "\r\n" ..
         "LOCATION: http://" .. wifi.sta.getip() .. ":" .. device.http_port .. "/Device.xml\r\n\r\n"
       c:send(port, ip, resp)
-      print("Heap: ", node.heap(), "Responded to UPnP Discovery request from " .. ip .. ":" .. port)
       resp = nil
+      print("Heap: ", node.heap(), "Responded to UPnP Discovery request from " .. ip .. ":" .. port)
     end
   end
 end

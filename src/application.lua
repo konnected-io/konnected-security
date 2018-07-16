@@ -3,7 +3,8 @@ local dht_sensors = require("dht_sensors")
 local ds18b20_sensors = require("ds18b20_sensors")
 local actuators = require("actuators")
 local settings = require("settings")
-local sensorSend = {}
+local sensorPut = {}
+local actuatorGet = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
 local timeout = tmr.create()
 local sensorTimer = tmr.create()
@@ -21,7 +22,7 @@ end
 for i, actuator in pairs(actuators) do
   print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin, "Trigger:", actuator.trigger)
   gpio.mode(actuator.pin, gpio.OUTPUT)
-  gpio.write(actuator.pin, actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW)
+  table.insert(actuatorGet, { pin = actuator.pin })
 end
 
 -- initialize DHT sensors
@@ -34,7 +35,7 @@ if #dht_sensors > 0 then
       local temperature_string = temp .. "." .. temp_dec
       local humidity_string = humi .. "." .. humi_dec
       print("Heap:", node.heap(), "Temperature:", temperature_string, "Humidity:", humidity_string)
-      table.insert(sensorSend, { pin = pin, temp = temperature_string, humi = humidity_string })
+      table.insert(sensorPut, { pin = pin, temp = temperature_string, humi = humidity_string })
     else
       print("Heap:", node.heap(), "DHT Status:", status)
     end
@@ -63,7 +64,7 @@ if #ds18b20_sensors > 0 then
       local temperature_string = temp .. "." .. temp_dec
       print("Heap:", node.heap(), "Temperature:", temperature_string, "Resolution:", res)
       if (res >= ds18b20_res) then
-        table.insert(sensorSend, { pin = pin, temp = temperature_string, addr = romAddr(rom) })
+        table.insert(sensorPut, { pin = pin, temp = temperature_string, addr = romAddr(rom) })
       end
     end
     return callbackFn
@@ -85,48 +86,78 @@ sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   for i, sensor in pairs(sensors) do
     if sensor.state ~= gpio.read(sensor.pin) then
       sensor.state = gpio.read(sensor.pin)
-      table.insert(sensorSend, { pin = sensor.pin, state = sensor.state })
+      table.insert(sensorPut, { pin = sensor.pin, state = sensor.state })
     end
   end
 end)
 
--- This loop makes the HTTP requests to the home automation service to update device state
+-- print HTTP status line
+local printHttpResponse = function(code, data)
+  local a = { "Heap:", node.heap(), "HTTP Call:", code }
+  for k, v in pairs(data) do
+    table.insert(a, k)
+    table.insert(a, v)
+  end
+  print(unpack(a))
+end
+
+-- This loop makes the HTTP requests to the home automation service to get or update device state
 sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
-  if sensorSend[1] then
+
+  -- gets state of actuators
+  if actuatorGet[1] then
     t:stop()
-    local sensor = sensorSend[1]
+    local actuator = actuatorGet[1]
+    timeout:start()
+
+    http.get(table.concat({ settings.apiUrl, "/device/", dni, '?pin=', actuator.pin }),
+      table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\n" }),
+      function(code, response, headers)
+        local pin   = tonumber(response:match('"pin":(%d)'))
+        local state = tonumber(response:match('"state":(%d)'))
+        printHttpResponse(code, {pin = pin, state = state})
+
+        if pin == actuator.pin and code >= 200 and code < 300 then
+          gpio.write(actuator.pin, state)
+          print("Heap:", node.heap(), "Actuator pin:", pin, "Initial state:", state)
+        else
+          gpio.write(actuator.pin, actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW)
+        end
+
+        table.remove(actuatorGet, 1)
+        blinktimer:start()
+        t:start()
+      end)
+
+  -- update state of sensors when needed
+  elseif sensorPut[1] then
+    t:stop()
+    local sensor = sensorPut[1]
     timeout:start()
     http.put(table.concat({ settings.apiUrl, "/device/", dni }),
       table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
       sjson.encode(sensor),
       function(code)
         timeout:stop()
-
-        -- print HTTP status line
-        local a = { "Heap:", node.heap(), "HTTP Call:", code }
-        for k, v in pairs(sensor) do
-          table.insert(a, k)
-          table.insert(a, v)
-        end
-        print(unpack(a))
-
+        printHttpResponse(code, sensor)
 
         -- check for success and retry if necessary
         if code >= 200 and code < 300 then
-          table.remove(sensorSend, 1)
+          table.remove(sensorPut, 1)
         else
           -- retry up to 10 times then reboot as a failsafe
           local retry = sensor.retry or 0
           if retry == 10 then node.restart() end
           sensor.retry = retry + 1
-          sensorSend[1] = sensor
+          sensorPut[1] = sensor
         end
 
         blinktimer:start()
         t:start()
       end)
-    collectgarbage()
   end
+
+  collectgarbage()
 end)
 
 print("Heap:", node.heap(), "Endpoint:", settings.apiUrl)
