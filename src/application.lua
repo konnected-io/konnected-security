@@ -112,7 +112,8 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
 
     http.get(table.concat({ settings.apiUrl, "/device/", dni, '?pin=', actuator.pin }),
       table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\n" }),
-      function(code, response, headers)
+      function(code, response)
+        timeout:stop()
         local pin   = tonumber(response:match('"pin":(%d)'))
         local state = tonumber(response:match('"state":(%d)'))
         printHttpResponse(code, {pin = pin, state = state})
