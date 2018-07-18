@@ -11,7 +11,7 @@ if require("settings").discovery ~= false then
   end)
 
   -- broadcast SSDP NOTIFY
-  tmr.create():alarm(1500, tmr.ALARM_SINGLE, function(t)
+  tmr.create():alarm(15000, tmr.ALARM_SINGLE, function()
     upnp:send(1900, '239.255.255.250', require('ssdp_notify')('upnp:rootdevice', '::upnp:rootdevice'))
     upnp:send(1900, '239.255.255.250', require('ssdp_notify')(device.id, ''))
     upnp:send(1900, '239.255.255.250', require('ssdp_notify')(device.urn, '::' .. device.urn))
