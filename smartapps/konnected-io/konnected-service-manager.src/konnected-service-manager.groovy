@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-public static String version() { return "2.2.2.dev1" }
+public static String version() { return "2.2.2.beta1" }
 
 definition(
   name:        "Konnected Service Manager",

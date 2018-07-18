@@ -113,7 +113,7 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
         local state = tonumber(response:match('"state":(%d)'))
         printHttpResponse(code, {pin = pin, state = state})
 
-        if pin == actuator.pin and code >= 200 and code < 300 then
+        if pin == actuator.pin and code >= 200 and code < 300 and state then
           gpio.write(actuator.pin, state)
           print("Heap:", node.heap(), "Actuator pin:", pin, "Initial state:", state)
         else
