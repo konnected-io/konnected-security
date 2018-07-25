@@ -17,7 +17,7 @@ local function turnOffIn(pin, on_state, delay, times, pause)
     gpio.write(pin, off)
     times = times - 1
 
-    if times > 0 or infinateLoops[pin] then
+    if (times > 0 or infinateLoops[pin]) and pause then
       tmr.create():alarm(pause, tmr.ALARM_SINGLE, function()
         print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", on_state)
         gpio.write(pin, on_state)
