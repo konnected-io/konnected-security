@@ -32,7 +32,7 @@ if #dht_sensors > 0 then
   local function readDht(pin)
     local status, temp, humi, temp_dec, humi_dec = dht.read(pin)
     if status == dht.OK then
-      local temperature_string = temp .. "." .. temp_dec
+      local temperature_string = temp .. "." .. math.abs(temp_dec)
       local humidity_string = humi .. "." .. humi_dec
       print("Heap:", node.heap(), "Temperature:", temperature_string, "Humidity:", humidity_string)
       table.insert(sensorPut, { pin = pin, temp = temperature_string, humi = humidity_string })
@@ -54,7 +54,7 @@ if #ds18b20_sensors > 0 then
 
   local function ds18b20Callback(pin)
     local callbackFn = function(i, rom, res, temp, temp_dec, par)
-      local temperature_string = temp .. "." .. temp_dec
+      local temperature_string = temp .. "." .. math.abs(temp_dec)
       print("Heap:", node.heap(), "Temperature:", temperature_string, "Resolution:", res)
       if (res >= 12) then
         table.insert(sensorPut, { pin = pin, temp = temperature_string,
