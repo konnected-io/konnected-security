@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected CO Sensor", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected CO Sensor", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-carbon-monoxide") {
     capability "Smoke Detector"
     capability "Carbon Monoxide Detector"
     capability "Sensor"

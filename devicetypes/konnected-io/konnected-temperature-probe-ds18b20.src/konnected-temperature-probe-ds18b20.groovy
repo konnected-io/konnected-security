@@ -15,7 +15,7 @@
  */
 
 metadata {
-  definition (name: "Konnected Temperature Probe (DS18B20)", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Temperature Probe (DS18B20)", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-humidity") {
     capability "Temperature Measurement"
   }
 

@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Smoke Sensor", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Smoke Sensor", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-smoke") {
     capability "Smoke Detector"
     capability "Sensor"
   }

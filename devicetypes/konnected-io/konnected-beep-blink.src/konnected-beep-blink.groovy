@@ -15,7 +15,7 @@
  */
 
 metadata {
-  definition (name: "Konnected Beep/Blink", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Beep/Blink", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-switch") {
 	capability "Alarm"
     capability "Switch"
     capability "Actuator"

@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Panic Button", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Panic Button", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-contact") {
     capability "Switch"
     capability "Sensor"
   }

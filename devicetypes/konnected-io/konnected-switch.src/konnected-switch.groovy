@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Switch", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Switch", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-switch") {
     capability "Switch"
     capability "Actuator"
   }
