@@ -19,12 +19,6 @@ metadata {
     capability "Temperature Measurement"
   }
 
-  preferences {
-    input name: "pollInterval", type: "number", title: "Polling Interval (minutes)",
-      defaultValue: defaultPollInterval(),
-      description: "Frequency of sensor updates"
-  }
-
   tiles {
     multiAttributeTile(name:"main", type:"thermostat", width:6, height:4) {
         tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
@@ -65,12 +59,4 @@ def updateStates(states) {
   }
   sendEvent(name: "temperature", value: temperature.setScale(1, BigDecimal.ROUND_HALF_UP), unit: location.getTemperatureScale())
   log.debug "Temperature: $temperature"
-}
-
-def pollInterval() {
-  return pollInterval.isNumber() ? pollInterval : defaultPollInterval()
-}
-
-def defaultPollInterval() {
-  return 3 // minutes
 }

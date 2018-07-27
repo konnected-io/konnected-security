@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-public static String version() { return "2.2.2.beta1" }
+public static String version() { return "2.2.2" }
 
 definition(
   name:        "Konnected Service Manager",
@@ -30,7 +30,7 @@ definition(
 
 mappings {
   path("/device/:mac/:id/:deviceState") { action: [ PUT: "childDeviceStateUpdate"] }
-  path("/device/:mac") { action: [ PUT: "childDeviceStateUpdate"] }
+  path("/device/:mac") { action: [ PUT: "childDeviceStateUpdate", GET: "getDeviceState" ] }
   path("/ping") { action: [ GET: "devicePing"] }
 }
 
@@ -393,6 +393,15 @@ def childDeviceStateUpdate() {
     } else {
 	    log.warn "Device $deviceId not found!"
     }
+  }
+}
+
+def getDeviceState() {
+  def pin = (params.pin ?: request.JSON?.pin).toInteger()
+  def deviceId = params.mac.toUpperCase() + "|" + pin
+  def device = getChildDevice(deviceId)
+  if (device) {
+    return [pin: pin, state: device.currentBinaryValue()]
   }
 }
 
