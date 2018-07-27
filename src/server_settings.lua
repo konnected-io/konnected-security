@@ -28,6 +28,7 @@ local function process(request)
 			setVar("sensors",   require("variables_build")(request.body.sensors))
 			setVar("actuators", require("variables_build")(request.body.actuators))
 			setVar("dht_sensors", require("variables_build")(request.body.dht_sensors))
+		  setVar("ds18b20_sensors", require("variables_build")(request.body.ds18b20_sensors))
 
 			print("Heap:", node.heap(), 'Settings updated! Restarting in 5 seconds...')
 			restartTimer:start()

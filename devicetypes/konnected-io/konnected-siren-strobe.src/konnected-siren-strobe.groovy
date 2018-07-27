@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Siren/Strobe", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Siren/Strobe", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-siren") {
     capability "Alarm"
     capability "Switch"
     capability "Actuator"
