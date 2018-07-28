@@ -20,9 +20,7 @@ end
 
 -- initialize actuators
 for i, actuator in pairs(actuators) do
-  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin, "Trigger:", actuator.trigger)
-  gpio.mode(actuator.pin, gpio.OUTPUT)
-  table.insert(actuatorGet, { pin = actuator.pin })
+  table.insert(actuatorGet, actuator)
 end
 
 -- initialize DHT sensors
@@ -113,12 +111,14 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
         local state = tonumber(response:match('"state":(%d)'))
         printHttpResponse(code, {pin = pin, state = state})
 
+        gpio.mode(actuator.pin, gpio.OUTPUT)
         if pin == actuator.pin and code >= 200 and code < 300 and state then
           gpio.write(actuator.pin, state)
-          print("Heap:", node.heap(), "Actuator pin:", pin, "Initial state:", state)
         else
-          gpio.write(actuator.pin, actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW)
+          state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
+          gpio.write(actuator.pin, state)
         end
+        print("Heap:", node.heap(), "Initialized actuator Pin:", pin, "Trigger:", actuator.trigger, "Initial state:", state)
 
         table.remove(actuatorGet, 1)
         blinktimer:start()
