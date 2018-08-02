@@ -1,5 +1,5 @@
 /**
- *  Konnected Temperature & Humidity Sensor (DHT)
+ *  Konnected Temperature Probe (DS18B20)
  *
  *  Copyright 2018 Konnected Inc (https://konnected.io)
  *
@@ -15,15 +15,8 @@
  */
 
 metadata {
-  definition (name: "Konnected Temperature & Humidity Sensor (DHT)", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-humidity") {
+  definition (name: "Konnected Temperature Probe (DS18B20)", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-humidity") {
     capability "Temperature Measurement"
-    capability "Relative Humidity Measurement"
-  }
-
-  preferences {
-    input name: "pollInterval", type: "number", title: "Polling Interval (minutes)",
-      defaultValue: defaultPollInterval(),
-      description: "Frequency of sensor updates"
   }
 
   tiles {
@@ -48,9 +41,6 @@ metadata {
                     [value: 96, color: "#BC2323"]
                 ]
         }
-        tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
-            attributeState("humidity", label:'${currentValue}%', unit:"%", defaultState: true)
-        }
     }
     main "main"
     details "main"
@@ -68,20 +58,5 @@ def updateStates(states) {
   	temperature = temperature * 9 / 5 + 32
   }
   sendEvent(name: "temperature", value: temperature.setScale(1, BigDecimal.ROUND_HALF_UP), unit: location.getTemperatureScale())
-
-  def humidity
-  if (states.humi) {
-    humidity = new BigDecimal(states.humi)
-    sendEvent(name: "humidity", value: humidity.setScale(0, BigDecimal.ROUND_HALF_UP), unit: '%')
-  }
-
-  log.debug "Temperature: $temperature, Humidity: $humidity"
-}
-
-def pollInterval() {
-  return pollInterval.isNumber() ? pollInterval : defaultPollInterval()
-}
-
-def defaultPollInterval() {
-  return 3 // minutes
+  log.debug "Temperature: $temperature"
 }

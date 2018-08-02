@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Switch", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Switch", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-switch") {
     capability "Switch"
     capability "Actuator"
   }
@@ -67,4 +67,12 @@ def on() {
 
 def triggerLevel() {
   return invertTrigger ? 0 : 1
+}
+
+def currentBinaryValue() {
+  if (device.currentValue('switch') == 'on') {
+    invertTrigger ? 0 : 1
+  } else {
+    invertTrigger ? 1 : 0
+  }
 }

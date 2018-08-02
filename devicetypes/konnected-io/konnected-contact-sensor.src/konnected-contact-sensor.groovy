@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Contact Sensor", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Contact Sensor", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-contact") {
     capability "Contact Sensor"
     capability "Sensor"
   }

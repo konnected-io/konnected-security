@@ -1,8 +1,15 @@
 local module = ...
 
+infinateLoops = {}
+
 local function turnOffIn(pin, on_state, delay, times, pause)
   local off = on_state == 0 and 1 or 0
-  times = times or 1
+  times = times or -1
+
+  if (times == -1) then
+    infinateLoops[pin] = true
+  end
+
   print("Heap:", node.heap(), "Actuator Pin:", pin, "Momentary:", delay, "Repeat:", times, "Pause:", pause)
 
   tmr.create():alarm(delay, tmr.ALARM_SINGLE, function()
@@ -10,7 +17,7 @@ local function turnOffIn(pin, on_state, delay, times, pause)
     gpio.write(pin, off)
     times = times - 1
 
-    if times > 0 then
+    if (times > 0 or infinateLoops[pin]) and pause then
       tmr.create():alarm(pause, tmr.ALARM_SINGLE, function()
         print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", on_state)
         gpio.write(pin, on_state)
@@ -42,14 +49,23 @@ local function process(request)
 
   if request.contentType == "application/json" then
     if request.method == "PUT" then
-      print("Heap:", node.heap(), "Actuator Pin:", request.body.pin, "State:", request.body.state)
-      gpio.write(request.body.pin, request.body.state)
+      local pin = tonumber(request.body.pin)
+      local state = tonumber(request.body.state)
+      local times = tonumber(request.body.times)
+      print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", state)
+
+      if infinateLoops[pin] then
+        infinateLoops[pin] = false
+      end
+
+      gpio.write(pin, state)
+
       if request.body.momentary then
-        turnOffIn(request.body.pin, request.body.state, request.body.momentary, request.body.times, request.body.pause)
-        local off = on_state == 0 and 1 or 0
-        return sjson.encode({ pin = request.body.pin, state = off })
+        turnOffIn(pin, state, request.body.momentary, times, request.body.pause)
+        if (times == -1) then state = -1 end -- this indicates an infiniate repeat
+        return sjson.encode({ pin = pin, state = state })
       else
-        return sjson.encode({ pin = request.body.pin, state = request.body.state })
+        return sjson.encode({ pin = pin, state = state })
       end
       blinktimer:start()
     end

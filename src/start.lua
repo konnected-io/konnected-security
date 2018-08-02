@@ -1,9 +1,9 @@
 for fn in pairs(file.list()) do
   local fm = string.match(fn,".*%.lua-$")
-  if (fm) and fm ~= "init.lua" then 
+  if (fm) and fm ~= "init.lua" then
+    print("Heap: ", node.heap(), "Compiling: ", fn)
     node.compile(fm)
     file.remove(fm)
-    print("Heap: ", node.heap(), "Compiled: ", fn)
   end
 end
 fn = nil
