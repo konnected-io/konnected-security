@@ -103,6 +103,10 @@ def siren() {
   ])
 }
 
+def both() {
+  siren()
+}
+
 def triggerLevel() {
   return invertTrigger ? 0 : 1
 }

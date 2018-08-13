@@ -118,7 +118,7 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
           state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
           gpio.write(actuator.pin, state)
         end
-        print("Heap:", node.heap(), "Initialized actuator Pin:", pin, "Trigger:", actuator.trigger, "Initial state:", state)
+        print("Heap:", node.heap(), "Initialized actuator Pin:", actuator.pin, "Trigger:", actuator.trigger, "Initial state:", state)
 
         table.remove(actuatorGet, 1)
         blinktimer:start()
