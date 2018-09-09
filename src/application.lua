@@ -86,6 +86,7 @@ end)
 
 -- print HTTP status line
 local printHttpResponse = function(code, data)
+  print("printHttpResponse")
   local a = { "Heap:", node.heap(), "HTTP Call:", code }
   for k, v in pairs(data) do
     table.insert(a, k)
@@ -107,8 +108,11 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
       table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\n" }),
       function(code, response)
         timeout:stop()
-        local pin   = tonumber(response:match('"pin":(%d)'))
-        local state = tonumber(response:match('"state":(%d)'))
+        local pin, state
+        if response then
+          pin = tonumber(response:match('"pin":(%d)'))
+          state = tonumber(response:match('"state":(%d)'))
+        end
         printHttpResponse(code, {pin = pin, state = state})
 
         gpio.mode(actuator.pin, gpio.OUTPUT)
