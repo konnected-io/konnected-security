@@ -1,14 +1,16 @@
 #!/bin/bash
 
 FIRMWARE_PATH=${PWD}/../nodemcu-firmware
-IMAGE_NAME=konnected-firmware-2-2-2
+IMAGE_NAME=konnected-firmware-2-2-4
 
 cp firmware/2.2.0/app/include/* $FIRMWARE_PATH/app/include/
-cp src/* $FIRMWARE_PATH/local/fs
+# cp src/* $FIRMWARE_PATH/local/fs
 
 docker run -e "INTEGER_ONLY=1" \
   -e "IMAGE_NAME=${IMAGE_NAME}" \
-  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware marcelstoer/nodemcu-build
+  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware marcelstoer/nodemcu-build build
 
 cp ${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin firmware/${IMAGE_NAME}.bin
 cp ${FIRMWARE_PATH}/bin/*-32mb.bin firmware/
+
+# for fname in /opt/lua/*.lua ; do ./luac.cross.int -o /opt/lua/$(basename "$fname" .lua).{lc,lua}; done

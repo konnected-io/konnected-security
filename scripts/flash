@@ -1,10 +1,10 @@
 #!/bin/bash
 
-FIRMWARE_NAME=konnected-firmware-2-2-2
-FILESYSTEM_NAME=konnected-filesystem-0xa0000-32mb
+FIRMWARE_NAME=konnected-firmware-2-2-4.bin
+FILESYSTEM_NAME=0x100000-0x1f400.img
 PORT=/dev/cu.wchusbserial1410
 
-esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${FIRMWARE_NAME}.bin
-esptool.py --port=${PORT} write_flash --flash_mode dio 0xa0000 firmware/${FILESYSTEM_NAME}.bin
+esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${FIRMWARE_NAME}
+esptool.py --port=${PORT} write_flash --flash_mode dio 0x100000 firmware/${FILESYSTEM_NAME}
 
 tput bel
