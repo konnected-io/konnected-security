@@ -72,7 +72,7 @@
 // gives the fastest start-up and imaging times.
 
 #define BUILD_SPIFFS
-#define SPIFFS_FIXED_LOCATION        0x100000
+#define SPIFFS_FIXED_LOCATION        0xf0000
 #define SPIFFS_MAX_FILESYSTEM_SIZE    128000
 //#define SPIFFS_SIZE_1M_BOUNDARY
 #define SPIFFS_CACHE 1          // Enable if you use you SPIFFS in R/W mode
