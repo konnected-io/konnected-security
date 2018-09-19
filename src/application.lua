@@ -40,7 +40,8 @@ if #dht_sensors > 0 then
   end
 
   for i, sensor in pairs(dht_sensors) do
-    local pollInterval = (sensor.poll_interval > 0 and sensor.poll_interval or 3) * 60 * 1000
+    local pollInterval = tonumber(sensor.poll_interval) or 0
+    pollInterval = (pollInterval > 0 and pollInterval or 3) * 60 * 1000
     print("Heap:", node.heap(), "Polling DHT on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
     tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() readDht(sensor.pin) end)
     readDht(sensor.pin)
@@ -64,7 +65,8 @@ if #ds18b20_sensors > 0 then
   end
 
   for i, sensor in pairs(ds18b20_sensors) do
-    local pollInterval = (sensor.poll_interval > 0 and sensor.poll_interval or 3) * 60 * 1000
+    local pollInterval = tonumber(sensor.poll_interval) or 0
+    pollInterval = (pollInterval > 0 and pollInterval or 3) * 60 * 1000
     print("Heap:", node.heap(), "Polling DS18b20 on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
     local callbackFn = ds18b20Callback(sensor.pin)
     ds18b20.setup(sensor.pin)
