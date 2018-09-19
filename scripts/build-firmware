@@ -16,9 +16,9 @@ rm $FIRMWARE_PATH/local/fs/*.lua
 rm $FIRMWARE_PATH/local/fs/init.lc
 cp src/init.lua $FIRMWARE_PATH/local/fs
 
-#docker run -e "INTEGER_ONLY=1" \
-#  -e "IMAGE_NAME=${IMAGE_NAME}" \
-#  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware marcelstoer/nodemcu-build build
+docker run -e "INTEGER_ONLY=1" \
+  -e "IMAGE_NAME=${IMAGE_NAME}" \
+  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware marcelstoer/nodemcu-build build
 
 cp ${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin firmware/${IMAGE_NAME}.bin
 cp ${FIRMWARE_PATH}/bin/0xf0000-0x1f400.img firmware/konnected-filesystem-0xf0000-2-2-4.img

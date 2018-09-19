@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for fname in /opt/nodemcu-firmware/local/fs/*.lua ; do
+  /opt/nodemcu-firmware/luac.cross.int -o /opt/nodemcu-firmware/local/fs/$(basename "$fname" .lua).{lc,lua}
+done
