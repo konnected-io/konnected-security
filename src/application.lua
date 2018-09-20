@@ -110,7 +110,7 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
       function(code, response)
         timeout:stop()
         local pin, state, json_response
-        if response then
+        if response and code >= 200 and code < 300 then
           json_response = sjson.decode(response)
           pin = json_response.pin
           state = json_response.state
