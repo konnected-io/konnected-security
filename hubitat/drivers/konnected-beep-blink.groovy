@@ -110,3 +110,7 @@ def both() {
 def triggerLevel() {
   return invertTrigger ? 0 : 1
 }
+
+def currentBinaryValue() {
+  invertTrigger ? 1 : 0
+}

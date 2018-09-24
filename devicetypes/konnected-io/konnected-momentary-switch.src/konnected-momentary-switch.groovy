@@ -75,3 +75,7 @@ def currentBinaryValue() {
     invertTrigger ? 1 : 0
   }
 }
+
+def currentBinaryValue() {
+  invertTrigger ? 1 : 0
+}
