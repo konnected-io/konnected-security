@@ -14,10 +14,18 @@
  *
  */
 metadata {
-  definition (name: "Konnected Panic Button", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Panic Button", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-contact") {
     capability "Switch"
     capability "Sensor"
   }
+
+  preferences {
+    input name: "normalState", type: "enum", title: "Normal State",
+	  options: ["Normally Closed", "Normally Open"],
+      defaultValue: "Normally Closed",
+      description: "By default, the alarm state is triggered when the sensor circuit is open (NC). Select Normally Open (NO) when a closed circuit indicates an alarm."
+  }
+
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
@@ -30,17 +38,18 @@ metadata {
   }
 }
 
-//Update state sent from parent app
-def setStatus(state) { 
-  switch(state) {
-    case "0" :
-      sendEvent(name: "switch", value: "off") 
-      break
-    case "1" :
-      sendEvent(name: "switch", value: "on") 
-      break
-    default:
-      sendEvent(name: "switch", value: "on") 
-      break
-  }
+
+def isClosed() {
+  normalState == "Normally Open" ? "on" : "off"
+}
+
+def isOpen() {
+  normalState == "Normally Open" ? "off" : "on"
+}
+
+// Update state sent from parent app
+def setStatus(state) {
+  def stateValue = state == "1" ? isOpen() : isClosed()
+  sendEvent(name: "switch", value: stateValue)
+  log.debug "$device.label is $stateValue"
 }

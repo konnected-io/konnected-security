@@ -14,7 +14,7 @@
  *
  */
 metadata {
-  definition (name: "Konnected Momentary Switch", namespace: "konnected-io", author: "konnected.io") {
+  definition (name: "Konnected Momentary Switch", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-switch") {
     capability "Switch"
     capability "Actuator"
     capability "Momentary"
@@ -66,4 +66,12 @@ def push() {
 
 def triggerLevel() {
   return invertTrigger ? 0 : 1
+}
+
+def currentBinaryValue() {
+  if (device.currentValue('switch') == 'on') {
+    invertTrigger ? 0 : 1
+  } else {
+    invertTrigger ? 1 : 0
+  }
 }
