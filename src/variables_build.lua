@@ -8,6 +8,8 @@ local function build_list(objects)
       table.insert(out, "{")
       table.insert(out, build_list(value))
       table.insert(out, "},")
+    elseif value == sjson.NULL then
+      -- skip it
     else
       table.insert(out, key)
       table.insert(out, "=")

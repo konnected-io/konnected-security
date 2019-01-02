@@ -62,7 +62,7 @@ local function process(request)
 
       if request.body.momentary then
         turnOffIn(pin, state, request.body.momentary, times, request.body.pause)
-        if (times == -1) then state = -1 end -- this indicates an infiniate repeat
+        if (times == -1) then state = -1 end -- this indicates an infinate repeat
         return sjson.encode({ pin = pin, state = state })
       else
         return sjson.encode({ pin = pin, state = state })

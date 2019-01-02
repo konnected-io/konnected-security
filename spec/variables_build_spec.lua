@@ -5,6 +5,10 @@ describe("variables_build", function()
     return s:gsub('%c','')
   end
 
+  setup(function()
+    _G.sjson = require("cjson")
+  end)
+
   it("returns a string that makes a lua list of lists", function()
     local thing = {{pin=1},{pin=2}}
     local str = require('variables_build')(thing)
