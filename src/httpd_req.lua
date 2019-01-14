@@ -23,10 +23,14 @@ local function httpdRequest(data)
   httpdRequestHandler.method = method
   httpdRequestHandler.path = path
   httpdRequestHandler.contentType = string.match(data, "Content%-Type: ([%w/-]+)")
-  httpdRequestHandler.body = string.sub(data, string.find(data, "\r\n\r\n", 1, true), #data)
+  local bodyPos = string.find(data, "\r\n\r\n", 1, true)
 
-  if httpdRequestHandler.contentType == "application/json" then
-    httpdRequestHandler.body = sjson.decode(httpdRequestHandler.body)
+  if bodyPos then
+    httpdRequestHandler.body = string.sub(data, bodyPos + 4, #data)
+
+    if httpdRequestHandler.contentType == "application/json" then
+      httpdRequestHandler.body = sjson.decode(httpdRequestHandler.body)
+    end
   end
 
   return httpdRequestHandler
