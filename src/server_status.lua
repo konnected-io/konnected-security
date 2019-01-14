@@ -18,9 +18,7 @@ local function process()
     actuators = require("actuators"),
     dht_sensors = require("dht_sensors"),
     ds18b20_sensors = require("ds18b20_sensors"),
-    endpoint = require("settings").apiUrl,
-    blink = require("settings").blink,
-    discovery = require("settings").discovery
+    settings = require("settings")
   }
   return sjson.encode(body)
 end
