@@ -20,6 +20,7 @@ end
 
 -- initialize actuators
 for i, actuator in pairs(actuators) do
+  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin)
   table.insert(actuatorGet, actuator)
 end
 
@@ -112,8 +113,8 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
         local pin, state, json_response
         if response and code >= 200 and code < 300 then
           json_response = sjson.decode(response)
-          pin = json_response.pin
-          state = json_response.state
+          pin = tonumber(json_response.pin)
+          state = tonumber(json_response.state)
         end
         printHttpResponse(code, {pin = pin, state = state})
 

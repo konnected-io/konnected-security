@@ -1,10 +1,13 @@
 nodemcu = {
   tmrs = {},
-  run_tmr = function(interval, type)
-    for _,v in pairs(nodemcu.tmrs) do
+  run_tmr = function(interval, type, reset)
+    for i,v in pairs(nodemcu.tmrs) do
       if v.interval == interval and v.type == type then
         print('Running tmr ' .. type .. ', interval:', interval )
-        return v.fn({unregister = function() end})
+        if type == tmr.ALARM_SINGLE and reset then
+          table.remove(nodemcu.tmrs, i)
+        end
+        v.fn({stop = function() end, start = function() end, unregister = function() end})
       end
     end
   end,
@@ -46,7 +49,8 @@ _G.tmr = {
         })
       end,
       unregister = function() end,
-      start = function() end
+      start = function() end,
+      stop = function() end
     }
   end
 }
@@ -57,8 +61,8 @@ _G.file = {
 }
 
 _G.gpio = {
-  HIGH = 'HIGH',
-  LOW = 'LOW',
+  HIGH = 1,
+  LOW = 0,
   mode = function() end,
   read = function() end,
   write = function() end
@@ -107,6 +111,19 @@ _G.net = {
     }
   end
 }
+
+_G.http = {
+  get = function() end,
+  put = function() end,
+  post = function() end
+}
+
+_G.unpack = function(t, i)
+  i = i or 1
+  if t[i] ~= nil then
+    return t[i], unpack(t, i + 1)
+  end
+end
 
 -- Print contents of `tbl`, with indentation.
 -- `indent` sets the initial level of indentation.
