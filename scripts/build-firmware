@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FIRMWARE_PATH=${PWD}/../nodemcu-firmware
-IMAGE_NAME=konnected-firmware-2-2-4
+IMAGE_NAME=konnected-firmware-2-2-5
 
 cp firmware/2.2.0/app/include/* $FIRMWARE_PATH/app/include/
 
@@ -21,4 +21,4 @@ docker run -e "INTEGER_ONLY=1" \
   --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware marcelstoer/nodemcu-build build
 
 cp ${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin firmware/${IMAGE_NAME}.bin
-cp ${FIRMWARE_PATH}/bin/0xf0000-0x1f400.img firmware/konnected-filesystem-0xf0000-2-2-4.img
+cp ${FIRMWARE_PATH}/bin/0xf0000-0x1f400.img firmware/konnected-filesystem-0xf0000-2-2-5.img
