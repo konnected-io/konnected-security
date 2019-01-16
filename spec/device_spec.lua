@@ -7,7 +7,7 @@ describe("device", function()
   end)
 
   it("has expected properties", function()
-    assert.equal(device.swVersion, "2.2.5.beta1")
+    assert.equal(device.swVersion, "2.2.5")
     assert.equal(device.hwVersion, "2.2.5")
     assert.equal(device.name, "Konnected")
   end)
