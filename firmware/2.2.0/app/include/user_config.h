@@ -102,7 +102,7 @@
 // don't require this functionality, then commenting out these options out
 // will remove any associated runtime overhead.
 
-//#define GPIO_INTERRUPT_ENABLE
+#define GPIO_INTERRUPT_ENABLE
 //#define GPIO_INTERRUPT_HOOK_ENABLE
 
 

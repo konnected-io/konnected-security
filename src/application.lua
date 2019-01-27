@@ -1,3 +1,4 @@
+require("wipe")
 local sensors = require("sensors")
 local dht_sensors = require("dht_sensors")
 local ds18b20_sensors = require("ds18b20_sensors")
