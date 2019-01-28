@@ -65,7 +65,8 @@ _G.gpio = {
   LOW = 0,
   mode = function() end,
   read = function() end,
-  write = function() end
+  write = function() end,
+  trig = function() end
 }
 
 _G.wifi = {

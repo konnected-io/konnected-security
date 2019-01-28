@@ -68,6 +68,11 @@ describe("application", function()
       assert.spy(gpio.write).was.called_with(1,0)
     end)
 
+    it("fails gracefully on malformed JSON response", function()
+      cb(200, "{\"pin\":\"1\",\"state\":}")
+      assert.spy(gpio.write).was.called_with(1,0)
+    end)
+
   end)
 
 end)
