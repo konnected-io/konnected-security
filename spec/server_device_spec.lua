@@ -98,5 +98,30 @@ describe("server_device", function()
       end)
     end)
 
+    describe("multiple switches", function()
+      before_each(function()
+        response = require("server_device")({
+          contentType = "application/json",
+          method = "PUT",
+          body = {{
+            pin = 1,
+            state = 1
+          },{
+            pin = 2,
+            state = 1
+          }}
+        })
+      end)
+
+      it("updates the state of the pin", function()
+        assert.spy(_G.gpio.write).was.called_with(1, 1)
+        assert.spy(_G.gpio.write).was.called_with(2, 1)
+      end)
+
+      it("responds with the new pin state", function()
+        assert.are.equal(response, sjson.encode({{ pin = 1, state = 1 },{ pin = 2, state = 1}}))
+      end)
+    end)
+
   end)
 end)

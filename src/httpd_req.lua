@@ -22,7 +22,7 @@ local function httpdRequest(data)
 
   httpdRequestHandler.method = method
   httpdRequestHandler.path = path
-  httpdRequestHandler.contentType = string.match(data, "Content%-Type: ([%w/-]+)")
+  httpdRequestHandler.contentType = string.match(data, "[Cc]ontent%-[Tt]ype: ([%w/-]+)")
   local bodyPos = string.find(data, "\r\n\r\n", 1, true)
 
   if bodyPos then

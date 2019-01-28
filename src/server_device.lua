@@ -49,25 +49,37 @@ local function process(request)
 
   if request.contentType == "application/json" then
     if request.method == "PUT" then
-      local pin = tonumber(request.body.pin)
-      local state = tonumber(request.body.state)
-      local times = tonumber(request.body.times)
-      print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", state)
+      local function updatePin(payload)
+        local pin = tonumber(payload.pin)
+        local state = tonumber(payload.state)
+        local times = tonumber(payload.times)
+        print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", state)
 
-      if infinateLoops[pin] then
-        infinateLoops[pin] = false
+        if infinateLoops[pin] then
+          infinateLoops[pin] = false
+        end
+
+        gpio.write(pin, state)
+
+        blinktimer:start()
+        if payload.momentary then
+          turnOffIn(pin, state, payload.momentary, times, payload.pause)
+          if (times == -1) then state = -1 end -- this indicates an infinate repeat
+          return { pin = pin, state = state }
+        else
+          return { pin = pin, state = state }
+        end
       end
 
-      gpio.write(pin, state)
-
-      if request.body.momentary then
-        turnOffIn(pin, state, request.body.momentary, times, request.body.pause)
-        if (times == -1) then state = -1 end -- this indicates an infinate repeat
-        return sjson.encode({ pin = pin, state = state })
+      if request.body[1] then
+        local ret = {}
+        for i in pairs(request.body) do
+          table.insert(ret, updatePin(request.body[i]))
+        end
+        return sjson.encode(ret)
       else
-        return sjson.encode({ pin = pin, state = state })
+        return sjson.encode(updatePin(request.body))
       end
-      blinktimer:start()
     end
   end
 end
