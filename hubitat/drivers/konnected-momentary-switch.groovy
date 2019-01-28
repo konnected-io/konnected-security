@@ -45,12 +45,23 @@ def updated() {
 }
 
 def updatePinState(Integer state) {
-  sendEvent(name: "switch", value: "on", isStateChange: true, display: false)
+  def off = invertTrigger ? 1 : 0
+  if (state == off) {
+    sendEvent(name: "switch", value: "off", isStateChange: true, display: false)
+  } else {
+    sendEvent(name: "switch", value: "on", isStateChange: true, display: false)
+    def delaySeconds = (momentaryDelay ?: 1000) / 1000 as Integer
+    runIn(Math.max(delaySeconds, 1), switchOff)
+  }
+}
+
+def switchOff() {
   sendEvent(name: "switch", value: "off", isStateChange: true, display: false)
 }
 
 def off() {
-  push()
+  def val = invertTrigger ? 1 : 0
+  parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 
 def on() {
