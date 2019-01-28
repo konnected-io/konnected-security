@@ -153,9 +153,14 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
         else
           -- retry up to 10 times then reboot as a failsafe
           local retry = sensor.retry or 0
-          if retry == 10 then node.restart() end
-          sensor.retry = retry + 1
-          sensorPut[1] = sensor
+          if retry == 10 then
+            print("Heap:", node.heap(), "Retried 10 times and failed. Rebooting in 30 seconds.")
+            for k,v in pairs(sensorPut) do sensorPut[k]=nil end -- remove all pending sensor updates
+            tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
+          else
+            sensor.retry = retry + 1
+            sensorPut[1] = sensor
+          end
         end
 
         blinktimer:start()
