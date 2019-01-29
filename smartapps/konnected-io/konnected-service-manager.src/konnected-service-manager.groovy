@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-public static String version() { return "2.2.3" }
+public static String version() { return "2.2.6.dev1" }
 
 definition(
   name:        "Konnected Service Manager",
@@ -244,6 +244,13 @@ private pageAssignPins() {
           required: false,
           defaultValue: true
         )
+        input(
+          name: "regenerateToken",
+          type: "bool",
+          title: "Regenerate Auth Token",
+          required: false,
+          defaultValue: false
+        )
     }
   }
 }
@@ -412,7 +419,10 @@ def devicePing() {
 
 //Device : update NodeMCU with token, url, sensors, actuators from SmartThings
 def updateSettingsOnDevice() {
-  if(!state.accessToken) { createAccessToken() }
+  if(!state.accessToken || settings.regenerateToken) {
+    app.updateSetting("regenerateToken", false)
+    createAccessToken()
+  }
 
   def device    = state.device
   def sensors   = []
