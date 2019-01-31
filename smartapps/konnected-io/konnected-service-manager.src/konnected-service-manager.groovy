@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-public static String version() { return "2.2.6.dev1" }
+public static String version() { return "2.2.6.dev2" }
 
 definition(
   name:        "Konnected Service Manager",
@@ -37,7 +37,8 @@ mappings {
 preferences {
   page(name: "pageWelcome",       install: false, uninstall: true, content: "pageWelcome", nextPage: "pageConfiguration")
   page(name: "pageDiscovery",     install: false, content: "pageDiscovery" )
-  page(name: "pageConfiguration", install: true, content: "pageConfiguration")
+  page(name: "pageConfiguration")
+  page(name: "pageSelectHwType")
 }
 
 def installed() {
@@ -161,29 +162,21 @@ def pageDiscovery() {
 
 // Page : 3 : Configure things wired to the Konnected board
 def pageConfiguration(params) {
-  def setHwType = params?.hwType
-  if (setHwType) { state.hwType = setHwType }
-  state.hwType ? pageAssignPins() : pageSelectHwType()
+  settings.hwType ? pageAssignPins() : pageSelectHwType()
 }
 
 private pageSelectHwType() {
-  dynamicPage(name: "pageConfiguration") {
+  dynamicPage(name: "pageConfiguration", nextPage: "pageConfiguration", install: false) {
     section(title: "Which wiring hardware do you have?") {
-      href(
-        name:        "Konnected Alarm Panel",
-        title:       "Konnected Alarm Panel",
+      paragraph "Select \"Konnected\" if you are using Konnected branded hardware, otherwise select NodeMCU for the open source pin mapping."
+      input(
+        name:        "hwType",
+        type:        "enum",
+        title:       "Pin Mapping",
         description: "Tap to select",
-        page:        "pageConfiguration",
-        params:      [hwType: "alarmPanel"],
-        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/konnected-alarm-panel-st-icon-t.jpg",
-      )
-      href(
-        name:        "NodeMCU Base",
-        title:       "NodeMCU Base",
-        description: "Tap to select",
-        page:        "pageConfiguration",
-        params:      [hwType: "nodemcu"],
-        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/icon-nodemcu.jpg",
+        required: true,
+        submitOnChange: true,
+        options: ["Konnected","NodeMCU"]
       )
     }
   }
@@ -191,7 +184,7 @@ private pageSelectHwType() {
 
 private pageAssignPins() {
   def device = state.device
-  dynamicPage(name: "pageConfiguration") {
+  dynamicPage(name: "pageConfiguration", install: true) {
     section() {
       input(
         name: "name",
@@ -247,9 +240,15 @@ private pageAssignPins() {
         input(
           name: "regenerateToken",
           type: "bool",
-          title: "Regenerate Auth Token",
+          title: "Regenerate auth token",
           required: false,
           defaultValue: false
+        )
+        href(
+          name: "changePinMapping",
+          page: "pageSelectHwType",
+          title: "Change pin mapping",
+          description: null
         )
     }
   }
@@ -500,7 +499,7 @@ void syncChildPinState(physicalgraph.device.HubResponse hubResponse) {
 }
 
 private Map pinMapping() {
-  if (state.hwType == "alarmPanel") {
+  if (settings.hwType == "Konnected") {
     return [
       1: "Zone 1",
       2: "Zone 2",
