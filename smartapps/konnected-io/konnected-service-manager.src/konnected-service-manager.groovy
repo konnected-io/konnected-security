@@ -346,17 +346,21 @@ def childDeviceConfiguration() {
       def deviceChild = getChildDevice(deviceDNI)
       if (!deviceChild) {
         if (deviceType != "") {
+          log.debug "Creating new device: '$deviceLabel'"
           addChildDevice("konnected-io", deviceType, deviceDNI, device.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ])
         }
       } else {
         // Change name if it's set here
         if (deviceChild.label != deviceLabel)
+          log.debug "Renaming '$deviceChild.label' to '$deviceLabel'"
           deviceChild.label = deviceLabel
 
         // Change Type, you will lose the history of events. delete and add back the child
         if (deviceChild.name != deviceType) {
+          log.debug "Deleting device '$deviceChild.label' - New device type '$deviceType' has changed from '$deviceChild.name'"
           deleteChildDevice(deviceDNI)
           if (deviceType != "") {
+            log.debug "Creating new device: '$deviceLabel'"
             addChildDevice("konnected-io", deviceType, deviceDNI, device.hub, [ "label": deviceLabel ? deviceLabel : deviceType , "completedSetup": true ])
           }
         }
@@ -369,7 +373,7 @@ def childDeviceConfiguration() {
   }
 
   deleteChildDevices.each {
-    log.debug "Deleting device $it.deviceNetworkId"
+    log.debug "Device was removed from Konnected configuration. Deleting: '$it.label'"
     deleteChildDevice(it.deviceNetworkId)
   }
 }
