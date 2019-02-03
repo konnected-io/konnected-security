@@ -26,35 +26,6 @@ metadata {
       description: "Frequency of sensor updates"
   }
 
-  tiles {
-    multiAttributeTile(name:"main", type:"thermostat", width:6, height:4) {
-        tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-            attributeState "temperature", label:'${currentValue}°F', unit: "°F", backgroundColors: [
-                    // Celsius Color Range
-                    [value:  0, color: "#153591"],
-                    [value:  7, color: "#1E9CBB"],
-                    [value: 15, color: "#90D2A7"],
-                    [value: 23, color: "#44B621"],
-                    [value: 29, color: "#F1D801"],
-                    [value: 33, color: "#D04E00"],
-                    [value: 36, color: "#BC2323"],
-                    // Fahrenheit Color Range
-                    [value: 40, color: "#153591"],
-                    [value: 44, color: "#1E9CBB"],
-                    [value: 59, color: "#90D2A7"],
-                    [value: 74, color: "#44B621"],
-                    [value: 84, color: "#F1D801"],
-                    [value: 92, color: "#D04E00"],
-                    [value: 96, color: "#BC2323"]
-                ]
-        }
-        tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
-            attributeState("humidity", label:'${currentValue}%', unit:"%", defaultState: true)
-        }
-    }
-    main "main"
-    details "main"
-  }
 }
 
 def updated() {

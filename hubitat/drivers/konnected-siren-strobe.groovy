@@ -25,18 +25,6 @@ metadata {
   	      description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
   }
 
-  tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.alarm", key: "PRIMARY_CONTROL") {
-        attributeState ("off",  label: "Off",    icon:"st.security.alarm.clear", action:"alarm.both", backgroundColor:"#ffffff", nextState: "turningOn")
-        attributeState ("both", label: "Alarm!", icon:"st.security.alarm.alarm", action:"alarm.off",  backgroundColor:"#e86d13", nextState: "turningOff")
-        attributeState ("turningOn", label:'Activating', icon:"st.security.alarm.alarm", action:"alarm.off", backgroundColor:"#e86d13", nextState: "turningOff")
-        attributeState ("turningOff", label:'Turning off', icon:"st.security.alarm.clear", action:"alarm.on", backgroundColor:"#ffffff", nextState: "turningOn")
-      }
-    }
-    main "main"
-    details "main"
-  }
 }
 
 def updated() {

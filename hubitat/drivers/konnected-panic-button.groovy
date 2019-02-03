@@ -26,16 +26,6 @@ metadata {
       description: "By default, the alarm state is triggered when the sensor circuit is open (NC). Select Normally Open (NO) when a closed circuit indicates an alarm."
   }
 
-  tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-        attributeState ("off", label: "Off",    icon:"st.illuminance.illuminance.dark",  backgroundColor:"#ffffff")
-        attributeState ("on",  label: "Panic!", icon:"st.illuminance.illuminance.light", backgroundColor:"#e86d13")
-      }
-    }
-    main "main"
-    details "main"
-  }
 }
 
 

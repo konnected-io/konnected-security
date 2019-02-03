@@ -27,16 +27,6 @@ metadata {
       description: "By default, the alarm state is triggered when the sensor circuit is open (NC). Select Normally Open (NO) when a closed circuit indicates an alarm."
   }
 
-  tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.carbonMonoxide", key: "PRIMARY_CONTROL") {
-        attributeState ("clear",    label: "Clear", icon:"st.alarm.carbon-monoxide.clear", backgroundColor:"#ffffff")
-        attributeState ("detected", label: "Warning", icon:"st.alarm.carbon-monoxide.carbon-monoxide", backgroundColor:"#e86d13")
-      }
-    }
-    main "main"
-    details "main"
-  }
 }
 
 def isClosed() {

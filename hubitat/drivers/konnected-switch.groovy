@@ -24,18 +24,6 @@ metadata {
           description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
   }
 
-  tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-        attributeState ("off",  label: '${name}',    icon:"st.switches.switch.off", action:"switch.on",   backgroundColor:"#ffffff", nextState: "turningOn")
-        attributeState ("on",   label: '${name}',    icon:"st.switches.switch.on",  action:"switch.off",  backgroundColor:"#00A0DC", nextState: "turningOff")
-        attributeState ("turningOn", label:'Turning on', icon:"st.switches.switch.on", action:"switch.off", backgroundColor:"#00a0dc", nextState: "turningOff")
-        attributeState ("turningOff", label:'Turning off', icon:"st.switches.switch.off", action:"switch.on", backgroundColor:"#ffffff", nextState: "turningOn")
-      }
-    }
-    main "main"
-    details "main"
-  }
 }
 
 def updated() {

@@ -27,17 +27,6 @@ metadata {
           description: "Off delay (in milliseconds)"
   }
 
-  tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-        attributeState "off", label: 'Push', action: "momentary.push", backgroundColor: "#ffffff", nextState: "pushed"
-        attributeState "on", label: 'Push', action: "momentary.push", backgroundColor: "#00a0dc"
-        attributeState "pushed", label:'pushed', action: "momentary.push", backgroundColor:"#00a0dc", nextState: "off"
-      }
-    }
-    main "main"
-    details "main"
-  }
 }
 
 def updated() {

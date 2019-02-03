@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-public static String version() { return "2.2.3" }
+public static String version() { return "2.2.6" }
 
 definition(
   name:        "Konnected Service Manager",
@@ -37,7 +37,8 @@ mappings {
 preferences {
   page(name: "pageWelcome",       install: false, uninstall: true, content: "pageWelcome", nextPage: "pageConfiguration")
   page(name: "pageDiscovery",     install: false, content: "pageDiscovery" )
-  page(name: "pageConfiguration", install: true, content: "pageConfiguration")
+  page(name: "pageConfiguration")
+  page(name: "pageSelectHwType")
 }
 
 def installed() {
@@ -111,7 +112,7 @@ def pageWelcome() {
       } else {
         href(
           name:        "discovery",
-          title:       "Tap here to start discovery",
+          title:       "Click here to start discovery",
           page:        "pageDiscovery"
         )
       }
@@ -121,7 +122,7 @@ def pageWelcome() {
       href(
         name:        "pageWelcomeManual",
         title:       "Instructions & Knowledge Base",
-        description: "Tap to view the support portal at help.konnected.io",
+        description: "View the support portal at help.konnected.io",
         required:    false,
         image:       "https://raw.githubusercontent.com/konnected-io/docs/master/assets/images/manual-icon.png",
         url:         "https://help.konnected.io"
@@ -147,7 +148,7 @@ def pageDiscovery() {
         href(
           name: "discoveryComplete",
           title: "Found konnected-" + state.device.mac[-6..-1] + "!",
-          description: "Tap to continue",
+          description: "Click here to continue",
           page: "pageConfiguration"
         )
       }
@@ -161,37 +162,30 @@ def pageDiscovery() {
 
 // Page : 3 : Configure things wired to the Konnected board
 def pageConfiguration(params) {
-  def setHwType = params?.hwType
-  if (setHwType) { state.hwType = setHwType }
-  state.hwType ? pageAssignPins() : pageSelectHwType()
+  settings.hwType ? pageAssignPins() : pageSelectHwType()
 }
 
 private pageSelectHwType() {
-  dynamicPage(name: "pageConfiguration") {
+  dynamicPage(name: "pageConfiguration", nextPage: "pageConfiguration", install: false) {
     section(title: "Which wiring hardware do you have?") {
-      href(
-        name:        "Konnected Alarm Panel",
-        title:       "Konnected Alarm Panel",
-        description: "Tap to select",
-        page:        "pageConfiguration",
-        params:      [hwType: "alarmPanel"],
-        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/konnected-alarm-panel-st-icon-t.jpg",
-      )
-      href(
-        name:        "NodeMCU Base",
-        title:       "NodeMCU Base",
-        description: "Tap to select",
-        page:        "pageConfiguration",
-        params:      [hwType: "nodemcu"],
-        image:       "https://s3.us-east-2.amazonaws.com/konnected-io/icon-nodemcu.jpg",
+      paragraph "Select \"Konnected\" if you are using Konnected branded hardware, otherwise select NodeMCU for the open source pin mapping."
+      input(
+        name:        "hwType",
+        type:        "enum",
+        title:       "Pin Mapping",
+        description: "Click to select",
+        required: true,
+        submitOnChange: true,
+        options: ["Konnected","NodeMCU"]
       )
     }
   }
 }
 
+
 private pageAssignPins() {
   def device = state.device
-  dynamicPage(name: "pageConfiguration") {
+  dynamicPage(name: "pageConfiguration", install: true) {
     section() {
       input(
         name: "name",
@@ -243,6 +237,12 @@ private pageAssignPins() {
           title: "Enable device discovery",
           required: false,
           defaultValue: true
+        )
+        href(
+          name: "changePinMapping",
+          page: "pageSelectHwType",
+          title: "Change pin mapping",
+          description: null
         )
     }
   }
@@ -490,7 +490,7 @@ void syncChildPinState(hubitat.device.HubResponse hubResponse) {
 }
 
 private Map pinMapping() {
-  if (state.hwType == "alarmPanel") {
+  if (settings.hwType == "Konnected") {
     return [
       1: "Zone 1",
       2: "Zone 2",

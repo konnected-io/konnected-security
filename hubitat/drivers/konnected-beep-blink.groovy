@@ -41,22 +41,6 @@ metadata {
     input name: "alarmPause", type: "number", title: "Alarm Pause (ms)",
       description: "Pause between tones in alarm", range: "10..*"
   }
-
-  tiles(scale: 2) {
-    standardTile("beep", "device.switch", width: 6, height: 4, canChangeIcon: true, decoration: "flat") {
-      state "off", label: 'Beep', action: "tone.beep", icon: "st.alarm.beep.beep", backgroundColor: "#ffffff", nextState: "pushed"
-      state "on", label: 'Beep', action: "tone.beep", icon: "st.alarm.beep.beep", backgroundColor: "#00a0dc"
-      state "pushed", label:'pushed', action: "tone.beep", icon: "st.alarm.beep.beep", backgroundColor:"#00a0dc", nextState: "off"
-    }
-    standardTile("alarm", "device.alarm", width: 2, height: 2, decoration: "flat") {
-      state "off", label: "Off", action: "alarm.siren", icon: "st.security.alarm.clear", nextState: "turningOn"
-      state "siren", label: "Alarm", action: "alarm.off", icon: "st.security.alarm.alarm", backgroundColor: "#e86d13", nextState: "turningOff"
-      state "turningOn", label:'Activating', icon:"st.security.alarm.alarm", action:"alarm.off", backgroundColor:"#e86d13", nextState: "turningOff"
-      state "turningOff", label:'Turning off', icon:"st.security.alarm.clear", action:"alarm.siren", backgroundColor:"#ffffff", nextState: "turningOn"
-    }
-    main "beep"
-    details "beep", "alarm"
-  }
 }
 
 def updated() {

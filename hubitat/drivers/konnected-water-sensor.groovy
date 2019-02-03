@@ -24,16 +24,6 @@ metadata {
       defaultValue: "Normally Open",
       description: "Most leak sensors indicate water when the circuit is closed (NO). Select Normally Closed (NC) to reverse this logic."
   }
-  tiles {
-    multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.water", key: "PRIMARY_CONTROL") {
-      	attributeState ("dry", label: "Dry", icon: "st.alarm.water.dry", backgroundColor: "#ffffff")
-		    attributeState ("wet", label: "Wet", icon: "st.alarm.water.wet", backgroundColor: "#00A0DC")
-      }
-    }
-    main "main"
-    details "main"
-  }
 }
 
 def isClosed() {
