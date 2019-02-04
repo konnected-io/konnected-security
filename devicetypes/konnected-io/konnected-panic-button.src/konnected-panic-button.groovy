@@ -15,22 +15,22 @@
  */
 metadata {
   definition (name: "Konnected Panic Button", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-contact") {
-    capability "Switch"
+    capability "Contact Sensor"
     capability "Sensor"
   }
 
   preferences {
     input name: "normalState", type: "enum", title: "Normal State",
-	  options: ["Normally Closed", "Normally Open"],
+	    options: ["Normally Closed", "Normally Open"],
       defaultValue: "Normally Closed",
       description: "By default, the alarm state is triggered when the sensor circuit is open (NC). Select Normally Open (NO) when a closed circuit indicates an alarm."
   }
 
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-        attributeState ("off", label: "Off",    icon:"st.illuminance.illuminance.dark",  backgroundColor:"#ffffff")
-        attributeState ("on",  label: "Panic!", icon:"st.illuminance.illuminance.light", backgroundColor:"#e86d13")
+      tileAttribute ("device.contact", key: "PRIMARY_CONTROL") {
+        attributeState ("closed", label: "Off",    icon:"st.illuminance.illuminance.dark",  backgroundColor:"#ffffff")
+        attributeState ("open",  label: "Panic!", icon:"st.illuminance.illuminance.light", backgroundColor:"#e86d13")
       }
     }
     main "main"
@@ -38,18 +38,17 @@ metadata {
   }
 }
 
-
 def isClosed() {
-  normalState == "Normally Open" ? "on" : "off"
+  normalState == "Normally Open" ? "open" : "closed"
 }
 
 def isOpen() {
-  normalState == "Normally Open" ? "off" : "on"
+  normalState == "Normally Open" ? "closed" : "open"
 }
 
 // Update state sent from parent app
 def setStatus(state) {
   def stateValue = state == "1" ? isOpen() : isClosed()
-  sendEvent(name: "switch", value: stateValue)
+  sendEvent(name: "contact", value: stateValue)
   log.debug "$device.label is $stateValue"
 }
