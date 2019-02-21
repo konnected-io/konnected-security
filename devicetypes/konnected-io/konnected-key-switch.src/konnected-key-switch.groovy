@@ -24,21 +24,21 @@ metadata {
   preferences {
     input name: "invertTrigger", type: "bool", title: "Low Level Trigger",
           description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
-    input name: "pushDelay", type: "number", title: "Push Momentary Delay",
+    input name: "awayDelay", type: "number", title: "Away Momentary Delay",
           description: "Off delay (in milliseconds)"
-    input name: "holdDelay", type: "number", title: "Hold Momentary Delay",
+    input name: "stayDelay", type: "number", title: "Stay Momentary Delay",
           description: "Off delay (in milliseconds)"
   }
 
   tiles {
     standardTile("button", "device.button", width: 1, height: 1) {
-      state "default", label: "", icon: "st.unknown.zwave.remote-controller", backgroundColor: "#ffffff"
+      state "default", label: "", icon: "st.Home.home3", backgroundColor: "#ffffff"
     }
     standardTile("push", "device.button", width: 1, height: 1, decoration: "flat") {
-      state "default", label: "Push", backgroundColor: "#ffffff", action: "push"
+      state "default", label: "Arm Away", backgroundColor: "#ffffff", action: "push"
     } 
     standardTile("hold", "device.button", width: 1, height: 1, decoration: "flat") {
-      state "default", label: "Hold", backgroundColor: "#ffffff", action: "hold"
+      state "default", label: "Arm Stay", backgroundColor: "#ffffff", action: "hold"
     }          
     main "button"
     details(["button","push","hold"])
