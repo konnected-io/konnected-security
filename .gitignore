@@ -1,6 +1,9 @@
 # Compiled Lua sources
 luac.out
 
+# LFS image
+src/lfs/lfs.img
+
 # luarocks build files
 *.src.rock
 *.zip
