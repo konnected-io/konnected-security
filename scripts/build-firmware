@@ -1,24 +1,30 @@
 #!/bin/bash
 
 FIRMWARE_PATH=${PWD}/../nodemcu-firmware
-IMAGE_NAME=konnected-firmware-2-2-6
+IMAGE_NAME=konnected-firmware-2-2-7
 
+# Copy firmware configuration from this repository to the nodemcu-firmware repo
 cp firmware/2.2.0/app/include/* $FIRMWARE_PATH/app/include/
 
 rm $FIRMWARE_PATH/local/fs/*
-cp src/* $FIRMWARE_PATH/local/fs
 
-docker run \
-  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware \
-  -v ${PWD}/scripts:/scripts marcelstoer/nodemcu-build bash /scripts/cross-compile
-
-rm $FIRMWARE_PATH/local/fs/*.lua
-rm $FIRMWARE_PATH/local/fs/init.lc
-cp src/init.lua $FIRMWARE_PATH/local/fs
-
+# Build NodeMCU firmware image
 docker run -e "INTEGER_ONLY=1" \
   -e "IMAGE_NAME=${IMAGE_NAME}" \
   --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware marcelstoer/nodemcu-build build
 
+# Build LFS image with application files
+docker run -e "IMAGE_NAME=lfs" \
+  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware \
+  -v ${PWD}/src/lfs:/opt/lua marcelstoer/nodemcu-build lfs-image
+
+mv src/lfs/LFS_float_lfs.img src/lfs/lfs.img
+
+# Build SPIFFS image
+docker run \
+  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware \
+  -v ${PWD}/scripts:/scripts \
+  -v ${PWD}/src:/opt/lua marcelstoer/nodemcu-build bash /scripts/build-spiffs
+
 cp ${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin firmware/${IMAGE_NAME}.bin
-cp ${FIRMWARE_PATH}/bin/0xf0000-0x1f400.img firmware/konnected-filesystem-0xf0000-2-2-6.img
+cp ${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img firmware/konnected-filesystem-0x100000-2-2-7.img

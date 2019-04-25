@@ -45,7 +45,7 @@
 // the size of the store that you need.  This can be any multiple of 4kB up to
 // a maximum 256Kb.
 
-//#define LUA_FLASH_STORE 0x10000
+#define LUA_FLASH_STORE 0x10000
 
 
 // By default Lua executes the file init.lua at start up.  The following
@@ -72,7 +72,7 @@
 // gives the fastest start-up and imaging times.
 
 #define BUILD_SPIFFS
-#define SPIFFS_FIXED_LOCATION        0xf0000
+#define SPIFFS_FIXED_LOCATION        0x100000
 #define SPIFFS_MAX_FILESYSTEM_SIZE    128000
 //#define SPIFFS_SIZE_1M_BOUNDARY
 #define SPIFFS_CACHE 1          // Enable if you use you SPIFFS in R/W mode

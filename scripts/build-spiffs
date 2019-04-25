@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/opt/nodemcu-firmware/tools/spiffsimg/spiffsimg -f /opt/nodemcu-firmware/bin/konnected-filesystem-0x%x.img -S 2MB -U 0x100000 -r /scripts/spiffs.lst -d

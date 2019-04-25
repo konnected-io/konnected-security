@@ -1,0 +1,10 @@
+import /opt/lua/actuators.lua actuators.lua
+import /opt/lua/dht_sensors.lua dht_sensors.lua
+import /opt/lua/ds18b20_sensors.lua ds18b20_sensors.lua
+import /opt/lua/enduser_setup.html.gz enduser_setup.html.gz
+import /opt/lua/http_favicon.ico.gz http_favicon.ico.gz
+import /opt/lua/http_index.html.gz http_index.html.gz
+import /opt/lua/init.lua init.lua
+import /opt/lua/sensors.lua sensors.lua
+import /opt/lua/settings.lua settings.lua
+import /opt/lua/lfs/lfs.img lfs.img
