@@ -10,6 +10,7 @@ local dni = wifi.sta.getmac():gsub("%:", "")
 local timeout = tmr.create()
 local sensorTimer = tmr.create()
 local sendTimer = tmr.create()
+--local mqtt_client = require("mqtt_test")
 
 timeout:register(10000, tmr.ALARM_SEMI, node.restart)
 
@@ -139,33 +140,37 @@ sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   elseif sensorPut[1] then
     t:stop()
     local sensor = sensorPut[1]
-    timeout:start()
-    http.put(table.concat({ settings.apiUrl, "/device/", dni }),
-      table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
-      sjson.encode(sensor),
-      function(code)
-        timeout:stop()
-        printHttpResponse(code, sensor)
-
-        -- check for success and retry if necessary
-        if code >= 200 and code < 300 then
-          table.remove(sensorPut, 1)
-        else
-          -- retry up to 10 times then reboot as a failsafe
-          local retry = sensor.retry or 0
-          if retry == 10 then
-            print("Heap:", node.heap(), "Retried 10 times and failed. Rebooting in 30 seconds.")
-            for k,v in pairs(sensorPut) do sensorPut[k]=nil end -- remove all pending sensor updates
-            tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
-          else
-            sensor.retry = retry + 1
-            sensorPut[1] = sensor
-          end
-        end
-
-        blinktimer:start()
-        t:start()
-      end)
+    printHttpResponse(0, sensor)
+    if mqtt_client then
+      mqtt_client:publish('/things/' .. wifi.sta.getmac():lower(), sensor)
+    end
+--    timeout:start()
+--    http.put(table.concat({ settings.apiUrl, "/device/", dni }),
+--      table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
+--      sjson.encode(sensor),
+--      function(code)
+--        timeout:stop()
+--        printHttpResponse(code, sensor)
+--
+--        -- check for success and retry if necessary
+--        if code >= 200 and code < 300 then
+--          table.remove(sensorPut, 1)
+--        else
+--          -- retry up to 10 times then reboot as a failsafe
+--          local retry = sensor.retry or 0
+--          if retry == 10 then
+--            print("Heap:", node.heap(), "Retried 10 times and failed. Rebooting in 30 seconds.")
+--            for k,v in pairs(sensorPut) do sensorPut[k]=nil end -- remove all pending sensor updates
+--            tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
+--          else
+--            sensor.retry = retry + 1
+--            sensorPut[1] = sensor
+--          end
+--        end
+--
+--        blinktimer:start()
+    t:start()
+--      end)
   end
 
   collectgarbage()

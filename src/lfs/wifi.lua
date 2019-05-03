@@ -51,10 +51,21 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
 
     gpio.write(4, gpio.HIGH)
     enduser_setup.stop()
-    require("server")
-    print("Heap: ", node.heap(), "Loaded: ", "server")
-    require("application")
-    print("Heap: ", node.heap(), "Loaded: ", "application")
+
+    sntp.sync('time.google.com',
+      function(sec)
+        print("Heap: ", node.heap(), "Time set:", sec)
+        require("server")
+        print("Heap: ", node.heap(), "Loaded: ", "server")
+        require("application")
+        print("Heap: ", node.heap(), "Loaded: ", "application")
+      end,
+      function()
+        print("Heap: ", node.heap(), "Time sync failed!")
+      end)
+
+--    print("Heap:", node.heap(), "Connecting to AWS IoT")
+--    require("mqtt_test")
   end
 end)
 
