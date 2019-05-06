@@ -180,7 +180,7 @@
 //#define DEVELOPMENT_TOOLS
 //#define DEVELOPMENT_USE_GDB
 //#define DEVELOPMENT_BREAK_ON_STARTUP_PIN 1
-#define DEVELOP_VERSION
+//#define DEVELOP_VERSION
 
 
 // *** Heareafter, there be demons ***

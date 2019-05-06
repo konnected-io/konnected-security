@@ -21,9 +21,11 @@ local function process(request)
 			local setVar = require("variables_set")
 			setVar("settings", require("variables_build")({
 				token = request.body.token,
-				apiUrl = request.body.apiUrl,
+				endpoint = (request.body.endpoint or request.body.apiUrl),
+				endpoint_type = request.body.endpoint_type,
 				blink = request.body.blink,
-				discovery = request.body.discovery
+				discovery = request.body.discovery,
+				aws = request.body.aws
 			}))
 			setVar("sensors",   require("variables_build")(request.body.sensors))
 			setVar("actuators", require("variables_build")(request.body.actuators))

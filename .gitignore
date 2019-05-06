@@ -3,7 +3,6 @@ luac.out
 
 # LFS image
 src/lfs/lfs.img
-src/aws_config.lua
 
 # luarocks build files
 *.src.rock

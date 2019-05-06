@@ -12,7 +12,7 @@ local function connect(self, url)
 end
 
 local function close(self)
-        self.ws:close()
+	self.ws:close()
 end
 
 local function on(self, event, callback)
@@ -49,28 +49,28 @@ local function Client()
 	}
 
 	ws:on('receive', function(_, msg, opcode, x)
-		print("received", msg:len(), "bytes:", mqtt_packet.toHex(msg))
+--		print("received", msg:len(), "msg:", msg, "bytes:", mqtt_packet.toHex(msg))
 		local parsed = mqtt_packet.parse(msg)
-		for k, v in pairs(parsed) do
-			print('>', k, v)
-		end
-		if parsed.cmd == 3 then
-		    client:emit('message', parsed.topic, parsed.payload)
-		end
-		if parsed.cmd == 2 then
-		    client:emit('connect')
+--		for k, v in pairs(parsed) do
+--			print('>', k, v)
+--		end
+
+		if parsed.cmd == 4 then
+			client:emit('puback', parsed.message_id)
+		elseif parsed.cmd == 3 then
+			client:emit('message', parsed.topic, parsed.payload)
+		elseif parsed.cmd == 2 then
+			client:emit('connect')
 		end
 	end)
 
 	ws:on('close', function(_, status)
-		print('websocket closed, status:', status)
+		print("Heap:", node.heap(), 'websocket closed, status:', status)
 		client:emit('offline')
-		-- client.ws = nil
-		-- client.ws = create_ws()
 	end)
 
 	ws:on('connection', function(_)
-		print("websocket connected")
+		print("Heap:", node.heap(), "websocket connected")
 		ws:send(string.char(0x10, 0x0c, 0x00, 0x04, 0x4d, 0x51, 0x54, 0x54, 0x04, 0x02, 0x00, 0x00, 0x00, 0x00), 2)
 	end)
 

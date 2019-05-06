@@ -5,17 +5,17 @@ local function toHex(str)
 end
 
 local function lengthStr(length)
-    local buf = ""
-    local digit = 0
-    repeat
-	digit = bit32.band(length, 127)
-	length = bit32.rshift(length, 7)
-	if length > 0 then
-		digit = digit + 128
-	end
-	buf = buf .. string.char(digit)
-    until length == 0
-    return buf
+  local buf = ""
+  local digit = 0
+  repeat
+    digit = bit32.band(length, 127)
+    length = bit32.rshift(length, 7)
+    if length > 0 then
+      digit = digit + 128
+    end
+    buf = buf .. string.char(digit)
+  until length == 0
+  return buf
 end
 
 local function numberStr(n)
@@ -27,7 +27,6 @@ local function textStr(text)
 end
 
 local function subscribe(opts)
-	local buf = {}
 	local topics_buf = ""
 	for topic, qos in pairs(opts.topics) do
 		topics_buf = topics_buf .. textStr(topic) .. string.char(qos)
@@ -58,12 +57,11 @@ local function parse(buf)
 		i = i + 2
 		packet.topic = buf:sub(i, i + topic_len - 1)
 		packet.payload = buf:sub(i + topic_len)
+	elseif cmd == 4 then
+	  packet.message_id = bit32.lshift(buf:byte(3),8) + buf:byte(4)
 	end
 	return packet
 end
-
--- print('sub', toHex(subscribe({msg_id=0x11234, topics={{qos=0, topic='abc'}, {qos=1, topic='d'}}})))
--- print('pub', toHex(publish({topic='abc', payload='payload', qos=1, msg_id=0x11234})))
 
 return {
 	subscribe = subscribe,

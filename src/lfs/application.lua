@@ -4,15 +4,12 @@ local dht_sensors = require("dht_sensors")
 local ds18b20_sensors = require("ds18b20_sensors")
 local actuators = require("actuators")
 local settings = require("settings")
-local sensorPut = {}
-local actuatorGet = {}
 local dni = wifi.sta.getmac():gsub("%:", "")
-local timeout = tmr.create()
 local sensorTimer = tmr.create()
-local sendTimer = tmr.create()
---local mqtt_client = require("mqtt_test")
 
-timeout:register(10000, tmr.ALARM_SEMI, node.restart)
+-- globals
+sensorPut = {}
+actuatorGet = {}
 
 -- initialize binary sensors
 for i, sensor in pairs(sensors) do
@@ -89,91 +86,19 @@ sensorTimer:alarm(200, tmr.ALARM_AUTO, function(t)
   end
 end)
 
--- print HTTP status line
-local printHttpResponse = function(code, data)
-  local a = { "Heap:", node.heap(), "HTTP Call:", code }
-  for k, v in pairs(data) do
-    table.insert(a, k)
-    table.insert(a, v)
-  end
-  print(unpack(a))
+
+-- Support different communication methods for reporting to upstream platforms
+local endpoint_type = settings.endpoint_type or 'rest'
+
+-- REST is the default communication method and is used by the original SmartThings, Hubitat, Home Assistant,
+-- and OpenHab integrations.
+if endpoint_type == 'rest' then
+  require("rest_endpoint")(settings)
+
+-- AWS IoT is used for the Konnected Cloud Connector or custom integrations build on AWS
+elseif endpoint_type == 'aws_iot' then
+  require("aws_iot")(settings)
 end
 
--- This loop makes the HTTP requests to the home automation service to get or update device state
-sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
 
-  -- gets state of actuators
-  if actuatorGet[1] then
-    t:stop()
-    local actuator = actuatorGet[1]
-    timeout:start()
 
-    http.get(table.concat({ settings.apiUrl, "/device/", dni, '?pin=', actuator.pin }),
-      table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\n" }),
-      function(code, response)
-        timeout:stop()
-        local pin, state, json_response, status
-        if response and code >= 200 and code < 300 then
-          status, json_response = pcall(function() return sjson.decode(response) end)
-          if status then
-            pin = tonumber(json_response.pin)
-            state = tonumber(json_response.state)
-          end
-        end
-        printHttpResponse(code, {pin = pin, state = state})
-
-        gpio.mode(actuator.pin, gpio.OUTPUT)
-        if pin == actuator.pin and code >= 200 and code < 300 and state then
-          gpio.write(actuator.pin, state)
-        else
-          state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
-          gpio.write(actuator.pin, state)
-        end
-        print("Heap:", node.heap(), "Initialized actuator Pin:", actuator.pin, "Trigger:", actuator.trigger, "Initial state:", state)
-
-        table.remove(actuatorGet, 1)
-        blinktimer:start()
-        t:start()
-      end)
-
-  -- update state of sensors when needed
-  elseif sensorPut[1] then
-    t:stop()
-    local sensor = sensorPut[1]
-    printHttpResponse(0, sensor)
-    if mqtt_client then
-      mqtt_client:publish('/things/' .. wifi.sta.getmac():lower(), sensor)
-    end
---    timeout:start()
---    http.put(table.concat({ settings.apiUrl, "/device/", dni }),
---      table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
---      sjson.encode(sensor),
---      function(code)
---        timeout:stop()
---        printHttpResponse(code, sensor)
---
---        -- check for success and retry if necessary
---        if code >= 200 and code < 300 then
---          table.remove(sensorPut, 1)
---        else
---          -- retry up to 10 times then reboot as a failsafe
---          local retry = sensor.retry or 0
---          if retry == 10 then
---            print("Heap:", node.heap(), "Retried 10 times and failed. Rebooting in 30 seconds.")
---            for k,v in pairs(sensorPut) do sensorPut[k]=nil end -- remove all pending sensor updates
---            tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
---          else
---            sensor.retry = retry + 1
---            sensorPut[1] = sensor
---          end
---        end
---
---        blinktimer:start()
-    t:start()
---      end)
-  end
-
-  collectgarbage()
-end)
-
-print("Heap:", node.heap(), "Endpoint:", settings.apiUrl)

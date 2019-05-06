@@ -13,6 +13,11 @@ end
 
 -- This loop makes the HTTP requests to the home automation service to get or update device state
 local function startLoop(settings)
+
+  local timeout = tmr.create()
+  timeout:register(10000, tmr.ALARM_SEMI, node.restart)
+
+  local sendTimer = tmr.create()
   sendTimer:alarm(200, tmr.ALARM_AUTO, function(t)
 
     -- gets state of actuators
@@ -21,7 +26,7 @@ local function startLoop(settings)
       local actuator = actuatorGet[1]
       timeout:start()
 
-      http.get(table.concat({ settings.apiUrl, "/device/", dni, '?pin=', actuator.pin }),
+      http.get(table.concat({ settings.endpoint, "/device/", dni, '?pin=', actuator.pin }),
         table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\n" }),
         function(code, response)
           timeout:stop()
@@ -55,7 +60,7 @@ local function startLoop(settings)
       local sensor = sensorPut[1]
       printHttpResponse(0, sensor)
       timeout:start()
-      http.put(table.concat({ settings.apiUrl, "/device/", dni }),
+      http.put(table.concat({ settings.endpoint, "/device/", dni }),
         table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
         sjson.encode(sensor),
         function(code)
@@ -85,7 +90,7 @@ local function startLoop(settings)
 
     collectgarbage()
   end)
-  print("Heap:", node.heap(), "REST Endpoint:", settings.apiUrl)
+  print("Heap:", node.heap(), "REST Endpoint:", settings.endpoint)
 end
 
 return function(settings)
