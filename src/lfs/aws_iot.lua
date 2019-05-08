@@ -73,12 +73,17 @@ end)
 
 c:on('message', function(_, topic, message)
 	print("Heap:", node.heap(), 'topic:', topic, 'msg:', message)
-	local data = sjson.decode(message)
+	local payload = sjson.decode(message)
+	require("switch")(payload)
 end)
 
 c:on('connect', function()
 	print("Heap:", node.heap(), "mqtt: connected")
-	c:subscribe("konnected/" .. device_id .. "/switch/#")
+  for i, actuator in pairs(actuatorGet) do
+		local topic = "konnected/" .. device_id .. "/switch/" .. actuator.pin
+	  print("Heap:", node.heap(), "Subscribing to topic:", topic)
+		c:subscribe(topic)
+	end
 	sendTimer:start()
 end)
 

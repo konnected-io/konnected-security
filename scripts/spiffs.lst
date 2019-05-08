@@ -7,5 +7,4 @@ import /opt/lua/http_index.html.gz http_index.html.gz
 import /opt/lua/init.lua init.lua
 import /opt/lua/sensors.lua sensors.lua
 import /opt/lua/settings.lua settings.lua
-import /opt/lua/aws_config.lua aws_config.lua
 import /opt/lua/lfs/lfs.img lfs.img
