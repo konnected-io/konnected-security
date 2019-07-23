@@ -1,6 +1,6 @@
 local module = ...
 
-local infiniteLoops = {}
+infiniteLoops = {}
 
 local function turnOffIn(pin, on_state, delay, times, pause)
   local off = on_state == 0 and 1 or 0
