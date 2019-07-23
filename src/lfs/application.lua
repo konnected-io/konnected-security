@@ -4,7 +4,6 @@ local dht_sensors = require("dht_sensors")
 local ds18b20_sensors = require("ds18b20_sensors")
 local actuators = require("actuators")
 local settings = require("settings")
-local dni = wifi.sta.getmac():gsub("%:", "")
 local sensorTimer = tmr.create()
 
 -- globals

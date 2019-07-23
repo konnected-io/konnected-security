@@ -13,6 +13,7 @@ end
 
 -- This loop makes the HTTP requests to the home automation service to get or update device state
 local function startLoop(settings)
+  local dni = wifi.sta.getmac():gsub("%:", "")
 
   local timeout = tmr.create()
   timeout:register(10000, tmr.ALARM_SEMI, node.restart)

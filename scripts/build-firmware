@@ -28,4 +28,4 @@ docker run \
   -v ${PWD}/src:/opt/lua marcelstoer/nodemcu-build bash /scripts/build-spiffs
 
 cp ${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin firmware/${IMAGE_NAME}.bin
-cp ${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img firmware/konnected-filesystem-0x100000-2-3-0.img
+cp ${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img firmware/konnected-filesystem-0x100000-2-3-0-beta2.img
