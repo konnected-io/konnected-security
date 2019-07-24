@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FIRMWARE_NAME=konnected-firmware-2-3-0-beta1.bin
-FILESYSTEM_NAME=konnected-filesystem-0x100000-2-3-0-beta3.img
+FILESYSTEM_NAME=konnected-filesystem-0x100000-2-3-0-beta4.img
 PORT=/dev/cu.wchusbserial1410
 
 esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${FIRMWARE_NAME}
