@@ -3,7 +3,10 @@ local module = ...
 local function respondWithText(sck, body, ty, st)
   local ty = ty or "application/json"
   local st = st or 200
-  local sendContent = table.concat({'HTTP/1.1 ', st, '\r\nContent-Type: ', ty, '\r\nContent-Length: ', string.len(body), '\r\n\r\n', body})
+  local sendContent = table.concat({
+    'HTTP/1.1 ', st, '\r\nContent-Type: ', ty, '\r\nContent-Length: ', string.len(body),
+    '\r\nAccess-Control-Allow-Origin: *\r\n\r\n', body
+  })
   local function doSend(s)
     if sendContent == '' then
       s:close()
@@ -28,7 +31,7 @@ local function respondWithFile(sck, filename, ty, st)
     return
   end
 
-  local header = {'HTTP/1.1 ', st, '\r\nContent-Type: ', ty, '\r\n'}
+  local header = {'HTTP/1.1 ', st, '\r\nContent-Type: ', ty, '\r\n', 'Access-Control-Allow-Origin: *\r\n'}
   if string.sub(filename, -3) == '.gz' then
     table.insert(header, 'Content-Encoding: gzip\r\n')
   end
