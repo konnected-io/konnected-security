@@ -29,7 +29,13 @@ local function httpdRequest(data)
     httpdRequestHandler.body = string.sub(data, bodyPos + 4, #data)
 
     if httpdRequestHandler.contentType == "application/json" then
-      httpdRequestHandler.body = sjson.decode(httpdRequestHandler.body)
+      local status, body_obj = pcall(function() return sjson.decode(httpdRequestHandler.body) end)
+      if status then
+        httpdRequestHandler.body = body_obj
+      else
+        print("Heap:", node.heap(), "Discarding malformed JSON", httpdRequestHandler.body)
+        httpdRequestHandler.body = nil
+      end
     end
   end
 
