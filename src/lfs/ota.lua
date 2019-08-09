@@ -5,9 +5,9 @@ local function process(request)
     local uri = request.body.uri
     local proto, host, path, filename = string.match(uri, "(%w+)://([^/]+)(/[%w%p]+/)(.*)")
     LFS.http_ota(host, path, filename)
-    return ""
+    return '{ "status":"ok", "host":"'.. host ..'", "path":"'.. path ..'", "filename":"'.. filename ..'" }'
   else
-    return "bad request"
+    return '{ "status":"bad request" }'
   end
 end
 
