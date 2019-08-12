@@ -5,6 +5,9 @@ local function build_list(objects)
   local out = {}
   for key, value in pairs(objects) do
     if type(value) == 'table' then
+      if type(key) == 'string' then
+        table.insert(out, key .. "=")
+      end
       table.insert(out, "{")
       table.insert(out, build_list(value))
       table.insert(out, "},")

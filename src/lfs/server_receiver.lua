@@ -49,6 +49,11 @@ local function httpReceiver(sck, payload)
     response.text(sck, require("server_status")())
   end
 
+  if request.path == "/ota" then
+    print("Heap: ", node.heap(), "HTTP: ", "OTA Update")
+    response.text(sck, require("ota")(request))
+  end
+
   sck, request, response = nil
   collectgarbage()
 end

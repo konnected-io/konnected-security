@@ -93,7 +93,7 @@
 #define CLIENT_SSL_ENABLE
 //#define MD2_ENABLE
 #define SHA2_ENABLE
-#define SSL_BUFFER_SIZE 4196
+#define SSL_BUFFER_SIZE 5376
 
 
 // GPIO_INTERRUPT_ENABLE needs to be defined if your application uses the

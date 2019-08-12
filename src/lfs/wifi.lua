@@ -47,14 +47,26 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
     end
     failsafeTimer:unregister()
     failsafeTimer = nil
-    print("Heap: ", node.heap(), "Wifi connected with IP: ", wifi.sta.getip())
+    local ip, nm, gw = wifi.sta.getip()
+    print("Heap: ", node.heap(), "Wifi connected with IP: ", ip, "Gateway:", gw)
 
     gpio.write(4, gpio.HIGH)
     enduser_setup.stop()
-    require("server")
-    print("Heap: ", node.heap(), "Loaded: ", "server")
-    require("application")
-    print("Heap: ", node.heap(), "Loaded: ", "application")
+
+    sntp.sync({gw, 'time.google.com', 'pool.ntp.org'},
+      function(sec)
+        tm = rtctime.epoch2cal(sec)
+        print("Heap: ", node.heap(), "Current Time set:",
+          string.format("%04d-%02d-%02d %02d:%02d:%02d UTC",
+            tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"]))
+        require("server")
+        print("Heap: ", node.heap(), "Loaded: ", "server")
+        require("application")
+        print("Heap: ", node.heap(), "Loaded: ", "application")
+      end,
+      function()
+        print("Heap: ", node.heap(), "Time sync failed!")
+      end)
   end
 end)
 
