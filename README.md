@@ -48,16 +48,17 @@ Konnected leverages the [NodeMCU](https://github.com/nodemcu/nodemcu-firmware) c
         git clone https://github.com/konnected-io/konnected-security.git
         git clone https://github.com/nodemcu/nodemcu-firmware.git
 
-1. Use the build-firmware script to kick off the build.  Provide a version string formatted as shown below. The build script will automatically pull down the nodeMCU docker builder, build the base firmware, create an LFS image, and build a SPIFFS file system containing the entire Konnected application.
+1. Use the build-firmware script to kick off the build - providing a semantic version command line argument as shown below. The build script will automatically pull down the nodeMCU docker builder, build the base firmware, create an LFS image, and build a SPIFFS file system containing the entire Konnected application.
 
         cd konnected-security
         ./scripts/build-firmware 2-2-99
 
-1. Once the build completes a folder will be created in [firmware/builds](firmware/builds) named after the version specified in the previous step. This folder will contain two files also named to reflect the version.
+1. Once the build completes a folder will be created in `firmware/builds` named after the version specified in the previous step. This folder will contain two files also reflecting the version.
    1. konnected-filesystem-0x100000-2-2-99.img
    1. konnected-firmware-2-2-99.bin
 
-Note: Each time you build it will remove any prior build outputs corresponding to the same version.
+*Note: Each time you build it will remove any prior build outputs corresponding to the same version.*
+*Note: Versions in this project should always be formatted `<major>-<minor>-<patch>`.*
 
 ### Flashing a Build
 Flashing a build is simple with the [Konnected Flashing Tool](https://help.konnected.io/support/solutions/articles/32000023470-flashing-new-konnected-firmware-software).
@@ -71,11 +72,11 @@ Mac and Linux users can also easily flash from the command line using [scripts/f
      
         pip3 install esptool
         
- 1. Run the script in `scripts/flash` to flash the firmware and software to the device. You must pass in the version and serial port. The flash script will always attempt to flash a matching version in [firmware/builds](firmware/builds) before falling back to [firmware/releases](firmware/releases).
+ 1. Run the script in `scripts/flash` to flash the firmware and software to the device. You must pass in version and serial port args. The flash script will always attempt to flash a matching version in `firmware/builds` before falling back to `firmware/releases`
 
          ./scripts/flash 2-2-99 /dev/ttyS3
  
- Note: You may also need to make the script executable by running `chmod 755 scripts/flash`. 
+ *Note: You may also need to make the script executable by running `chmod 755 scripts/flash`.*
  
 
 ### Donations
