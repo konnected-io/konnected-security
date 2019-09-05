@@ -29,8 +29,9 @@ if [ ! -d "${BUILD_PATH}" ] ; then
 fi
 
 FIRMWARE_NAME="${BUILD_PATH}/konnected-firmware-${VERSION}.bin"
-FILESYSTEM_NAME="${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img"
+FILESYSTEM_NAME="${BUILD_PATH}/konnected-filesystem-0x*-${VERSION}.img"
 
+# Make sure the files exist as expected before flashing
 if ! [ -f ${FIRMWARE_NAME} ] ; then
     echo "Firmware build not found...expected at '${FIRMWARE_NAME}'"
     usage
@@ -41,8 +42,12 @@ if ! [ -f ${FILESYSTEM_NAME} ] ; then
     usage
 fi
 
+# Get the full name and parse out the address
+FILESYSTEM_NAME="$(echo ${BUILD_PATH}/konnected-filesystem-0x*-${VERSION}.img)"
+FS_ADDRESS="$(cut -d'-' -f5 <<<${FILESYSTEM_NAME})"
+
 esptool.py "--port=${PORT}" write_flash --flash_mode dio 0x00000 "${FIRMWARE_NAME}"
-esptool.py "--port=${PORT}" write_flash --flash_mode dio 0x100000 "${FILESYSTEM_NAME}"
+esptool.py "--port=${PORT}" write_flash --flash_mode dio "${FS_ADDRESS}" "${FILESYSTEM_NAME}"
 
 tput bel
 
