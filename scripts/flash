@@ -1,10 +1,54 @@
 #!/bin/bash
 
-FIRMWARE_NAME=konnected-firmware-2-3-0.bin
-FILESYSTEM_NAME=konnected-filesystem-0x100000-2-3-0.img
-PORT=/dev/cu.wchusbserial1410
+function usage() {
+    echo
+    echo "usage: $0 <version> <port>"
+    echo
+    echo '    version should be formatted <major>-<minor>-<patch>'
+    echo
+    echo 'Execute from the root dir of the repo.'
+    echo "    ex: '$0 /dev/ttyS5 2-3-0'"
+    exit 1
+}
+if [ "$#" == 0 ]; then
+    usage
+fi
 
-esptool.py --port=${PORT} write_flash --flash_mode dio 0x00000 firmware/${FIRMWARE_NAME}
-esptool.py --port=${PORT} write_flash --flash_mode dio 0x100000 firmware/${FILESYSTEM_NAME}
+VERSION="$1"
+if ! [[ "${VERSION}" =~ ^[0-9]+-[0-9]+-[0-9]+ ]] ; then
+    echo "Version not formatted correctly..."
+    usage
+fi
+
+PORT=${2:-/dev/cu.wchusbserial1410}
+BUILD_PATH="firmware/builds/${VERSION}"
+
+if [ ! -d "${BUILD_PATH}" ] ; then
+    echo "No matching build version - trying releases"
+    BUILD_PATH="firmware/releases/${VERSION}"
+fi
+
+FIRMWARE_NAME="${BUILD_PATH}/konnected-firmware-${VERSION}.bin"
+FILESYSTEM_NAME="${BUILD_PATH}/konnected-filesystem-0x*-${VERSION}.img"
+
+# Make sure the files exist as expected before flashing
+if ! [ -f ${FIRMWARE_NAME} ] ; then
+    echo "Firmware build not found...expected at '${FIRMWARE_NAME}'"
+    usage
+fi
+
+if ! [ -f ${FILESYSTEM_NAME} ] ; then
+    echo "Filesystem build not found...expected at '${FILESYSTEM_NAME}'"
+    usage
+fi
+
+# Get the full name and parse out the address
+FILESYSTEM_NAME="$(echo ${BUILD_PATH}/konnected-filesystem-0x*-${VERSION}.img)"
+FS_ADDRESS="$(cut -d'-' -f5 <<<${FILESYSTEM_NAME})"
+
+esptool.py "--port=${PORT}" write_flash --flash_mode dio 0x00000 "${FIRMWARE_NAME}"
+esptool.py "--port=${PORT}" write_flash --flash_mode dio "${FS_ADDRESS}" "${FILESYSTEM_NAME}"
 
 tput bel
+
+echo "Completed flashing of ${BUILD_PATH}"
