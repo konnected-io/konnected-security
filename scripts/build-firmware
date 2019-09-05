@@ -1,31 +1,58 @@
 #!/bin/bash
 
-FIRMWARE_PATH=${PWD}/../nodemcu-firmware
-IMAGE_NAME=konnected-firmware-2-3-0
+function usage() {
+    echo
+    echo "usage: $0 <version>"
+    echo
+    echo '    version should be formatted <major>-<minor>-<patch>'
+    echo 
+    echo 'Execute from the root dir of the repo. Upon successful completion the release will be created in firmware/releases/<version>'
+    echo "    ex: '$0 2-3-0'"
+    exit 1
+}
+if [ "$#" == 0 ]; then
+    usage
+fi
+
+VERSION="$1"
+if ! [[ "${VERSION}" =~ ^[0-9]+-[0-9]+-[0-9]+ ]] ; then
+    echo "Version not formatted correctly..."
+    usage
+fi
+
+FIRMWARE_PATH="${PWD}/../nodemcu-firmware"
+FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
+BUILD_PATH="firmware/builds/${VERSION}"
+IMAGE_NAME="konnected-firmware-${VERSION}"
 
 # Copy firmware configuration from this repository to the nodemcu-firmware repo
-cp firmware/2.2.0/app/include/* $FIRMWARE_PATH/app/include/
+cp "${FIRMWARE_OVERLAY_PATH}"/app/include/* "${FIRMWARE_PATH}/app/include/"
 
-rm $FIRMWARE_PATH/local/fs/*
+rm -f "${FIRMWARE_PATH}/local/fs/*"
 
- Build NodeMCU firmware image
+# Build NodeMCU firmware image
 docker run -e "INTEGER_ONLY=1" \
-  -e "IMAGE_NAME=${IMAGE_NAME}" \
-  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware marcelstoer/nodemcu-build build
+    -e "IMAGE_NAME=${IMAGE_NAME}" \
+    --rm -ti -v "${FIRMWARE_PATH}:/opt/nodemcu-firmware" marcelstoer/nodemcu-build build
 
 # Build LFS image with application files
 docker run -e "IMAGE_NAME=lfs" \
-  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware \
-  -v ${PWD}/src/lfs:/opt/lua marcelstoer/nodemcu-build lfs-image
+    --rm -ti -v "${FIRMWARE_PATH}:/opt/nodemcu-firmware" \
+    -v "${PWD}/src/lfs:/opt/lua" marcelstoer/nodemcu-build lfs-image
 
 mv src/lfs/LFS_integer_lfs.img src/lfs/lfs.img
-rm src/lfs/LFS_float_lfs.img
+rm -f src/lfs/LFS_float_lfs.img
 
 # Build SPIFFS image
 docker run \
-  --rm -ti -v $FIRMWARE_PATH:/opt/nodemcu-firmware \
-  -v ${PWD}/scripts:/scripts \
-  -v ${PWD}/src:/opt/lua marcelstoer/nodemcu-build bash /scripts/build-spiffs
+    --rm -ti -v "${FIRMWARE_PATH}:/opt/nodemcu-firmware" \
+    -v "${PWD}/scripts:/scripts" \
+    -v "${PWD}/src:/opt/lua" marcelstoer/nodemcu-build bash /scripts/build-spiffs
 
-cp ${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin firmware/${IMAGE_NAME}.bin
-cp ${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img firmware/konnected-filesystem-0x100000-2-3-0.img
+# Create or clear the output directory and transfer files 
+mkdir -p "${BUILD_PATH}"
+rm -rf "${BUILD_PATH}/*"
+cp "${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin" "${BUILD_PATH}/${IMAGE_NAME}.bin"
+cp "${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img" "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img"
+
+echo "Build Complete: Flash this build with './scripts/flash ${VERSION} <port>'"

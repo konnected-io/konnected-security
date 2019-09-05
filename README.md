@@ -4,31 +4,28 @@
 
 # Konnected Security
 
-**Konnected Security** integrates wired alarm system sensors and sirens to SmartThings using a NodeMCU based ESP8266 development
- board and (optional) relay. This project consists of a few components:
+**Konnected Security** integrates wired alarm system sensors and sirens to SmartThings, Home Assistant, OpenHAB, or Hubitat using a NodeMCU based ESP8266 development board and (optional) relay. This project consists of a few components:
  
- 1. [NodeMCU](http://nodemcu.com/index_en.html) firmware for an ESP8266 development board in `firmware`
- 1. Lua and HTML source code for the NodeMCU in `src`. All these files should be uploaded to the NodeMCU's 
- internal file system
+ 1. [NodeMCU](http://nodemcu.com/index_en.html) based firmware for an ESP8266 development board in `firmware`
+ 1. Lua and HTML source code for the NodeMCU in `src`. All these files are built into a SPIFFS file system which runs on NodeMCU
  1. [SmartThings](https://www.smartthings.com/) platform code in `smartapps` and `devicetypes`
  
 ![](http://docs.konnected.io/assets/images/konnected-alarm-panel.jpg)
 
 ## Skip this Installation!
+
 [Buy a Konnected Security NodeMCU kit from us](https://store.konnected.io) and you can skip the installation! We
 pre-load the Konnected Security software on every NodeMCU device before sending it to you. When you get it, just plug it
 in connect to WiFi, and it's ready to set up. Buying from us is great way to support
 the developers who have worked hard on this project.
 
-## Installation Overview
+## Getting Started
 
- 1. Install device drivers for your NodeMCU device.
- 1. Flash the device with the included firmware [firmware/konnected-firmware-2-0-5.bin](firmware/konnected-firmware-2-0-5.bin)
- 1. Upload all the code in `src` to the device and reboot the device.
+ 1. Flash the device with the latest firmware and filesystem [firmware/releases](firmware/releases) using the instructions in the [Konnected Security Support Documentation](https://help.konnected.io/support/solutions/articles/32000023470-flashing-new-konnected-firmware-software)
  1. Connect to the WiFi network `konnected-security_XXXXXX` to set up WiFi
- 1. Follow wiring instructions and SmartThings application setup instructions in the [Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
+ 1. Follow wiring instructions and application setup instructions in the [Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
 
-### Device Drivers
+#### Note on Device Drivers
 
 Windows and Mac users will need to download drivers so your computer can talk to the ESP8266 chip over USB. Depending
 on which board you have, there are different drivers: 
@@ -42,7 +39,30 @@ on which board you have, there are different drivers:
 * have the name _Amica_ on the back
 * the small component on the board near the USB port is engraved with SiLABS CP2102
 
-### Mac & Linux Users
+### Building the Firmware
+Konnected leverages the [NodeMCU](https://github.com/nodemcu/nodemcu-firmware) codebase and [Docker builder](https://hub.docker.com/r/marcelstoer/nodemcu-build/) to create a base nodeMCU firmware image and a filesystem containing the Konnected application. Building only requires a few steps.
+
+1. Download and install [Docker](https://www.docker.com/products/docker-desktop)
+1. Clone the Konnected and nodeMCU repos to the same level in your working directory
+
+        git clone https://github.com/konnected-io/konnected-security.git
+        git clone https://github.com/nodemcu/nodemcu-firmware.git
+
+1. Use the build-firmware script to kick off the build.  Provide a version string formatted as shown below. The build script will automatically pull down the nodeMCU docker builder, build the base firmware, create an LFS image, and build a SPIFFS file system containing the entire Konnected application.
+
+        cd konnected-security
+        ./scripts/build-firmware 2-2-99
+
+1. Once the build completes a folder will be created in [firmware/builds](firmware/builds) named after the version specified in the previous step. This folder will contain two files also named to reflect the version.
+   1. konnected-filesystem-0x100000-2-2-99.img
+   1. konnected-firmware-2-2-99.bin
+
+Note: Each time you build it will remove any prior build outputs corresponding to the same version.
+
+### Flashing a Build
+Flashing a build is simple with the [Konnected Flashing Tool](https://help.konnected.io/support/solutions/articles/32000023470-flashing-new-konnected-firmware-software).
+
+Mac and Linux users can also easily flash from the command line using [scripts/flash](scripts/flash).
 
  1. You must have Python installed with `pip` or `pip3`. 
     * **Mac users**: I recommend using [Homebrew](https://brew.sh/) and `brew install python`  
@@ -51,21 +71,11 @@ on which board you have, there are different drivers:
      
         pip3 install esptool
         
- 1. Run the script in `scripts/flash` to flash the firmware and software to the device. You may need to edit the variables
- at the top of the script as your serial port may be different depending on your operating system and the type of NodeMCU development board you have. You may also need to make the script executable by running `chmod 755 scripts/flash`. 
- 
- 
-### Windows Users
+ 1. Run the script in `scripts/flash` to flash the firmware and software to the device. You must pass in the version and serial port. The flash script will always attempt to flash a matching version in [firmware/builds](firmware/builds) before falling back to [firmware/releases](firmware/releases).
 
- 1. Download and install the [NodeMCU PyFlasher tool](https://github.com/marcelstoer/nodemcu-pyflasher)
- 1. Using PyFlasher, flash the latest firmware in the `firmware` directory of this repo at 115200 baud using flash mode `dio`.
- 1. Now you need to upload all the files in the `src` directory of this repo on to the device. If you're comfortable
- using Python, I recommend `nodemcu-uploader`. The command would look something like this:
-   
-    `C:\Python27\python.exe nodemcu-uploader --port=COM3 upload * --verify=raw`
-   
-    If you prefer a GUI tool, download and run [ESPlorer](https://esp8266.ru/esplorer/) and connect to your device at baud
-    115200. Then use the _Upload_ button to upload the files to the device.
+         ./scripts/flash 2-2-99 /dev/ttyS3
+ 
+ Note: You may also need to make the script executable by running `chmod 755 scripts/flash`. 
  
 
 ### Donations
