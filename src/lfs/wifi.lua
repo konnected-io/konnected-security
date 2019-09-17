@@ -35,6 +35,14 @@ if wifi.sta.getconfig() == "" then
   print("Heap: ", node.heap(), "WiFi Setup started")
 end
 
+local bootApp = function()
+  print("Heap: ", node.heap(), "Booting Konnected application")
+  require("server")
+  print("Heap: ", node.heap(), "Loaded: ", "server")
+  require("application")
+  print("Heap: ", node.heap(), "Loaded: ", "application")
+end
+
 local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
   require("led_flip").flip()
   if wifi.sta.getip() then
@@ -56,17 +64,14 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
     sntp.sync({gw, 'time.google.com', 'pool.ntp.org'},
       function(sec)
         tm = rtctime.epoch2cal(sec)
-        print("Heap: ", node.heap(), "Current Time set:",
+        print("Heap: ", node.heap(), "Current Date/Time:",
           string.format("%04d-%02d-%02d %02d:%02d:%02d UTC",
             tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"]))
-        require("server")
-        print("Heap: ", node.heap(), "Loaded: ", "server")
-        require("application")
-        print("Heap: ", node.heap(), "Loaded: ", "application")
+        bootApp()
       end,
       function()
         print("Heap: ", node.heap(), "Time sync failed!")
+        bootApp()
       end)
   end
 end)
-
