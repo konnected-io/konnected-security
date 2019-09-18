@@ -25,6 +25,8 @@ _G.node = {
   heap = function() return 0 end,
   chipid = function() return 0 end,
   restart = function() end,
+  flashindex = function() return true end,
+  flashreload = function() end,
   info = function() return 1, 5, 4 end
 }
 
@@ -124,6 +126,30 @@ _G.unpack = function(t, i)
   if t[i] ~= nil then
     return t[i], unpack(t, i + 1)
   end
+end
+
+_G.sntp = {
+  sync = function(_, success, fail)
+    success()
+  end
+}
+
+_G.rtctime = {
+  epoch2cal = function()
+    return {
+      year = 2019,
+      mon = 9,
+      day = 17,
+      hour = 17,
+      min = 46,
+      sec = 58
+    }
+  end
+}
+
+local df = dofile
+_G.dofile = function(n)
+  df('src/lfs/' .. n)
 end
 
 -- Print contents of `tbl`, with indentation.

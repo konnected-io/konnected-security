@@ -17,7 +17,7 @@ describe("init", function()
       nodemcu.wifi.sta.config = ""
       mock(_G.enduser_setup)
 
-      dofile("src/init.lua")
+      dofile("../init.lua")
     end)
 
     after_each(function()
@@ -35,7 +35,7 @@ describe("init", function()
     before_each(function()
       require("spec/nodemcu_stubs")
       stub(_G.tmr, 'create').returns(mock_timer)
-      dofile("src/init.lua")
+      dofile("../init.lua")
 
       spy.on(_G.gpio, 'write')
       spy.on(wifi.eventmon, 'unregister')
@@ -81,7 +81,7 @@ describe("init", function()
     before_each(function()
       require("spec/nodemcu_stubs")
       stub(_G.tmr, 'create').returns(mock_timer)
-      dofile("src/init.lua")
+      dofile("../init.lua")
       spy.on(wifi.eventmon, 'unregister')
 
       nodemcu.wifi.eventmon['STA_DISCONNECTED']({SSID = "test", BSSID = "test", reason = "201"})

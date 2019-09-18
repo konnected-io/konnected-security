@@ -1,5 +1,4 @@
 local module = ...
-local switch = require("switch")
 
 local function process(request)
   if request.method == "GET" then
@@ -26,11 +25,11 @@ local function process(request)
       if request.body[1] then
         local ret = {}
         for i in pairs(request.body) do
-          table.insert(ret, switch(request.body[i]))
+          table.insert(ret, require("switch")(request.body[i]))
         end
         return sjson.encode(ret)
       else
-        return sjson.encode(switch(request.body))
+        return sjson.encode(require("switch")(request.body))
       end
     end
   end

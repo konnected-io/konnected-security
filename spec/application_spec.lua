@@ -6,7 +6,7 @@ describe("application", function()
     if name == "actuators" then
       return {{pin=1,trigger=1} }
     elseif name == "settings" then
-      return {apiUrl = "http://192.168.1.123:8123/api/konnected", token = "secrettoken"}
+      return {endpoint = "http://192.168.1.123:8123/api/konnected", token = "secrettoken"}
     else
       return real_require(name)
     end
