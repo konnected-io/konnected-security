@@ -33,9 +33,15 @@ local function publish(self, topic, message)
 	self.msg_id = self.msg_id + 1
 end
 
-local function Client()
+local function Client(aws_settings)
 	local ws = websocket.createClient()
-	ws:config({headers={["sec-websocket-protocol"] = "mqtt"}})
+  local headers = {["sec-websocket-protocol"] = "mqtt" }
+  if aws_settings.token and aws_settings.authorizer_signature then
+		headers["X-Amz-CustomAuthorizer-Name"] = aws_settings.authorizer_name
+		headers["X-Amz-CustomAuthorizer-Signature"] = aws_settings.authorizer_signature
+		headers["Token"] = aws_settings.token
+	end
+	ws:config({headers=headers})
 	local client = {
 		connect = connect,
 		close = close,

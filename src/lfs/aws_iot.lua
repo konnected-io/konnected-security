@@ -2,17 +2,21 @@ local module = ...
 
 local mqtt = require('mqtt_ws')
 local device_id = wifi.sta.getmac():lower():gsub(':','')
-local c = mqtt.Client()
+local c = mqtt.Client(require('settings').aws)
 
 local function aws_sign_url(settings)
-	local aws_sig = require('aws_sig')
-	local url = aws_sig.createSignature(
-		settings.aws.access_key, settings.aws.secret_key,
-		settings.aws.region, 'iotdevicegateway', 'GET', settings.endpoint, '')
+	if settings.aws.secret_key and settings.aws.access_key then
+		local aws_sig = require('aws_sig')
+		local url = aws_sig.createSignature(
+			settings.aws.access_key, settings.aws.secret_key, settings.aws.session_token,
+			settings.aws.region, 'iotdevicegateway', 'GET', settings.endpoint, '')
 
-	aws_sig = nil
-	package.loaded.aws_sig = nil
-	return url
+		aws_sig = nil
+		package.loaded.aws_sig = nil
+		return url
+	else
+		return settings.endpoint
+	end
 end
 
 local sendTimer = tmr.create()
