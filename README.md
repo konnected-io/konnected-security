@@ -48,6 +48,10 @@ Konnected leverages the [NodeMCU](https://github.com/nodemcu/nodemcu-firmware) c
         git clone https://github.com/konnected-io/konnected-security.git
         git clone https://github.com/nodemcu/nodemcu-firmware.git
 
+1. Check out the 2.2.1 release of nodemcu
+
+        pushd nodemcu-firmware && git checkout 2.2.1-master_20190405 && popd
+
 1. Use the build-firmware script to kick off the build - providing a semantic version command line argument as shown below. The build script will automatically pull down the nodeMCU docker builder, build the base firmware, create an LFS image, and build a SPIFFS file system containing the entire Konnected application.
 
         cd konnected-security
