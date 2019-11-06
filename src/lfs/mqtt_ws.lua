@@ -36,9 +36,9 @@ end
 local function Client(aws_settings)
 	local ws = websocket.createClient()
   local headers = {["sec-websocket-protocol"] = "mqtt" }
-  if aws_settings.token and aws_settings.authorizer_signature then
-		headers["X-Amz-CustomAuthorizer-Name"] = aws_settings.authorizer_name
-		headers["X-Amz-CustomAuthorizer-Signature"] = aws_settings.authorizer_signature
+  if aws_settings.token and aws_settings.token_signature then
+		headers["X-Amz-CustomAuthorizer-Name"] = aws_settings.authorizer
+		headers["X-Amz-CustomAuthorizer-Signature"] = aws_settings.token_signature
 		headers["Token"] = aws_settings.token
 	end
 	ws:config({headers=headers})

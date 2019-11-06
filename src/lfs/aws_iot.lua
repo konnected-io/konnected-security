@@ -1,10 +1,12 @@
 local module = ...
 
 local mqtt = require('mqtt_ws')
+local settings = require('settings')
 local device_id = wifi.sta.getmac():lower():gsub(':','')
-local c = mqtt.Client(require('settings').aws)
+local c = mqtt.Client(settings.aws)
+local topics = settings.aws.topics
 
-local function aws_sign_url(settings)
+local function mqtt_ws_endpoint()
 	if settings.aws.secret_key and settings.aws.access_key then
 		local aws_sig = require('aws_sig')
 		local url = aws_sig.createSignature(
@@ -43,25 +45,25 @@ sendTimer:register(200, tmr.ALARM_AUTO, function(t)
 			tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
 		else
 			local message_id = c.msg_id
-			local topic = "konnected/" .. device_id .. "/sensor/" .. sensor.pin
-			print("Heap:", node.heap(), "PUBLISH", "Message ID:", message_id, "Topic:", topic, "Payload:", sjson.encode(sensor))
+		  sensor.device_id = device_id
+			print("Heap:", node.heap(), "PUBLISH", "Message ID:", message_id, "Topic:", topics.sensor, "Payload:", sjson.encode(sensor))
 			timeout:start()
-			c:publish(topic, sensor)
+			c:publish(topics.sensor, sensor)
 			sensor.message_id = message_id
 		end
 	end
 end)
 
-local function startLoop(settings)
+local function startLoop()
 	print("Heap:", node.heap(), 'Connecting to AWS IoT Endpoint:', settings.endpoint)
 
 	c:on('offline', function()
 		print("Heap:", node.heap(), "mqtt: offline")
 		sendTimer:stop()
-		c:connect(aws_sign_url(settings))
+		c:connect(mqtt_ws_endpoint())
 	end)
 
-	c:connect(aws_sign_url(settings))
+	c:connect(mqtt_ws_endpoint())
 end
 
 c:on('puback', function(_, message_id)
@@ -79,20 +81,26 @@ c:on('message', function(_, topic, message)
 	print("Heap:", node.heap(), 'topic:', topic, 'msg:', message)
 	local payload = sjson.decode(message)
 	require("switch")(payload)
+
+	-- publish the new state after actuating switch
+	table.insert(sensorPut, { pin = payload.pin, state = gpio.read(payload.pin) })
 end)
 
 c:on('connect', function()
 	print("Heap:", node.heap(), "mqtt: connected")
-  for i, actuator in pairs(actuatorGet) do
-		local topic = "konnected/" .. device_id .. "/switch/" .. actuator.pin
-	  print("Heap:", node.heap(), "Subscribing to topic:", topic)
-		c:subscribe(topic)
+	print("Heap:", node.heap(), "Subscribing to topic:", topics.switch)
+	c:subscribe(topics.switch)
+
+	-- update current state of actuators upon boot
+	for i, actuator in pairs(actuatorGet) do
+		table.insert(sensorPut, { pin = actuator.pin, state = gpio.read(actuator.pin) })
 	end
+
 	sendTimer:start()
 end)
 
-return function(settings)
+return function()
 	package.loaded[module] = nil
 	module = nil
-	return startLoop(settings)
+	return startLoop()
 end

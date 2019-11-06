@@ -96,7 +96,7 @@ if endpoint_type == 'rest' then
 
 -- AWS IoT is used for the Konnected Cloud Connector or custom integrations build on AWS
 elseif endpoint_type == 'aws_iot' then
-  require("aws_iot")(settings)
+  require("aws_iot")()
 end
 
 
