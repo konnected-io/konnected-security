@@ -30,7 +30,7 @@ metadata {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
       tileAttribute ("device.contact", key: "PRIMARY_CONTROL") {
         attributeState ("closed", label: "Fault!", icon:"st.categories.damageAndDanger", backgroundColor:"#e86d13")
-        attributeState ("open",   label: "OK",   icon:"st.contact.contact.open",   backgroundColor:"#ffffff")
+        attributeState ("open",   label: "OK",   icon:"st.Home.home1",   backgroundColor:"#ffffff")
       }
     }
     main "main"
