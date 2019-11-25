@@ -19,6 +19,7 @@ end
 -- initialize actuators
 for i, actuator in pairs(actuators) do
   print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin)
+  gpio.mode(actuator.pin, gpio.OUTPUT)
   table.insert(actuatorGet, actuator)
 end
 

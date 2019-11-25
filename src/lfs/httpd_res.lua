@@ -1,11 +1,12 @@
 local module = ...
 
-local function respondWithText(sck, body, ty, st)
+local function respondWithText(sck, body, ty, st, headers)
   local ty = ty or "application/json"
   local st = st or 200
+  local headers = headers or ''
   local sendContent = table.concat({
     'HTTP/1.1 ', st, '\r\nContent-Type: ', ty, '\r\nContent-Length: ', string.len(body),
-    '\r\nAccess-Control-Allow-Origin: *\r\n\r\n', body
+    '\r\nAccess-Control-Allow-Origin: *\r\n', headers, '\r\n', body
   })
   local function doSend(s)
     if sendContent == '' then
@@ -21,7 +22,7 @@ local function respondWithText(sck, body, ty, st)
   doSend(sck)
 end
 
-local function respondWithFile(sck, filename, ty, st)
+local function respondWithFile(sck, filename, ty, st, headers)
   local ty = ty or "text/html"
   local st = st or 200
   if file.exists(filename .. '.gz') then
