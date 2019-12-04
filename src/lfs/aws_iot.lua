@@ -6,23 +6,9 @@ local device_id = wifi.sta.getmac():lower():gsub(':','')
 local c = mqtt.Client(settings.aws)
 local topics = settings.aws.topics
 
-local function mqtt_ws_endpoint()
-	if settings.aws.secret_key and settings.aws.access_key then
-		local aws_sig = require('aws_sig')
-		local url = aws_sig.createSignature(
-			settings.aws.access_key, settings.aws.secret_key, settings.aws.session_token,
-			settings.aws.region, 'iotdevicegateway', 'GET', settings.endpoint, '')
-
-		aws_sig = nil
-		package.loaded.aws_sig = nil
-		return url
-	else
-		return settings.endpoint
-	end
-end
-
 local sendTimer = tmr.create()
 local timeout = tmr.create()
+local heartbeat = tmr.create()
 
 timeout:register(3000, tmr.ALARM_SEMI, function()
 	sensorPut[1].retry = (sensorPut[1].retry or 0) + 1
@@ -54,22 +40,30 @@ sendTimer:register(200, tmr.ALARM_AUTO, function(t)
 	end
 end)
 
+heartbeat:register(200, tmr.ALARM_AUTO, function(t)
+	local message_id = c.msg_id
+	print("Heap:", node.heap(), "PUBLISH", "Message ID:", message_id, "Topic:", topics.heartbeat,
+				"Payload:", require('server_status')())
+	c:publish(topics.sensor, require('server_status')())
+  t:interval(300000) -- 5 minutes
+end)
+
 local function startLoop()
 	print("Heap:", node.heap(), 'Connecting to AWS IoT Endpoint:', settings.endpoint)
 
 	c:on('offline', function()
 		print("Heap:", node.heap(), "mqtt: offline")
 		sendTimer:stop()
-		c:connect(mqtt_ws_endpoint())
+		c:connect(settings.endpoint)
 	end)
 
-	c:connect(mqtt_ws_endpoint())
+	c:connect(settings.endpoint)
 end
 
 c:on('puback', function(_, message_id)
+  print("Heap:", node.heap(), 'PUBACK', 'Message ID:', message_id)
 	local sensor = sensorPut[1]
-	if sensor.message_id == message_id then
-		print("Heap:", node.heap(), 'PUBACK', 'Message ID:', message_id)
+	if sensor and sensor.message_id == message_id then
 		table.remove(sensorPut, 1)
 		blinktimer:start()
 		timeout:stop()
@@ -96,6 +90,7 @@ c:on('connect', function()
 		table.insert(sensorPut, { pin = actuator.pin, state = gpio.read(actuator.pin) })
 	end
 
+	heartbeat:start()
 	sendTimer:start()
 end)
 

@@ -24,4 +24,3 @@ rm -rf "${BUILD_PATH}/*"
 cp "${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img" "${BUILD_PATH}/konnected-filesystem-0x100000-dev.img"
 
 esptool.py "--port=${PORT}" write_flash --flash_mode dio 0x100000 "${BUILD_PATH}/konnected-filesystem-0x100000-dev.img"
-esptool.py "--port=${PORT}" run "node.flashreload('lfs.img')"

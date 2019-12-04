@@ -3,6 +3,10 @@ local module = ...
 local function process()
   local ip, nm, gw = wifi.sta.getip()
   local device = require("device")
+  local settings = require("settings")
+  settings.token = nil
+  settings.aws = nil
+
   local body = {
     hwVersion = device.hwVersion,
     swVersion = device.swVersion,
@@ -18,7 +22,7 @@ local function process()
     actuators = require("actuators"),
     dht_sensors = require("dht_sensors"),
     ds18b20_sensors = require("ds18b20_sensors"),
-    settings = require("settings")
+    settings = settings
   }
   return sjson.encode(body)
 end
