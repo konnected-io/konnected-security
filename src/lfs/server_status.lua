@@ -24,7 +24,7 @@ local function process()
     ds18b20_sensors = require("ds18b20_sensors"),
     settings = settings
   }
-  return sjson.encode(body)
+  return body
 end
 
 return function()

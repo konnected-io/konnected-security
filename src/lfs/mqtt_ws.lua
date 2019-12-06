@@ -32,7 +32,6 @@ local function publish(self, topic, message)
 	if type(message) == 'table' then
 		message = sjson.encode(message)
   end
-  print("Topic:", topic, "Message:", message)
 	self.ws:send(mqtt_packet.publish({topic=topic, payload=message, qos=1, msg_id=self.msg_id}), 2)
 	self.msg_id = self.msg_id + 1
 end

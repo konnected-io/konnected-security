@@ -31,20 +31,21 @@ sendTimer:register(200, tmr.ALARM_AUTO, function(t)
 			tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
 		else
 			local message_id = c.msg_id
+      local topic = sensor.topic or topics.sensor
 		  sensor.device_id = device_id
-			print("Heap:", node.heap(), "PUBLISH", "Message ID:", message_id, "Topic:", topics.sensor, "Payload:", sjson.encode(sensor))
+			print("Heap:", node.heap(), "PUBLISH", "Message ID:", message_id, "Topic:", topic, "Payload:", sjson.encode(sensor))
 			timeout:start()
-			c:publish(topics.sensor, sensor)
+			c:publish(topic, sensor)
 			sensor.message_id = message_id
 		end
 	end
 end)
 
 heartbeat:register(200, tmr.ALARM_AUTO, function(t)
-	local message_id = c.msg_id
-	print("Heap:", node.heap(), "PUBLISH", "Message ID:", message_id, "Topic:", topics.heartbeat,
-				"Payload:", require('server_status')())
-	c:publish(topics.sensor, require('server_status')())
+  local hb = require('server_status')()
+  hb.topic = topics.heartbeat
+  hb.timestamp = rtctime.get()
+  table.insert(sensorPut, hb)
   t:interval(300000) -- 5 minutes
 end)
 

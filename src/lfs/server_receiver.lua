@@ -49,7 +49,7 @@ local function httpReceiver(sck, payload)
 
   elseif request.path == "/status" then
     print("Heap: ", node.heap(), "HTTP: ", "Status")
-    response.text(sck, require("server_status")())
+    response.text(sck, sjson.encode(require("server_status")()))
 
   elseif request.path == "/ota" then
     print("Heap: ", node.heap(), "HTTP: ", "OTA Update")
