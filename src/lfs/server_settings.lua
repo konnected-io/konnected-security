@@ -15,28 +15,26 @@ local function process(request)
 			restartTimer:start()
 		end
 		return ""
-	end
-	if request.contentType == "application/json" then
-		if request.method == "PUT" then
-			local setVar = require("variables_set")
-			setVar("settings", require("variables_build")({
-				token = request.body.token,
-				endpoint = (request.body.endpoint or request.body.apiUrl),
-				endpoint_type = request.body.endpoint_type,
-				blink = request.body.blink,
-				discovery = request.body.discovery,
-				aws = request.body.aws
-			}))
-			setVar("sensors",   require("variables_build")(request.body.sensors))
-			setVar("actuators", require("variables_build")(request.body.actuators))
-			setVar("dht_sensors", require("variables_build")(request.body.dht_sensors))
-		  setVar("ds18b20_sensors", require("variables_build")(request.body.ds18b20_sensors))
 
-			print("Heap:", node.heap(), 'Settings updated! Restarting in 5 seconds...')
-			restartTimer:start()
+	elseif (request.method == "PUT" or request.method == "POST") and request.contentType == "application/json" then
+		local setVar = require("variables_set")
+		setVar("settings", require("variables_build")({
+			token = request.body.token,
+			endpoint = (request.body.endpoint or request.body.apiUrl),
+			endpoint_type = request.body.endpoint_type,
+			blink = request.body.blink,
+			discovery = request.body.discovery,
+			aws = request.body.aws
+		}))
+		setVar("sensors",   require("variables_build")(request.body.sensors))
+		setVar("actuators", require("variables_build")(request.body.actuators))
+		setVar("dht_sensors", require("variables_build")(request.body.dht_sensors))
+		setVar("ds18b20_sensors", require("variables_build")(request.body.ds18b20_sensors))
 
-			return ""
-		end
+		print("Heap:", node.heap(), 'Settings updated! Restarting in 5 seconds...')
+		restartTimer:start()
+
+		return ""
 	end
 end
 

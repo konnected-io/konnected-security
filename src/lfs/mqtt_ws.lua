@@ -29,13 +29,22 @@ local function subscribe(self, topic, qos)
 end
 
 local function publish(self, topic, message)
-	self.ws:send(mqtt_packet.publish({topic=topic, payload=sjson.encode(message), qos=1, msg_id=self.msg_id}), 2)
+	if type(message) == 'table' then
+		message = sjson.encode(message)
+  end
+	self.ws:send(mqtt_packet.publish({topic=topic, payload=message, qos=1, msg_id=self.msg_id}), 2)
 	self.msg_id = self.msg_id + 1
 end
 
-local function Client()
+local function Client(aws_settings)
 	local ws = websocket.createClient()
-	ws:config({headers={["sec-websocket-protocol"] = "mqtt"}})
+  local headers = {["sec-websocket-protocol"] = "mqtt" }
+  if aws_settings.token and aws_settings.token_signature then
+		headers["X-Amz-CustomAuthorizer-Name"] = aws_settings.authorizer
+		headers["X-Amz-CustomAuthorizer-Signature"] = aws_settings.token_signature
+		headers["Token"] = aws_settings.token
+	end
+	ws:config({headers=headers})
 	local client = {
 		connect = connect,
 		close = close,
