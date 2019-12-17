@@ -21,7 +21,8 @@ local function httpReceiver(sck, payload)
   local response = require("httpd_res")()
 
   if request.method == 'OPTIONS' then
-    response.text(sck, "", nil, 204, table.concat({
+    print("Heap: ", node.heap(), "HTTP: ", "Options")
+    response.text(sck, "", nil, nil, table.concat({
       "Access-Control-Allow-Methods: POST, GET, PUT, OPTIONS\r\n",
       "Access-Control-Allow-Headers: Content-Type\r\n"
     }))
