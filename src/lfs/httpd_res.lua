@@ -4,9 +4,14 @@ local function respondWithText(sck, body, ty, st, headers)
   local ty = ty or "application/json"
   local st = st or 200
   local headers = headers or ''
+  local contentLength = string.len(body)
+
+  if contentLength > 0 then
+    headers = table.concat({ headers, 'Content-Type: ', ty, '\r\nContent-Length: ', contentLength, '\r\n' })
+  end
+
   local sendContent = table.concat({
-    'HTTP/1.1 ', st, '\r\nContent-Type: ', ty, '\r\nContent-Length: ', string.len(body),
-    '\r\nAccess-Control-Allow-Origin: *\r\n', headers, '\r\n', body
+    'HTTP/1.1 ', st, '\r\nAccess-Control-Allow-Origin: *\r\n', headers, '\r\n', body
   })
   local function doSend(s)
     if sendContent == '' then
