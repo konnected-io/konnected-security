@@ -18,6 +18,8 @@ metadata {
     capability "Switch"
     capability "Actuator"
     capability "Momentary"
+    
+    attribute "Message", "string"
   }
 
   preferences {
@@ -33,13 +35,23 @@ metadata {
         attributeState "off", label: 'Push', action: "momentary.push", backgroundColor: "#ffffff", nextState: "pushed"
         attributeState "on", label: 'Push', action: "switch.off", backgroundColor: "#00a0dc"
         attributeState "pushed", label:'pushed', action: "switch.off", backgroundColor:"#00a0dc", nextState: "off"
+      }          
+      tileAttribute("device.Message", key: "SECONDARY_CONTROL") {
+       attributeState("Message", label:'${currentValue}', defaultState: true)
       }
-    }
+    } 
     main "main"
     details "main"
   }
 }
 
+def installed() {
+    initialize()
+}
+def initialize() {
+    // initialize counter
+    state.switchCounter = 0
+}
 def updated() {
   parent.updateSettingsOnDevice()
 }
@@ -70,9 +82,12 @@ def on() {
 
 def push() {
   def val = invertTrigger ? 0 : 1
+  state.switchCounter = (state.switchCounter ?: 0) + 1
+  log.debug "Pushed $state.switchCounter times"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val, [
     momentary : momentaryDelay ?: 500
   ])
+  sendEvent(name:"Message", value: "Pushed $state.switchCounter times" ) 
 }
 
 def triggerLevel() {
