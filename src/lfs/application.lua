@@ -18,7 +18,9 @@ end
 
 -- initialize actuators
 for i, actuator in pairs(actuators) do
-  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin)
+  local initialState = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
+  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin, "on:", actuator.trigger or gpio.HIGH, "off:", initialState)
+  gpio.write(actuator.pin, initialState)
   gpio.mode(actuator.pin, gpio.OUTPUT)
   table.insert(actuatorGet, actuator)
 end
