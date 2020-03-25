@@ -52,10 +52,17 @@ end)
 local function startLoop()
 	print("Heap:", node.heap(), 'Connecting to AWS IoT Endpoint:', settings.endpoint)
 
+	local mqttFails = 0
 	c:on('offline', function()
-		print("Heap:", node.heap(), "mqtt: offline")
+		mqttFails = mqttFails + 1
+		print("Heap:", node.heap(), "mqtt: offline", "failures:", mqttFails)
 		sendTimer:stop()
-		c:connect(settings.endpoint)
+
+		if mqttFails >= 10 then
+			tmr.create():alarm(3000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 3 sec
+		else
+			c:connect(settings.endpoint)
+		end
 	end)
 
 	c:connect(settings.endpoint)
@@ -75,10 +82,19 @@ end)
 c:on('message', function(_, topic, message)
 	print("Heap:", node.heap(), 'topic:', topic, 'msg:', message)
 	local payload = sjson.decode(message)
-	require("switch")(payload)
+	local endState = require("switch")(payload)
 
 	-- publish the new state after actuating switch
-	table.insert(sensorPut, { pin = payload.pin, state = gpio.read(payload.pin) })
+	table.insert(sensorPut, endState)
+
+	-- set state back to initial after momentary is complete
+	if payload.momentary and payload.times > 0 then
+		revertIn = (payload.momentary + payload.pause) * payload.times - payload.pause
+		tmr.create():alarm(revertIn, tmr.ALARM_SINGLE, function()
+			local revertState = { pin = endState.pin, state = endState.state == 0 and 1 or 0}
+			table.insert(sensorPut, revertState)
+		end)
+	end
 end)
 
 c:on('connect', function()

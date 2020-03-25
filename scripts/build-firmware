@@ -55,4 +55,7 @@ rm -rf "${BUILD_PATH}/*"
 cp "${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin" "${BUILD_PATH}/${IMAGE_NAME}.bin"
 cp "${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img" "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img"
 
+srec_cat -output "${BUILD_PATH}/konnected-esp8266-${VERSION}.bin" -binary "${BUILD_PATH}/${IMAGE_NAME}.bin" -binary -fill 0xff 0x0000 0x100000 "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img" -binary -offset 0x100000
+
+
 echo "Build Complete: Flash this build with './scripts/flash ${VERSION} <port>'"
