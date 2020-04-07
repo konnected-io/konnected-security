@@ -46,7 +46,7 @@ def updateStates(states) {
     sendEvent(name: "humidity", value: humidity.setScale(0, BigDecimal.ROUND_HALF_UP), unit: '%')
   }
 
-  log.debug "Temperature: $temperature, Humidity: $humidity"
+  log.info "Temperature: $temperature, Humidity: $humidity"
 }
 
 def pollInterval() {

@@ -22,6 +22,7 @@ metadata {
   preferences {
     input name: "invertTrigger", type: "bool", title: "Low Level Trigger",
           description: "Select if the attached relay uses a low-level trigger. Default is high-level trigger"
+  input name: "debugOutput", type: "bool", title: "Enable debug logging?", defaultValue: false
   }
 
 }
@@ -37,19 +38,19 @@ def updatePinState(Integer state) {
   } else {
     val = invertTrigger ? "off" : "on"
   }
-  log.debug "$device is $val"
+  logDebug "$device is $val"
   sendEvent(name: "switch", value: val)
 }
 
 def off() {
   def val = invertTrigger ? 1 : 0
-  log.debug "Turning off $device.label (state = $val)"
+  logDebug "Turning off $device.label (state = $val)"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 
 def on() {
   def val = invertTrigger ? 0 : 1
-  log.debug "Turning on $device.label (state = $val)"
+  logDebug "Turning on $device.label (state = $val)"
   parent.deviceUpdateDeviceState(device.deviceNetworkId, val)
 }
 
@@ -64,3 +65,15 @@ def currentBinaryValue() {
     invertTrigger ? 1 : 0
   }
 }
+
+def logsOff(){
+  log.warn "debug logging disabled..."
+  device.updateSetting("debugOutput",[value:"false",type:"bool"])
+}
+
+private logDebug(msg) {
+  if (settings?.debugOutput || settings?.debugOutput == null) {
+    log.debug "$msg"
+  }
+}
+

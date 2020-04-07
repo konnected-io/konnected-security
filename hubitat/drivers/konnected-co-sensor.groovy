@@ -41,5 +41,6 @@ def isOpen() {
 def setStatus(state) {
   def stateValue = state == "1" ? isOpen() : isClosed()
   sendEvent(name: "carbonMonoxide", value: stateValue)
-  log.debug "$device.label is $stateValue"
+  log.info "$device.label is $stateValue"
 }
+

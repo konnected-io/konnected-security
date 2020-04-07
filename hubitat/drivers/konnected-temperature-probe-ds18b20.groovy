@@ -32,5 +32,5 @@ def updateStates(states) {
   	temperature = temperature * 9 / 5 + 32
   }
   sendEvent(name: "temperature", value: temperature.setScale(1, BigDecimal.ROUND_HALF_UP), unit: location.getTemperatureScale())
-  log.debug "Temperature: $temperature"
+  log.info "Temperature: $temperature"
 }
