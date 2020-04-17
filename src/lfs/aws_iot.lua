@@ -88,7 +88,7 @@ c:on('message', function(_, topic, message)
 	table.insert(sensorPut, endState)
 
 	-- set state back to initial after momentary is complete
-	if payload.momentary and payload.times > 0 then
+	if payload.momentary and payload.times ~= -1 then
 		revertIn = (payload.momentary + payload.pause) * payload.times - payload.pause
 		tmr.create():alarm(revertIn, tmr.ALARM_SINGLE, function()
 			local revertState = { pin = endState.pin, state = endState.state == 0 and 1 or 0}
