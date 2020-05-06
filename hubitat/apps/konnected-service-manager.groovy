@@ -555,7 +555,7 @@ private String convertHexToIP(hex) { [convertHexToInt(hex[0..1]),convertHexToInt
 
 def logsOff(){
   log.warn "debug logging disabled..."
-  device.updateSetting("debugOutput",[value:"false",type:"bool"])
+  app.updateSetting("debugOutput",[value:"false",type:"bool"])
 }
 
 private logDebug(msg) {
