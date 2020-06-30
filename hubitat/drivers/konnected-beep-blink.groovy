@@ -21,6 +21,12 @@ metadata {
     capability "Actuator"
     capability "Momentary"
     capability "Tone"
+      
+    command "customBeep", [
+      [name: "Duration*", type: "NUMBER", range: "10..*", description: "Each beep or blink duration"],
+      [name: "Pause*", type: "NUMBER", range: "10..*", description: "Pause between beeps/blinks in milliseconds"],
+      [name: "Repeat*", type: "NUMBER", range: "1..*", description: "Times to repeat the pulse"]
+    ]
   }
 
   preferences {
@@ -69,6 +75,14 @@ def on() {
 
 def push() {
   beep()
+}
+
+def customBeep(BigDecimal duration, BigDecimal pause, BigDecimal repeat) {
+  parent.deviceUpdateDeviceState(device.deviceNetworkId, triggerLevel(), [
+    momentary : duration ?: 250,
+    pause     : pause ?: 150,
+    times     : repeat ?: 3
+  ])
 }
 
 def beep() {
