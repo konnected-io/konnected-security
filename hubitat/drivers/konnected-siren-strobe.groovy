@@ -38,7 +38,7 @@ def updatePinState(Integer state) {
   } else {
     val = invertTrigger ? "off" : "on"
   }
-  log.debug "$device is $val"
+  log.info "$device is $val"
   sendEvent(name: "switch", value: val, displayed: false)
   if (val == "on") { val = "both" }
   sendEvent(name: "alarm", value: val)
