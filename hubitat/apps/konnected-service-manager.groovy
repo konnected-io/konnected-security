@@ -58,6 +58,12 @@ def updated() {
 def uninstalled() {
   def device = state.device
   log.info "uninstall(): Removing Konnected Device $device?.mac"
+
+  getAllChildDevices().each {
+  	log.info "deleting device: $it"
+  	deleteChildDevice(it.deviceNetworkId)
+  }
+
   revokeAccessToken()
 
   def body = [
