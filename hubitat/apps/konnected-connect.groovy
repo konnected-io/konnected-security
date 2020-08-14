@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-public static String version() { return "2.2.6" }
+public static String version() { return "2.2.7" }
 
 definition(
   name:        "Konnected (Connect)",
@@ -32,6 +32,7 @@ preferences {
     section {
       app(name: "childApps", appName: "Konnected Service Manager", namespace: "konnected-io", title: "Add a Konnected device", multiple: true)
       paragraph "Konnected (Connect) v${version()}"
+      input name: "debugOutput", type: "bool", title: "Enable debug logging?", defaultValue: true
     }
   }
 }
@@ -44,6 +45,7 @@ def installed() {
 def updated() {
   log.info "updated(): Updating Konnected SmartApp"
   unschedule()
+  if (debugOutput) runIn(1800,logsOff)
   initialize()
 }
 
@@ -57,7 +59,7 @@ def initialize() {
 
 // Device Discovery : Send M-Search to multicast
 def discoverySearch() {
-  log.debug "Discovering Konnected devices on the network via SSDP"
+  logDebug "Discovering Konnected devices on the network via SSDP"
   sendHubCommand(new hubitat.device.HubAction("lan discovery ${discoveryDeviceType()}", hubitat.device.Protocol.LAN))
 }
 
@@ -71,7 +73,7 @@ void registerKnownDevice(mac) {
   }
 
   if (isNewDevice(mac)) {
-    log.debug "Registering Konnected device ${mac}"
+    log.info "Registering Konnected device ${mac}"
   	state.knownDevices.add(mac)
   }
 }
@@ -83,3 +85,15 @@ void removeKnownDevice(mac) {
 Boolean isNewDevice(mac) {
   return !state.knownDevices?.contains(mac)
 }
+
+def logsOff(){
+  log.warn "debug logging disabled..."
+  app.updateSetting("debugOutput",[value:"false",type:"bool"])
+}
+
+private logDebug(msg) {
+  if (settings.debugOutput || settings.debugOutput == null) {
+    log.debug "$msg"
+  }
+}
+
