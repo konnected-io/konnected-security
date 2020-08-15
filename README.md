@@ -2,9 +2,9 @@
 
 [![GitHub release](https://img.shields.io/github/release/konnected-io/konnected-security.svg?style=flat-square)](https://github.com/konnected-io/konnected-security/releases)
 
-# Konnected Security
+# Konnected
 
-**Konnected Security** integrates wired alarm system sensors and sirens to SmartThings, Home Assistant, OpenHAB, or Hubitat using a NodeMCU based ESP8266 development board and (optional) relay. This project consists of a few components:
+**Konnected** integrates wired alarm system sensors and sirens to SmartThings, Home Assistant, OpenHAB, or Hubitat using a NodeMCU based ESP8266 development board and (optional) relay. This project consists of a few components:
  
  1. [NodeMCU](http://nodemcu.com/index_en.html) based firmware for an ESP8266 development board in `firmware`
  1. Lua and HTML source code for the NodeMCU in `src`. All these files are built into a SPIFFS file system which runs on NodeMCU
@@ -14,10 +14,8 @@
 
 ## Skip this Installation!
 
-[Buy a Konnected Security NodeMCU kit from us](https://store.konnected.io) and you can skip the installation! We
-pre-load the Konnected Security software on every NodeMCU device before sending it to you. When you get it, just plug it
-in connect to WiFi, and it's ready to set up. Buying from us is great way to support
-the developers who have worked hard on this project.
+[Buy a Konnected Alarm Panel](https://konnected.io), our commercial product that was the inspiration of this open-source
+ library. Buying from us is great way to support the developers who have worked hard on this project.
 
 ## Getting Started
 
@@ -97,7 +95,6 @@ Thank you for your support,
 Nate Clark
 **@heythisisnate**
 
-#### [Donate Here with Paypal or Bitcoin](http://docs.konnected.io/donate)
 
 ### [For more information, click here for Konnected Documentation, Help and Community support](http://help.konnected.io)
 
