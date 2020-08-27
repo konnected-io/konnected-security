@@ -1,5 +1,7 @@
 local module = ...
 
+local log = require("log")
+
 infiniteLoops = {}
 
 local function turnOffIn(pin, on_state, delay, times, pause)
@@ -10,16 +12,16 @@ local function turnOffIn(pin, on_state, delay, times, pause)
     infiniteLoops[pin] = true
   end
 
-  print("Heap:", node.heap(), "Actuator Pin:", pin, "Momentary:", delay, "Repeat:", times, "Pause:", pause)
+  log.info("Actuator Pin:", pin, "Momentary:", delay, "Repeat:", times, "Pause:", pause)
 
   tmr.create():alarm(delay, tmr.ALARM_SINGLE, function()
-    print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", off)
+    log.info("Actuator Pin:", pin, "State:", off)
     gpio.write(pin, off)
     times = times - 1
 
     if (times > 0 or infiniteLoops[pin]) and pause then
       tmr.create():alarm(pause, tmr.ALARM_SINGLE, function()
-        print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", on_state)
+        log.info("Actuator Pin:", pin, "State:", on_state)
         gpio.write(pin, on_state)
         turnOffIn(pin, on_state, delay, times, pause)
       end)
@@ -31,7 +33,7 @@ local function updatePin(payload)
   local pin = tonumber(payload.pin)
   local state = tonumber(payload.state)
   local times = tonumber(payload.times)
-  print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", state)
+  log.info("Actuator Pin:", pin, "State:", state)
 
   if infiniteLoops[pin] then
     infiniteLoops[pin] = false

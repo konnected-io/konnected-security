@@ -1,4 +1,7 @@
 local module = ...
+
+local log = require("log")
+
 local restartTimer = tmr.create()
 restartTimer:register(2000, tmr.ALARM_SINGLE, function() node.restart() end)
 local function process(request)
@@ -31,7 +34,7 @@ local function process(request)
 		setVar("dht_sensors", require("variables_build")(request.body.dht_sensors))
 		setVar("ds18b20_sensors", require("variables_build")(request.body.ds18b20_sensors))
 
-		print("Heap:", node.heap(), 'Settings updated! Restarting in 5 seconds...')
+		log.warn('Settings updated! Restarting in 5 seconds...')
 		restartTimer:start()
 
 		return ""

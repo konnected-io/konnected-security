@@ -1,3 +1,4 @@
+local log = require("log")
 local mqtt_packet = require('mqtt_packet')
 
 local function emit(self, event, ...)
@@ -58,10 +59,10 @@ local function Client(aws_settings)
 	}
 
 	ws:on('receive', function(_, msg, opcode, x)
---		print("received", msg:len(), "msg:", msg, "bytes:", mqtt_packet.toHex(msg))
+--		log.info("received", msg:len(), "msg:", msg, "bytes:", mqtt_packet.toHex(msg))
 		local parsed = mqtt_packet.parse(msg)
 --		for k, v in pairs(parsed) do
---			print('>', k, v)
+--			log.info('>', k, v)
 --		end
 
 		if parsed.cmd == 4 then
@@ -74,12 +75,12 @@ local function Client(aws_settings)
 	end)
 
 	ws:on('close', function(_, status)
-		print("Heap:", node.heap(), 'websocket closed, status:', status)
+		log.info('websocket closed, status:', status)
 		client:emit('offline')
 	end)
 
 	ws:on('connection', function(_)
-		print("Heap:", node.heap(), "websocket connected")
+		log.info("websocket connected")
 		ws:send(string.char(0x10, 0x0c, 0x00, 0x04, 0x4d, 0x51, 0x54, 0x54, 0x04, 0x02, 0x00, 0x00, 0x00, 0x00), 2)
 	end)
 

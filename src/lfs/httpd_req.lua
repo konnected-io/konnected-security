@@ -1,8 +1,10 @@
 local module = ...
 
+local log = require("log")
+
 local httpdRequestHandler = {
   method = nil,
-  query = { }, 
+  query = { },
   path = nil,
   contentType = nil,
   body = nil
@@ -33,7 +35,7 @@ local function httpdRequest(data)
       if status then
         httpdRequestHandler.body = body_obj
       else
-        print("Heap:", node.heap(), "Discarding malformed JSON", httpdRequestHandler.body)
+        log.warn("Discarding malformed JSON", httpdRequestHandler.body)
         httpdRequestHandler.body = nil
       end
     end

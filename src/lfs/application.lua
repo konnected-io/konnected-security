@@ -1,4 +1,5 @@
 require("wipe")
+local log = require("log")
 local sensors = require("sensors")
 local dht_sensors = require("dht_sensors")
 local ds18b20_sensors = require("ds18b20_sensors")
@@ -12,14 +13,14 @@ actuatorGet = {}
 
 -- initialize binary sensors
 for i, sensor in pairs(sensors) do
-  print("Heap:", node.heap(), "Initializing sensor pin:", sensor.pin)
+  log.info("Initializing sensor pin:", sensor.pin)
   gpio.mode(sensor.pin, gpio.INPUT, gpio.PULLUP)
 end
 
 -- initialize actuators
 for i, actuator in pairs(actuators) do
   local initialState = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
-  print("Heap:", node.heap(), "Initializing actuator pin:", actuator.pin, "on:", actuator.trigger or gpio.HIGH, "off:", initialState)
+  log.info("Initializing actuator pin:", actuator.pin, "on:", actuator.trigger or gpio.HIGH, "off:", initialState)
   gpio.write(actuator.pin, initialState)
   gpio.mode(actuator.pin, gpio.OUTPUT)
   table.insert(actuatorGet, actuator)
@@ -34,17 +35,17 @@ if #dht_sensors > 0 then
     if status == dht.OK then
       local temperature_string = temp .. "." .. math.abs(temp_dec)
       local humidity_string = humi .. "." .. humi_dec
-      print("Heap:", node.heap(), "Temperature:", temperature_string, "Humidity:", humidity_string)
+      log.info("Temperature:", temperature_string, "Humidity:", humidity_string)
       table.insert(sensorPut, { pin = pin, temp = temperature_string, humi = humidity_string })
     else
-      print("Heap:", node.heap(), "DHT Status:", status)
+      log.info("DHT Status:", status)
     end
   end
 
   for i, sensor in pairs(dht_sensors) do
     local pollInterval = tonumber(sensor.poll_interval) or 0
     pollInterval = (pollInterval > 0 and pollInterval or 3) * 60 * 1000
-    print("Heap:", node.heap(), "Polling DHT on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
+    log.info("Polling DHT on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
     tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() readDht(sensor.pin) end)
     readDht(sensor.pin)
   end
@@ -56,7 +57,7 @@ if #ds18b20_sensors > 0 then
   local function ds18b20Callback(pin)
     local callbackFn = function(i, rom, res, temp, temp_dec, par)
       local temperature_string = temp .. "." .. math.abs(temp_dec)
-      print("Heap:", node.heap(), "Temperature:", temperature_string, "Resolution:", res)
+      log.info("Temperature:", temperature_string, "Resolution:", res)
       if (res >= 12) then
         table.insert(sensorPut, { pin = pin, temp = temperature_string,
           addr = string.format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
@@ -69,7 +70,7 @@ if #ds18b20_sensors > 0 then
   for i, sensor in pairs(ds18b20_sensors) do
     local pollInterval = tonumber(sensor.poll_interval) or 0
     pollInterval = (pollInterval > 0 and pollInterval or 3) * 60 * 1000
-    print("Heap:", node.heap(), "Polling DS18b20 on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
+    log.info("Polling DS18b20 on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
     local callbackFn = ds18b20Callback(sensor.pin)
     ds18b20.setup(sensor.pin)
     ds18b20.setting({}, 12)

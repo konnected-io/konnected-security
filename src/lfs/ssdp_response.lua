@@ -1,11 +1,13 @@
 local module = ...
 
+local log = require("log")
+
 local function ssdpResponse(c, d, port, ip)
   if string.match(d, "M-SEARCH") then
     local device = require("device")
     local urn = d:match("ST: (urn:[%w%p]*)")
     if (urn == device.urn or string.match(d, "ST: ssdp:all")) then
-      print("Heap: ", node.heap(), "Responding to UPnP Discovery request from " .. ip .. ":" .. port)
+      log.info("Responding to UPnP Discovery request from " .. ip .. ":" .. port)
       local resp =
       "HTTP/1.1 200 OK\r\n" ..
         "CACHE-CONTROL: max-age=1800\r\n" ..
