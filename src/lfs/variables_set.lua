@@ -1,4 +1,7 @@
 local module = ...
+
+local log = require("log")
+
 local function set(name, value)
   if not value then return end
   local fn = name .. '.lua'
@@ -8,7 +11,7 @@ local function set(name, value)
   f.close()
   node.compile(fn)
   file.remove(fn)
-  print("Heap: ", node.heap(), "Wrote: ", fn)
+  log.info("Wrote: ", fn)
   collectgarbage()
 end
 

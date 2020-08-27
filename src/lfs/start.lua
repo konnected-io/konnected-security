@@ -1,7 +1,9 @@
+local log = require("log")
+
 for fn in pairs(file.list()) do
   local fm = string.match(fn,".*%.lua-$")
   if (fm) and fm ~= "init.lua" then
-    print("Heap: ", node.heap(), "Compiling: ", fn)
+    log.info("Compiling: ", fn)
     node.compile(fm)
     file.remove(fm)
   end

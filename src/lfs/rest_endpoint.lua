@@ -1,5 +1,7 @@
 local module = ...
 
+local log = require("log")
+
 -- print HTTP status line
 local function printHttpResponse(code, data)
   local a = { "Heap:", node.heap(), "HTTP Call:", code }
@@ -7,7 +9,7 @@ local function printHttpResponse(code, data)
     table.insert(a, k)
     table.insert(a, v)
   end
-  print(unpack(a))
+  log.info(unpack(a))
 end
 
 
@@ -48,7 +50,7 @@ local function startLoop(settings)
             state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
             gpio.write(actuator.pin, state)
           end
-          print("Heap:", node.heap(), "Initialized actuator Pin:", actuator.pin, "Trigger:", actuator.trigger, "Initial state:", state)
+          log.info("Initialized actuator Pin:", actuator.pin, "Trigger:", actuator.trigger, "Initial state:", state)
 
           table.remove(actuatorGet, 1)
           blinktimer:start()
@@ -75,7 +77,7 @@ local function startLoop(settings)
             -- retry up to 10 times then reboot as a failsafe
             local retry = sensor.retry or 0
             if retry == 10 then
-              print("Heap:", node.heap(), "Retried 10 times and failed. Rebooting in 30 seconds.")
+              log.error("Retried 10 times and failed. Rebooting in 30 seconds.")
               for k, v in pairs(sensorPut) do sensorPut[k] = nil end -- remove all pending sensor updates
               tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
             else
@@ -91,7 +93,7 @@ local function startLoop(settings)
 
     collectgarbage()
   end)
-  print("Heap:", node.heap(), "REST Endpoint:", settings.endpoint)
+  log.info("REST Endpoint:", settings.endpoint)
 end
 
 return function(settings)

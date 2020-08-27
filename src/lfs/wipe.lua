@@ -1,3 +1,5 @@
+local log = require("log")
+
 -- reset settings by holding the FLASH button (D3) for 8 seconds
 gpio.mode(3, gpio.INT)
 
@@ -12,17 +14,17 @@ wipeTmr:register(8000, tmr.ALARM_SEMI, function()
     setVar("dht_sensors", require("variables_build")({}))
     setVar("ds18b20_sensors", require("variables_build")({}))
 
-    print("Heap:", node.heap(), 'Settings updated! Restarting now')
+    log.info('Settings updated! Restarting now')
     node.restart()
   end)
 end)
 
 local function pressed(level)
   if level == gpio.LOW then
-    print("Heap:", node.heap(), "FLASH button pressed")
+    log.warn("FLASH button pressed")
     wipeTmr:start()
   else
-    print("Heap:", node.heap(), "FLASH button released")
+    log.warn("FLASH button released")
     wipeTmr:stop()
   end
 end

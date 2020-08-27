@@ -1,5 +1,6 @@
 local module = ...
 
+local log = require("log")
 local mqtt = require('mqtt_ws')
 local settings = require('settings')
 local device_id = wifi.sta.getmac():lower():gsub(':','')
@@ -22,18 +23,18 @@ sendTimer:register(200, tmr.ALARM_AUTO, function(t)
 		t:stop()
 
 		if sensor.retry and sensor.retry > 0 then
-			print("Heap:", node.heap(), "Retry:", sensor.retry)
+			log.warn("Retry:", sensor.retry)
 		end
 
 		if sensor.retry and sensor.retry > 10 then
-			print("Heap:", node.heap(), "Retried 10 times and failed. Rebooting in 30 seconds.")
+			log.error("Retried 10 times and failed. Rebooting in 30 seconds.")
 			for k, v in pairs(sensorPut) do sensorPut[k] = nil end -- remove all pending sensor updates
 			tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
 		else
 			local message_id = c.msg_id
       local topic = sensor.topic or topics.sensor
 		  sensor.device_id = device_id
-			print("Heap:", node.heap(), "PUBLISH", "Message ID:", message_id, "Topic:", topic, "Payload:", sjson.encode(sensor))
+			log.info("PUBLISH", "Message ID:", message_id, "Topic:", topic, "Payload:", sjson.encode(sensor))
 			timeout:start()
 			c:publish(topic, sensor)
 			sensor.message_id = message_id
@@ -50,12 +51,12 @@ heartbeat:register(200, tmr.ALARM_AUTO, function(t)
 end)
 
 local function startLoop()
-	print("Heap:", node.heap(), 'Connecting to AWS IoT Endpoint:', settings.endpoint)
+	log.info('Connecting to AWS IoT Endpoint:', settings.endpoint)
 
 	local mqttFails = 0
 	c:on('offline', function()
 		mqttFails = mqttFails + 1
-		print("Heap:", node.heap(), "mqtt: offline", "failures:", mqttFails)
+		log.warn("mqtt: offline", "failures:", mqttFails)
 		sendTimer:stop()
 
 		if mqttFails >= 10 then
@@ -70,7 +71,7 @@ local function startLoop()
 end
 
 c:on('puback', function(_, message_id)
-  print("Heap:", node.heap(), 'PUBACK', 'Message ID:', message_id)
+  log.info('PUBACK', 'Message ID:', message_id)
 	local sensor = sensorPut[1]
 	if sensor and sensor.message_id == message_id then
 		table.remove(sensorPut, 1)
@@ -81,7 +82,7 @@ c:on('puback', function(_, message_id)
 end)
 
 c:on('message', function(_, topic, message)
-	print("Heap:", node.heap(), 'topic:', topic, 'msg:', message)
+	log.info('topic:', topic, 'msg:', message)
 	local payload = sjson.decode(message)
 	local endState = require("switch")(payload)
 
@@ -102,8 +103,8 @@ c:on('message', function(_, topic, message)
 end)
 
 c:on('connect', function()
-	print("Heap:", node.heap(), "mqtt: connected")
-	print("Heap:", node.heap(), "Subscribing to topic:", topics.switch)
+	log.info("mqtt: connected")
+	log.info("Subscribing to topic:", topics.switch)
 	c:subscribe(topics.switch)
 
 	-- update current state of actuators upon boot

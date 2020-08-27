@@ -7,6 +7,7 @@
 
 local host, dir, image = ...
 
+local log = require("log")
 local doRequest, firstRec, subsRec, finalise
 local n, total, size = 0, 0
 
@@ -24,7 +25,7 @@ doRequest = function(sk,hostIP)
         "Host: "..host,
         "Connection: close",
         "", "", }, "\r\n")
-      print(request)
+      log.info(request)
       sck:send(request)
       sck:on("receive",firstRec)
     end)
@@ -36,7 +37,7 @@ firstRec = function (sck,rec)
   local i      = rec:find('\r\n\r\n',1,true) or 1
   local header = rec:sub(1,i+1):lower()
   size         = tonumber(header:match('\ncontent%-length: *(%d+)\r') or 0)
-  print(rec:sub(1, i+1))
+  log.info(rec:sub(1, i+1))
   if size > 0 then
     sck:on("receive",subsRec)
     file.open(image, 'w')
@@ -44,7 +45,7 @@ firstRec = function (sck,rec)
   else
     sck:on("receive", nil)
     sck:close()
-    print("GET failed")
+    log.warn("GET failed")
   end
 end
 
@@ -70,7 +71,7 @@ finalise = function(sck)
     -- run as separate task to maximise RAM available
     node.task.post(function() node.flashreload(image) end)
   else
-    print"Invalid save of image file"
+    log.error("Invalid save of image file")
   end
 end
 

@@ -1,5 +1,7 @@
 local module = ...
 
+local log = require("log")
+
 local function httpReceiver(sck, payload)
 
   -- Some clients send POST data in multiple chunks.
@@ -21,7 +23,7 @@ local function httpReceiver(sck, payload)
   local response = require("httpd_res")()
 
   if request.method == 'OPTIONS' then
-    print("Heap: ", node.heap(), "HTTP: ", "Options")
+    log.info("HTTP: ", "Options")
     response.text(sck, "", nil, nil, table.concat({
       "Access-Control-Allow-Methods: POST, GET, PUT, OPTIONS\r\n",
       "Access-Control-Allow-Headers: Content-Type\r\n"
@@ -30,7 +32,7 @@ local function httpReceiver(sck, payload)
   end
 
   if request.path == "/" then
-    print("Heap: ", node.heap(), "HTTP: ", "Index")
+    log.info("HTTP: ", "Index")
     response.file(sck, "http_index.html")
 
   elseif request.path == "/favicon.ico" then
@@ -38,22 +40,22 @@ local function httpReceiver(sck, payload)
 
   elseif request.path == "/Device.xml" then
     response.text(sck, require("ssdp")(), "text/xml")
-    print("Heap: ", node.heap(), "HTTP: ", "Discovery")
+    log.info("HTTP: ", "Discovery")
 
   elseif request.path == "/settings" then
-    print("Heap: ", node.heap(), "HTTP: ", "Settings")
+    log.info("HTTP: ", "Settings")
     response.text(sck, require("server_settings")(request))
 
   elseif request.path == "/device" then
-    print("Heap: ", node.heap(), "HTTP: ", "Device")
+    log.info("HTTP: ", "Device")
     response.text(sck, require("server_device")(request))
 
   elseif request.path == "/status" then
-    print("Heap: ", node.heap(), "HTTP: ", "Status")
+    log.info("HTTP: ", "Status")
     response.text(sck, sjson.encode(require("server_status")()))
 
   elseif request.path == "/ota" then
-    print("Heap: ", node.heap(), "HTTP: ", "OTA Update")
+    log.info("HTTP: ", "OTA Update")
     response.text(sck, require("ota")(request))
   end
 
