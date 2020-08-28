@@ -55,6 +55,10 @@ local function httpReceiver(sck, payload)
   elseif request.path == "/ota" then
     print("Heap: ", node.heap(), "HTTP: ", "OTA Update")
     response.text(sck, require("ota")(request))
+
+  elseif request.path == "/lock" then
+    log.info("HTTP: ", "Lock")
+    response.text(sck, require("ota")(request))
   end
 
   sck, request, response = nil
