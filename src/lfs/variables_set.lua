@@ -12,6 +12,7 @@ local function set(name, value)
   node.compile(fn)
   file.remove(fn)
   log.info("Wrote: ", fn)
+  package.loaded[name] = nil
   collectgarbage()
 end
 

@@ -20,6 +20,12 @@ local function process(request)
 		return ""
 
 	elseif (request.method == "PUT" or request.method == "POST") and request.contentType == "application/json" then
+		-- Ensure the settings lock flag isn't present
+		local device_config = file.exists("device_config.lc") and require("device_config") or {}
+		if device_config.lock_sig and device_config.lock_sig ~= "" then
+			return '{ "msg":"settings are locked" }', nil, 409
+		end
+
 		local setVar = require("variables_set")
 		setVar("settings", require("variables_build")({
 			token = request.body.token,
