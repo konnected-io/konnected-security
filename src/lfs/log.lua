@@ -41,12 +41,9 @@ for i, x in ipairs(modes) do
 
     local msg = tostring(...)
 
-    -- usec is not exact as rollover occurs but it works for reference purposes
-    local sec = tmr.time()
-    local usec = tmr.now() % 1000000
-
     -- Output to console
-    print(string.format("%s[%-6s%s.%s, %s]%s: %s",
+    local sec, usec = rtctime.get()
+    print(string.format("%s[%-6s%11s.%06s, %s]%s: %s",
                         log.usecolor and x.color or "",
                         nameupper,
                         sec, usec,

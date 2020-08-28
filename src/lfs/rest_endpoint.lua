@@ -4,7 +4,7 @@ local log = require("log")
 
 -- print HTTP status line
 local function printHttpResponse(code, data)
-  local a = { "Heap:", node.heap(), "HTTP Call:", code }
+  local a = {"HTTP Call:", code }
   for k, v in pairs(data) do
     table.insert(a, k)
     table.insert(a, v)
