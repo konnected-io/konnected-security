@@ -26,9 +26,7 @@ local function process(request)
         return sjson.encode({msg="missing `pwd` field"}), nil, 400
       end
 
-      local hmac = crypto.new_hmac("SHA1", request.body.pwd)
-      hmac:update(lock_str)
-      local signature = encoder.toHex(hmac:finalize())
+      local signature = encoder.toHex(crypto.hmac("SHA1", lock_str, request.body.pwd))
 
       -- if locked then try to unlock, else lock
       local setVar = require("variables_set")
