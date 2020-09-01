@@ -35,7 +35,7 @@ local function httpdRequest(data)
       if status then
         httpdRequestHandler.body = body_obj
       else
-        log.warn("Discarding malformed JSON", httpdRequestHandler.body)
+        log.warn("Discard bad JSON", httpdRequestHandler.body)
         httpdRequestHandler.body = nil
       end
     end

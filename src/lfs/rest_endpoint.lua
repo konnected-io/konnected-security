@@ -50,7 +50,7 @@ local function startLoop(settings)
             state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
             gpio.write(actuator.pin, state)
           end
-          log.info("Initialized actuator Pin:", actuator.pin, "Trigger:", actuator.trigger, "Initial state:", state)
+          log.info("Init act Pin:", actuator.pin, "Trig:", actuator.trigger, "Init state:", state)
 
           table.remove(actuatorGet, 1)
           blinktimer:start()
@@ -77,7 +77,7 @@ local function startLoop(settings)
             -- retry up to 10 times then reboot as a failsafe
             local retry = sensor.retry or 0
             if retry == 10 then
-              log.error("Retried 10 times and failed. Rebooting in 30 seconds.")
+              log.error("Retried 10x. Reboot in 30s.")
               for k, v in pairs(sensorPut) do sensorPut[k] = nil end -- remove all pending sensor updates
               tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
             else
@@ -93,7 +93,7 @@ local function startLoop(settings)
 
     collectgarbage()
   end)
-  log.info("REST Endpoint:", settings.endpoint)
+  --log.info("REST:", settings.endpoint)
 end
 
 return function(settings)

@@ -27,14 +27,14 @@ sendTimer:register(200, tmr.ALARM_AUTO, function(t)
 		end
 
 		if sensor.retry and sensor.retry > 10 then
-			log.error("Retried 10 times and failed. Rebooting in 30 seconds.")
+			log.error("Retried 10x. Reboot in 30s.")
 			for k, v in pairs(sensorPut) do sensorPut[k] = nil end -- remove all pending sensor updates
 			tmr.create():alarm(30000, tmr.ALARM_SINGLE, function() node.restart() end) -- reboot in 30 sec
 		else
 			local message_id = c.msg_id
       local topic = sensor.topic or topics.sensor
 		  sensor.device_id = device_id
-			log.info("PUBLISH", "Message ID:", message_id, "Topic:", topic, "Payload:", sjson.encode(sensor))
+			log.info("PUB", "Msg ID:", message_id, "Topic:", topic, "Payload:", sjson.encode(sensor))
 			timeout:start()
 			c:publish(topic, sensor)
 			sensor.message_id = message_id
@@ -51,7 +51,7 @@ heartbeat:register(200, tmr.ALARM_AUTO, function(t)
 end)
 
 local function startLoop()
-	log.info('Connecting to AWS IoT Endpoint:', settings.endpoint)
+	log.info('Conn AWS IoT:', settings.endpoint)
 
 	local mqttFails = 0
 	c:on('offline', function()
@@ -103,7 +103,7 @@ end)
 
 c:on('connect', function()
 	log.info("mqtt: connected")
-	log.info("Subscribing to topic:", topics.switch)
+	log.info("Sub to topic:", topics.switch)
 	c:subscribe(topics.switch)
 
 	-- update current state of actuators upon boot

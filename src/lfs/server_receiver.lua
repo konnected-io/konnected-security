@@ -31,8 +31,9 @@ local function httpReceiver(sck, payload)
     return
   end
 
+  log.info("HTTP: ", request.path)
+
   if request.path == "/" then
-    log.info("HTTP: ", "Index")
     response.file(sck, "http_index.html")
 
   elseif request.path == "/favicon.ico" then
@@ -40,27 +41,21 @@ local function httpReceiver(sck, payload)
 
   elseif request.path == "/Device.xml" then
     response.text(sck, require("ssdp")(), "text/xml")
-    log.info("HTTP: ", "Discovery")
 
   elseif request.path == "/settings" then
-    log.info("HTTP: ", "Settings")
     response.text(sck, require("server_settings")(request))
 
   elseif request.path == "/device" then
-    log.info("HTTP: ", "Device")
     response.text(sck, require("server_device")(request))
 
   elseif request.path == "/status" then
-    log.info("HTTP: ", "Status")
     response.text(sck, sjson.encode(require("server_status")()))
 
   elseif request.path == "/ota" then
-    log.info("HTTP: ", "OTA Update")
     response.text(sck, require("ota")(request))
 
   elseif request.path == "/lock" then
-    log.info("HTTP: ", "Lock")
-    response.text(sck, require("ota")(request))
+    response.text(sck, require("server_lock")(request))
   end
 
   sck, request, response = nil

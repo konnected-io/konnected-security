@@ -3,7 +3,7 @@ local log = require("log")
 for fn in pairs(file.list()) do
   local fm = string.match(fn,".*%.lua-$")
   if (fm) and fm ~= "init.lua" then
-    log.info("Compiling: ", fn)
+    log.info("Comp: ", fn)
     node.compile(fm)
     file.remove(fm)
   end

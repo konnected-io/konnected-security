@@ -7,7 +7,7 @@ local function ssdpResponse(c, d, port, ip)
     local device = require("device")
     local urn = d:match("ST: (urn:[%w%p]*)")
     if (urn == device.urn or string.match(d, "ST: ssdp:all")) then
-      log.info("Responding to UPnP Discovery request from " .. ip .. ":" .. port)
+      log.info("Resp to UPnP Disc request from " .. ip .. ":" .. port)
       local resp =
       "HTTP/1.1 200 OK\r\n" ..
         "CACHE-CONTROL: max-age=1800\r\n" ..

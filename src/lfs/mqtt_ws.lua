@@ -75,12 +75,12 @@ local function Client(aws_settings)
 	end)
 
 	ws:on('close', function(_, status)
-		log.info('websocket closed, status:', status)
+		log.info('ws close, status:', status)
 		client:emit('offline')
 	end)
 
 	ws:on('connection', function(_)
-		log.info("websocket connected")
+		log.info("ws connect")
 		ws:send(string.char(0x10, 0x0c, 0x00, 0x04, 0x4d, 0x51, 0x54, 0x54, 0x04, 0x02, 0x00, 0x00, 0x00, 0x00), 2)
 	end)
 

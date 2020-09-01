@@ -14,7 +14,7 @@ wipeTmr:register(8000, tmr.ALARM_SEMI, function()
     setVar("dht_sensors", require("variables_build")({}))
     setVar("ds18b20_sensors", require("variables_build")({}))
 
-    log.info('Settings updated! Restarting now')
+    log.info('Settings updated! Restarting')
     node.restart()
   end)
 end)

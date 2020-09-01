@@ -71,7 +71,7 @@ finalise = function(sck)
     -- run as separate task to maximise RAM available
     node.task.post(function() node.flashreload(image) end)
   else
-    log.error("Invalid save of image file")
+    log.error("Invalid save")
   end
 end
 

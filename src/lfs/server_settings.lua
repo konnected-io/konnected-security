@@ -40,7 +40,7 @@ local function process(request)
 		setVar("dht_sensors", require("variables_build")(request.body.dht_sensors))
 		setVar("ds18b20_sensors", require("variables_build")(request.body.ds18b20_sensors))
 
-		log.warn('Settings updated! Restarting in 5 seconds...')
+		log.warn('Settings updated! Reboot in 5s')
 		restartTimer:start()
 
 		return ""

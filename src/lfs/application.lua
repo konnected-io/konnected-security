@@ -13,14 +13,14 @@ actuatorGet = {}
 
 -- initialize binary sensors
 for i, sensor in pairs(sensors) do
-  log.info("Initializing sensor pin:", sensor.pin)
+  log.info("Init sens pin:", sensor.pin)
   gpio.mode(sensor.pin, gpio.INPUT, gpio.PULLUP)
 end
 
 -- initialize actuators
 for i, actuator in pairs(actuators) do
   local initialState = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
-  log.info("Initializing actuator pin:", actuator.pin, "on:", actuator.trigger or gpio.HIGH, "off:", initialState)
+  log.info("Init act pin:", actuator.pin, "on:", actuator.trigger or gpio.HIGH, "off:", initialState)
   gpio.write(actuator.pin, initialState)
   gpio.mode(actuator.pin, gpio.OUTPUT)
   table.insert(actuatorGet, actuator)
@@ -35,7 +35,7 @@ if #dht_sensors > 0 then
     if status == dht.OK then
       local temperature_string = temp .. "." .. math.abs(temp_dec)
       local humidity_string = humi .. "." .. humi_dec
-      log.info("Temperature:", temperature_string, "Humidity:", humidity_string)
+      log.info("Temp:", temperature_string, "RH:", humidity_string)
       table.insert(sensorPut, { pin = pin, temp = temperature_string, humi = humidity_string })
     else
       log.info("DHT Status:", status)
@@ -45,7 +45,7 @@ if #dht_sensors > 0 then
   for i, sensor in pairs(dht_sensors) do
     local pollInterval = tonumber(sensor.poll_interval) or 0
     pollInterval = (pollInterval > 0 and pollInterval or 3) * 60 * 1000
-    log.info("Polling DHT on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
+    log.info("Polling DHT on pin " .. sensor.pin .. " @ " .. pollInterval .. "ms")
     tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() readDht(sensor.pin) end)
     readDht(sensor.pin)
   end
@@ -57,7 +57,7 @@ if #ds18b20_sensors > 0 then
   local function ds18b20Callback(pin)
     local callbackFn = function(i, rom, res, temp, temp_dec, par)
       local temperature_string = temp .. "." .. math.abs(temp_dec)
-      log.info("Temperature:", temperature_string, "Resolution:", res)
+      log.info("Temp:", temperature_string, "Res:", res)
       if (res >= 12) then
         table.insert(sensorPut, { pin = pin, temp = temperature_string,
           addr = string.format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
@@ -70,7 +70,7 @@ if #ds18b20_sensors > 0 then
   for i, sensor in pairs(ds18b20_sensors) do
     local pollInterval = tonumber(sensor.poll_interval) or 0
     pollInterval = (pollInterval > 0 and pollInterval or 3) * 60 * 1000
-    log.info("Polling DS18b20 on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
+    log.info("Polling DS18 on pin " .. sensor.pin .. " @ " .. pollInterval .. "ms")
     local callbackFn = ds18b20Callback(sensor.pin)
     ds18b20.setup(sensor.pin)
     ds18b20.setting({}, 12)
