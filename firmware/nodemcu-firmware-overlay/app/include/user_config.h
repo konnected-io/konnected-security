@@ -46,7 +46,7 @@
 // a maximum 256Kb.
 
 #define LUA_FLASH_STORE 0x10000
-
+//#define LUA_FLASH_STORE 0x40000 max LFS size
 
 // By default Lua executes the file init.lua at start up.  The following
 // define allows you to replace this with an alternative startup.  Warning:
@@ -118,10 +118,10 @@
 // management, using internal timer callbacks.  Whilst many Lua developers
 // prefer to implement equivalent features in Lua, others will prefer the
 // Wifi module to do this for them.  Uncomment the following to enable
-// this functionality.  See the relevant WiFi module documentation for 
+// this functionality.  See the relevant WiFi module documentation for
 // further details, as the scope of these changes is not obvious.
 
-//  Enable the wifi.startsmart() and wifi.stopsmart()  
+//  Enable the wifi.startsmart() and wifi.stopsmart()
 //#define WIFI_SMART_ENABLE
 
 //  Enable wifi.sta.config() event callbacks

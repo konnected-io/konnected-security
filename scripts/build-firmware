@@ -5,7 +5,7 @@ function usage() {
     echo "usage: $0 <version>"
     echo
     echo '    version should be formatted <major>-<minor>-<patch>'
-    echo 
+    echo
     echo 'Execute from the root dir of the repo. Upon successful completion the release will be created in firmware/releases/<version>'
     echo "    ex: '$0 2-3-0'"
     exit 1
@@ -20,10 +20,12 @@ if ! [[ "${VERSION}" =~ ^[0-9]+-[0-9]+-[0-9]+ ]] ; then
     usage
 fi
 
+set -e
 FIRMWARE_PATH="${PWD}/../nodemcu-firmware"
 FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
 BUILD_PATH="firmware/builds/${VERSION}"
 IMAGE_NAME="konnected-firmware-${VERSION}"
+LFS_BASE="${PWD}/src/lfs"
 
 # Copy firmware configuration from this repository to the nodemcu-firmware repo
 cp "${FIRMWARE_OVERLAY_PATH}"/app/include/* "${FIRMWARE_PATH}/app/include/"
@@ -36,12 +38,15 @@ docker run -e "INTEGER_ONLY=1" \
     --rm -ti -v "${FIRMWARE_PATH}:/opt/nodemcu-firmware" marcelstoer/nodemcu-build build
 
 # Build LFS image with application files
-docker run -e "IMAGE_NAME=lfs" \
-    --rm -ti -v "${FIRMWARE_PATH}:/opt/nodemcu-firmware" \
-    -v "${PWD}/src/lfs:/opt/lua" marcelstoer/nodemcu-build lfs-image
+LUA_FILES=$(find ${LFS_BASE} -iname "*.lua" | sed "s|${LFS_BASE}|/lfs|g")
 
-mv src/lfs/LFS_integer_lfs.img src/lfs/lfs.img
-rm -f src/lfs/LFS_float_lfs.img
+echo Adding files to LFS:
+echo ${LUA_FILES}
+docker run --rm -ti \
+  -v ${FIRMWARE_PATH}:/tools \
+  -v ${LFS_BASE}:/lfs \
+  marcelstoer/nodemcu-build /tools/luac.cross.int -m 0x10000 -f -o "/lfs/lfs.img" ${LUA_FILES}
+echo
 
 # Build SPIFFS image
 docker run \
@@ -49,7 +54,7 @@ docker run \
     -v "${PWD}/scripts:/scripts" \
     -v "${PWD}/src:/opt/lua" marcelstoer/nodemcu-build bash /scripts/build-spiffs
 
-# Create or clear the output directory and transfer files 
+# Create or clear the output directory and transfer files
 mkdir -p "${BUILD_PATH}"
 rm -rf "${BUILD_PATH}/*"
 cp "${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin" "${BUILD_PATH}/${IMAGE_NAME}.bin"
