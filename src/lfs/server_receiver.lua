@@ -52,12 +52,12 @@ local function httpReceiver(sck, payload)
     print("Heap: ", node.heap(), "HTTP: ", "Status")
     response.text(sck, sjson.encode(require("server_status")()))
 
+  elseif request.path == "/lock" then
+    print("Heap: ", node.heap(), "HTTP: ", "Lock")
+    response.text(sck, require("server_lock")(request))
+
   elseif request.path == "/ota" then
     print("Heap: ", node.heap(), "HTTP: ", "OTA Update")
-    response.text(sck, require("ota")(request))
-
-  elseif request.path == "/lock" then
-    log.info("HTTP: ", "Lock")
     response.text(sck, require("ota")(request))
   end
 
