@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function usage() {
     echo
     echo "usage: $0 <version>"
     echo
-    echo '    version should be formatted <major>-<minor>-<patch>'
+    echo '    -v version should be formatted <major>-<minor>-<patch>'
+    echo '    -c <nodemcu-repo> optional abs path to custom nodemcu-firmware repo'
     echo
     echo 'Execute from the root dir of the repo. Upon successful completion the release will be created in firmware/releases/<version>'
     echo "    ex: '$0 2-3-0'"
@@ -14,28 +15,67 @@ if [ "$#" == 0 ]; then
     usage
 fi
 
-VERSION="$1"
-if ! [[ "${VERSION}" =~ ^[0-9]+-[0-9]+-[0-9]+ ]] ; then
-    echo "Version not formatted correctly..."
-    usage
-fi
-
 set -e
-FIRMWARE_PATH="${PWD}/../nodemcu-firmware"
 FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
 BUILD_PATH="firmware/builds/${VERSION}"
 IMAGE_NAME="konnected-firmware-${VERSION}"
+
 LFS_BASE="${PWD}/src/lfs"
+OUTPUT_BASE="${PWD}/build"
+OUTPUT_APP="${OUTPUT_BASE}/app"
+FW_BASE="${OUTPUT_BASE}/nodemcu-firmware"
+FW_TAG="3.0-master_20200610"
+VERSION="99-99-99"
+
+# process cmd args
+while getopts "v:c:h" opt; do
+    case ${opt} in
+        h )
+            usage
+            ;;
+        c )
+            FW_BASE="$OPTARG"
+            FW_TAG=''
+            echo "using custom nodemcu-repo ${FW_BASE}"
+            ;;
+        v )
+            VERSION="$OPTARG"
+            if ! [[ "${VERSION}" =~ ^[0-9]+-[0-9]+-[0-9]+ ]] ; then
+                echo "Version not formatted correctly..."
+                usage
+            fi
+            echo "tagging as version ${VERSION}"
+            ;;
+        \? )
+            echo "Invalid Option: -$OPTARG" 1>&2
+            exit 1
+            ;;
+    esac
+done
+
+rm -rf ${OUTPUT_BASE}
+mkdir -p "${OUTPUT_BASE}";
+chown -R $USER "${OUTPUT_BASE}"
+
+# pull and update the FW repo if none is supplied
+if [ ! -z "$FW_TAG" ] ; then
+    echo "Checking out nodemcu-firmware:${FW_TAG}"
+    git clone https://github.com/nodemcu/nodemcu-firmware.git \
+        "${FW_BASE}"
+    cd "${FW_BASE}"
+    git checkout "${FW_TAG}"
+    git submodule update --recursive
+    cd -
+fi
 
 # Copy firmware configuration from this repository to the nodemcu-firmware repo
-cp "${FIRMWARE_OVERLAY_PATH}"/app/include/* "${FIRMWARE_PATH}/app/include/"
+cp "${FIRMWARE_OVERLAY_PATH}"/app/include/* "${FW_BASE}/app/include/"
 
-rm -f "${FIRMWARE_PATH}/local/fs/*"
+rm -f "${FW_BASE}/local/fs/*"
 
 # Build NodeMCU firmware image
-docker run -e "INTEGER_ONLY=1" \
-    -e "IMAGE_NAME=${IMAGE_NAME}" \
-    --rm -ti -v "${FIRMWARE_PATH}:/opt/nodemcu-firmware" marcelstoer/nodemcu-build build
+docker run -e "IMAGE_NAME=${IMAGE_NAME}" \
+    --rm -ti -v "${FW_BASE}:/opt/nodemcu-firmware" marcelstoer/nodemcu-build build
 
 # Build LFS image with application files
 LUA_FILES=$(find ${LFS_BASE} -iname "*.lua" | sed "s|${LFS_BASE}|/lfs|g")
@@ -43,22 +83,31 @@ LUA_FILES=$(find ${LFS_BASE} -iname "*.lua" | sed "s|${LFS_BASE}|/lfs|g")
 echo Adding files to LFS:
 echo ${LUA_FILES}
 docker run --rm -ti \
-  -v ${FIRMWARE_PATH}:/tools \
+  -v ${FW_BASE}:/nodemcu-firmware \
+  -v ${OUTPUT_APP}:/build \
   -v ${LFS_BASE}:/lfs \
-  marcelstoer/nodemcu-build /tools/luac.cross.int -m 0x10000 -f -o "/lfs/lfs.img" ${LUA_FILES}
+  marcelstoer/nodemcu-build /nodemcu-firmware/luac.cross.int -m 0x10000 -f -o "/build/lfs.img" ${LUA_FILES}
 echo
 
-# Build SPIFFS image
+# transfer source files not in the lfs to the build output (ignore the status)
+cp -f ${LFS_BASE}/../* "${OUTPUT_APP}" 2>/dev/null || true; echo "Building SPIFFS..."
+
+# Build spiffsimg tool (manual for now because of https://github.com/nodemcu/nodemcu-firmware/issues/2943)
+docker run --rm -ti \
+  -v ${FW_BASE}:/nodemcu-firmware \
+  marcelstoer/nodemcu-build make -C /nodemcu-firmware/tools/spiffsimg
+
+# Create SPIFFS image
 docker run \
-    --rm -ti -v "${FIRMWARE_PATH}:/opt/nodemcu-firmware" \
+    --rm -ti -v "${FW_BASE}:/opt/nodemcu-firmware" \
     -v "${PWD}/scripts:/scripts" \
-    -v "${PWD}/src:/opt/lua" marcelstoer/nodemcu-build bash /scripts/build-spiffs
+    -v "${OUTPUT_APP}:/opt/lua" marcelstoer/nodemcu-build bash /scripts/build-spiffs
 
 # Create or clear the output directory and transfer files
 mkdir -p "${BUILD_PATH}"
 rm -rf "${BUILD_PATH}/*"
-cp "${FIRMWARE_PATH}/bin/nodemcu_integer_${IMAGE_NAME}.bin" "${BUILD_PATH}/${IMAGE_NAME}.bin"
-cp "${FIRMWARE_PATH}/bin/konnected-filesystem-0x100000.img" "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img"
+cp "${FW_BASE}/bin/nodemcu_integer_${IMAGE_NAME}.bin" "${BUILD_PATH}/${IMAGE_NAME}.bin"
+cp "${FW_BASE}/bin/konnected-filesystem-0x100000.img" "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img"
 
 srec_cat -output "${BUILD_PATH}/konnected-esp8266-${VERSION}.bin" -binary "${BUILD_PATH}/${IMAGE_NAME}.bin" -binary -fill 0xff 0x0000 0x100000 "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img" -binary -offset 0x100000
 

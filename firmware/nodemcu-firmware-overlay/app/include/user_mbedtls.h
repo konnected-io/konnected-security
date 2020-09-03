@@ -1,4 +1,5 @@
-#include "c_types.h"
+#include <stdint.h>
+#include <stddef.h>
 
 #include "user_config.h"
 
@@ -78,9 +79,11 @@
 #define MBEDTLS_ECP_DP_SECP256R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP384R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP521R1_ENABLED
+
 #define MBEDTLS_ECP_DP_SECP192K1_ENABLED
 #define MBEDTLS_ECP_DP_SECP224K1_ENABLED
 #define MBEDTLS_ECP_DP_SECP256K1_ENABLED
+
 #define MBEDTLS_ECP_DP_BP256R1_ENABLED
 #define MBEDTLS_ECP_DP_BP384R1_ENABLED
 #define MBEDTLS_ECP_DP_BP512R1_ENABLED
@@ -190,11 +193,17 @@
 #define MBEDTLS_CIPHER_C
 #define MBEDTLS_CMAC_C
 #define MBEDTLS_CTR_DRBG_C
-#undef MBEDTLS_DEBUG_C
+
+#ifdef DEVELOP_VERSION
+# define MBEDTLS_DEBUG_C
+#else
+# undef MBEDTLS_DEBUG_C
+#endif
+
 #define MBEDTLS_DES_C
 #define MBEDTLS_DHM_C
 #define MBEDTLS_ECDH_C
-#undef MBEDTLS_ECDSA_C
+#define MBEDTLS_ECDSA_C
 #undef MBEDTLS_ECJPAKE_C
 #define MBEDTLS_ECP_C
 #define MBEDTLS_ENTROPY_C
@@ -266,8 +275,10 @@
 //#define MBEDTLS_MEMORY_ALIGN_MULTIPLE      4 /**< Align on multiples of this value */
 
 //#define MBEDTLS_PLATFORM_STD_MEM_HDR   <stdlib.h> /**< Header to include if MBEDTLS_PLATFORM_NO_STD_FUNCTIONS is defined. Don't define if no header is needed. */
-#define MBEDTLS_PLATFORM_STD_CALLOC        pvPortCalloc /**< Default allocator to use, can be undefined */
-#define MBEDTLS_PLATFORM_STD_FREE            vPortFree /**< Default free to use, can be undefined */
+extern void *mbedtls_calloc_wrap(size_t n, size_t sz);
+#define MBEDTLS_PLATFORM_STD_CALLOC        mbedtls_calloc_wrap /**< Default allocator to use, can be undefined */
+extern void mbedtls_free_wrap(void *p);
+#define MBEDTLS_PLATFORM_STD_FREE            mbedtls_free_wrap /**< Default free to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_EXIT            exit /**< Default exit to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_TIME            time /**< Default time to use, can be undefined. MBEDTLS_HAVE_TIME must be enabled */
 //#define MBEDTLS_PLATFORM_STD_FPRINTF      fprintf /**< Default fprintf to use, can be undefined */
@@ -292,17 +303,11 @@
 //#define MBEDTLS_SSL_CACHE_DEFAULT_TIMEOUT       86400 /**< 1 day  */
 //#define MBEDTLS_SSL_CACHE_DEFAULT_MAX_ENTRIES      50 /**< Maximum entries in cache */
 
-#if 0
-// dynamic buffer sizing with espconn_secure_set_size()
-extern unsigned int max_content_len;
-#define MBEDTLS_SSL_MAX_CONTENT_LEN             max_content_len;
-#else
 // the current mbedtls integration doesn't allow to set the buffer size dynamically:
 //   MBEDTLS_SSL_MAX_FRAGMENT_LENGTH feature and dynamic sizing are mutually exclusive
-//   due to non-constant initializer element in app/mbedtls/library/ssl_tls.c:150 
+//   due to non-constant initializer element in app/mbedtls/library/ssl_tls.c:150
 // the buffer size is hardcoded here and value is taken from SSL_BUFFER_SIZE (user_config.h)
 #define MBEDTLS_SSL_MAX_CONTENT_LEN             SSL_BUFFER_SIZE /**< Maxium fragment length in bytes, determines the size of each of the two internal I/O buffers */
-#endif
 
 //#define MBEDTLS_SSL_DEFAULT_TICKET_LIFETIME     86400 /**< Lifetime of session tickets (if enabled) */
 //#define MBEDTLS_PSK_MAX_LEN               32 /**< Max size of TLS pre-shared keys, in bytes (default 256 bits) */

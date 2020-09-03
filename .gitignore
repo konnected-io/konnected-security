@@ -42,6 +42,9 @@ src/lfs/lfs.img
 *.x86_64
 *.hex
 
+# Build Artifacts
+build
+firmware/builds
+
 # Private files
 private
-
