@@ -88,7 +88,7 @@ docker run --rm -ti \
   -v ${FW_BASE}:/nodemcu-firmware \
   -v ${OUTPUT_APP}:/build \
   -v ${LFS_BASE}:/lfs \
-  marcelstoer/nodemcu-build /nodemcu-firmware/luac.cross.int -m 0x10000 -f -o "/build/lfs.img" ${LUA_FILES}
+  marcelstoer/nodemcu-build /nodemcu-firmware/luac.cross.int -m 0x40000 -f -o "/build/lfs.img" ${LUA_FILES}
 echo
 
 # transfer source files not in the lfs to the build output (ignore the status)
