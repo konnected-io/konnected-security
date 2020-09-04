@@ -66,7 +66,7 @@
 // LUA_FLASH_STORE defines the default partition size if the NodeMCU partition
 // tool is not used.
 
-//#define LUA_FLASH_STORE                   0x10000
+#define LUA_FLASH_STORE                   0x10000
 //#define LUA_FLASH_STORE 0x40000 max LFS size
 
 // By default Lua executes the file init.lua at start up.  The following
@@ -99,7 +99,7 @@
 
 #define BUILD_SPIFFS
 #define SPIFFS_CACHE 1          // Enable if you use you SPIFFS in R/W mode
-#define SPIFFS_MAX_FILESYSTEM_SIZE    128000
+//#define SPIFFS_MAX_FILESYSTEM_SIZE 128000
 #define SPIFFS_MAX_OPEN_FILES 4 // maximum number of open files for SPIFFS
 #define FS_OBJ_NAME_LEN 31      // maximum length of a filename
 
@@ -240,7 +240,7 @@
 #  define LUA_FLASH_STORE                 0x0
 #endif
 
-#define SPIFFS_FIXED_LOCATION             0x100000
+#define SPIFFS_FIXED_LOCATION 0x100000
 #ifndef SPIFFS_MAX_FILESYSTEM_SIZE
 #  define SPIFFS_MAX_FILESYSTEM_SIZE      0xFFFFFFFF
 #endif

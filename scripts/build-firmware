@@ -16,16 +16,15 @@ if [ "$#" == 0 ]; then
 fi
 
 set -e
+
+FW_TAG="3.0-master_20200610"
+VERSION="99-99-99"
 FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
-BUILD_PATH="firmware/builds/${VERSION}"
-IMAGE_NAME="konnected-firmware-${VERSION}"
 
 LFS_BASE="${PWD}/src/lfs"
 OUTPUT_BASE="${PWD}/build"
 OUTPUT_APP="${OUTPUT_BASE}/app"
 FW_BASE="${OUTPUT_BASE}/nodemcu-firmware"
-FW_TAG="3.0-master_20200610"
-VERSION="99-99-99"
 
 # process cmd args
 while getopts "v:c:h" opt; do
@@ -53,6 +52,9 @@ while getopts "v:c:h" opt; do
     esac
 done
 
+BUILD_PATH="firmware/builds/${VERSION}"
+IMAGE_NAME="konnected-firmware-${VERSION}"
+
 rm -rf ${OUTPUT_BASE}
 mkdir -p "${OUTPUT_BASE}";
 chown -R $USER "${OUTPUT_BASE}"
@@ -69,7 +71,7 @@ if [ ! -z "$FW_TAG" ] ; then
 fi
 
 # Copy firmware configuration from this repository to the nodemcu-firmware repo
-cp "${FIRMWARE_OVERLAY_PATH}"/app/include/* "${FW_BASE}/app/include/"
+cp -rf "${FIRMWARE_OVERLAY_PATH}"/* "${FW_BASE}/"
 
 rm -f "${FW_BASE}/local/fs/*"
 
