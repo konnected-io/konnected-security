@@ -65,7 +65,8 @@ local function startLoop()
 		end
 	end)
 
-	c:connect(settings.endpoint)
+	-- stripping -ats results uses the endpoint with a smaller cert chain
+	c:connect(string.gsub(settings.endpoint, "-ats", ""))
 end
 
 c:on('puback', function(_, message_id)
