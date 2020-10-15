@@ -1,6 +1,5 @@
 local module = ...
 
-local log = require("log")
 local lock_str = "lockmeup"
 
 local st_locked = {state="locked"}
@@ -11,7 +10,7 @@ local function process(request)
   local device_config = file.exists("device_config.lc") and require("device_config") or {}
 
   if request.method == "GET" then
-    log.info("Settings Lock status requested")
+    print("Heap:", node.heap(), "Settings Lock status requested")
     if device_config.lock_sig and device_config.lock_sig ~= "" then
       return sjson.encode(st_locked)
     end
@@ -20,7 +19,7 @@ local function process(request)
 
   if request.contentType == "application/json" then
     if request.method == "PUT" then
-      log.info("Settings Lock update requested")
+      print("Heap:", node.heap(), "Settings Lock update requested")
 
       if not request.body.pwd then
         return sjson.encode({msg="missing `pwd` field"}), nil, 400
@@ -36,17 +35,17 @@ local function process(request)
           setVar("device_config", require("variables_build")({
             lock_sig = ""
           }))
-          log.warn("Unlocked settings")
+          print("Heap:", node.heap(), "Unlocked settings")
           return sjson.encode(st_unlocked)
         end
 
-        log.warn("wrong unlock password")
+        print("Heap:", node.heap(), "wrong unlock password")
         return sjson.encode({msg="incorrect value for pwd"}), nil, 403
       else
         setVar("device_config", require("variables_build")({
           lock_sig = signature
         }))
-        log.info("Settings locked w/" .. signature)
+        print("Heap:", node.heap(), "Settings locked w/" .. signature)
         return sjson.encode(st_locked)
       end
     end
