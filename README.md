@@ -28,12 +28,12 @@
 Windows and Mac users will need to download drivers so your computer can talk to the ESP8266 chip over USB. Depending
 on which board you have, there are different drivers: 
 
-**[WeMos CH340 drivers](https://wiki.wemos.cc/downloads)** for boards that:
+**[WeMos CH340 drivers](https://www.wemos.cc/en/latest/ch340_driver.html)** for boards that:
 * have the name _LoLin_ on the back or front
 * the small rectangular component on the board near the USB port is engraved with CH340G
 * **Mac OS X Sierra users**: [use this driver](http://kig.re/2014/12/31/how-to-use-arduino-nano-mini-pro-with-CH340G-on-mac-osx-yosemite.html)
 
-**[Silicon LabsUSB to UART drivers](http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx)** for boards that:
+**[Silicon Labs USB to UART drivers](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers)** for boards that:
 * have the name _Amica_ on the back
 * the small component on the board near the USB port is engraved with SiLABS CP2102
 
