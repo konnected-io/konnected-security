@@ -70,7 +70,10 @@ local function Client(aws_settings)
 			client:emit('message', parsed.topic, parsed.payload)
 		elseif parsed.cmd == 2 then
 			client:emit('connect')
+		else
+			print(parsed)
 		end
+
 	end)
 
 	ws:on('close', function(_, status)
