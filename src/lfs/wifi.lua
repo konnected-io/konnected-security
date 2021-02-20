@@ -1,4 +1,7 @@
 print("Heap: ", node.heap(), "Connecting to Wifi..")
+
+wifi.sta.sleeptype(wifi.NONE_SLEEP)
+
 local startWifiSetup = function()
   print("Heap: ", node.heap(), "Entering Wifi setup mode")
   wifi.eventmon.unregister(wifi.eventmon.STA_DISCONNECTED)
@@ -57,6 +60,9 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
     failsafeTimer = nil
     local ip, nm, gw = wifi.sta.getip()
     print("Heap: ", node.heap(), "Wifi connected with IP: ", ip, "Gateway:", gw)
+
+    -- monitor wifi for disconnects
+    require("wifi_monitor").monitor()
 
     gpio.write(4, gpio.HIGH)
     enduser_setup.stop()
