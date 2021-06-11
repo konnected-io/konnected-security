@@ -42,7 +42,7 @@ local function startLoop(settings)
           printHttpResponse(code, {pin = pin, state = state})
 
           gpio.mode(actuator.pin, gpio.OUTPUT)
-          if pin == actuator.pin and code >= 200 and code < 300 and state then
+          if pin == tonumber(actuator.pin) and code >= 200 and code < 300 and state then
             gpio.write(actuator.pin, state)
           else
             state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW

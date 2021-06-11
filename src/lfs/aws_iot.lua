@@ -8,6 +8,7 @@ local topics = settings.aws.topics
 
 local sendTimer = tmr.create()
 local timeout = tmr.create()
+local mqttTimeout = tmr.create()
 local heartbeat = tmr.create()
 
 timeout:register(3000, tmr.ALARM_SEMI, function()
@@ -49,6 +50,11 @@ heartbeat:register(200, tmr.ALARM_AUTO, function(t)
   t:interval(300000) -- 5 minutes
 end)
 
+mqttTimeout:register(10000, tmr.ALARM_SEMI, function(t)
+	print("Heap:", node.heap(), 'Couldn\'t connect to AWS IoT! Restarting.')
+	node.restart()
+end)
+
 local function startLoop()
 	print("Heap:", node.heap(), 'Connecting to AWS IoT Endpoint:', settings.endpoint)
 
@@ -65,7 +71,8 @@ local function startLoop()
 		end
 	end)
 
-	-- stripping -ats results uses the endpoint with a smaller cert chain
+	mqttTimeout:start()
+  -- stripping -ats uses the endpoint with a smaller cert chain
 	c:connect(string.gsub(settings.endpoint, "-ats", ""))
 end
 
@@ -102,6 +109,7 @@ c:on('message', function(_, topic, message)
 end)
 
 c:on('connect', function()
+	mqttTimeout:stop()
 	print("Heap:", node.heap(), "mqtt: connected")
 	print("Heap:", node.heap(), "Subscribing to topic:", topics.switch)
 	c:subscribe(topics.switch)
