@@ -12,7 +12,7 @@
 #define NODE_VERSION_STR(x)	#x
 #define NODE_VERSION_XSTR(x)	NODE_VERSION_STR(x)
 
-# define NODE_VERSION		"Konnected firmware 2.3.0\r\nNodeMCU " ESP_SDK_VERSION_STRING "." NODE_VERSION_XSTR(NODE_VERSION_INTERNAL)
+# define NODE_VERSION		"Konnected firmware 3.0.0\r\nNodeMCU " ESP_SDK_VERSION_STRING "." NODE_VERSION_XSTR(NODE_VERSION_INTERNAL)
 // Leave the space after # in the line above. It busts replacement of NODE_VERSION in the docker build which is not needed anymore with this PR.
 // Can be removed when the script is adapted
 

@@ -17,8 +17,8 @@ fi
 
 set -e
 
-FW_TAG="3.0-master_20200610"
-VERSION="99-99-99"
+FW_TAG="3.0.0-release_20210201"
+VERSION="3-0-0"
 FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
 
 LFS_BASE="${PWD}/src/lfs"
@@ -62,7 +62,7 @@ chown -R $USER "${OUTPUT_BASE}"
 # pull and update the FW repo if none is supplied
 if [ ! -z "$FW_TAG" ] ; then
     echo "Checking out nodemcu-firmware:${FW_TAG}"
-    git clone https://github.com/nodemcu/nodemcu-firmware.git \
+    git clone --recurse-submodules https://github.com/nodemcu/nodemcu-firmware.git \
         "${FW_BASE}"
     cd "${FW_BASE}"
     git checkout "${FW_TAG}"

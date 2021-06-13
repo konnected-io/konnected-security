@@ -17,7 +17,6 @@
 #include "flash_api.h"
 #include "user_interface.h"
 #include "user_modules.h"
-#include "user_config.h"
 
 #include "ets_sys.h"
 #include "driver/uart.h"
@@ -26,6 +25,7 @@
 #include "mem.h"
 #include "espconn.h"
 #include "sections.h"
+#include "../modules/wifi_common.h"
 
 #ifdef LUA_USE_MODULES_RTCTIME
 #include "rtc/rtctime.h"
@@ -41,8 +41,8 @@ __asm__(
   "init_data_end:\n"
 );
 extern const char _irom0_text_start[], _irom0_text_end[], _flash_used_end[];
-#define IROM0_SIZE (_irom0_text_end - _irom0_text_start)
 
+#define IROM0_SIZE (_irom0_text_end - _irom0_text_start)
 
 #define PRE_INIT_TEXT_ATTR        __attribute__((section(".p3.pre_init")))
 #define IROM_PTABLE_ATTR          __attribute__((section(".irom0.ptable")))
@@ -61,9 +61,14 @@ extern const char _irom0_text_start[], _irom0_text_end[], _flash_used_end[];
 #define NODEMCU_PARTITION_LFS       PLATFORM_PARTITION(NODEMCU_LFS0_PARTITION)
 #define NODEMCU_PARTITION_SPIFFS    PLATFORM_PARTITION(NODEMCU_SPIFFS0_PARTITION)
 
+#define RF_CAL_SIZE            0x1000
+#define PHY_DATA_SIZE          0x1000
+#define SYSTEM_PARAMETER_SIZE  0x3000
+
 #define MAX_PARTITIONS 20
 #define WORDSIZE       sizeof(uint32_t)
 #define PTABLE_SIZE    7   /** THIS MUST BE MATCHED TO NO OF PT ENTRIES BELOW **/
+
 struct defaultpt {
   platform_rcr_t hdr;
   partition_item_t pt[PTABLE_SIZE+1]; // the +! is for the endmarker
@@ -79,12 +84,12 @@ static const struct defaultpt rompt IROM_PTABLE_ATTR USED_ATTR  = {
           .id  = PLATFORM_RCR_PT},
   .pt  = {
     { NODEMCU_PARTITION_EAGLEROM,         0x00000,     0x0B000},
-    { SYSTEM_PARTITION_RF_CAL,            0x0B000,      0x1000},
-    { SYSTEM_PARTITION_PHY_DATA,          0x0C000,      0x1000},
-    { SYSTEM_PARTITION_SYSTEM_PARAMETER,  0x0D000,      0x3000},
-    { NODEMCU_PARTITION_IROM0TEXT,        0x10000,      0x0000},
-    { NODEMCU_PARTITION_LFS,              0x0,          LUA_FLASH_STORE},
-    { NODEMCU_PARTITION_SPIFFS,           SPIFFS_FIXED_LOCATION,  SPIFFS_MAX_FILESYSTEM_SIZE},
+    { SYSTEM_PARTITION_RF_CAL,            0x0D000,     RF_CAL_SIZE},
+    { SYSTEM_PARTITION_PHY_DATA,          0x0F000,     PHY_DATA_SIZE},
+    { NODEMCU_PARTITION_IROM0TEXT,        0x10000,     0x0000},
+    { NODEMCU_PARTITION_LFS,              0x0,         LUA_FLASH_STORE},
+    { NODEMCU_PARTITION_SPIFFS,           0x0,         SPIFFS_MAX_FILESYSTEM_SIZE},
+    { SYSTEM_PARTITION_SYSTEM_PARAMETER,  0x0,     SYSTEM_PARAMETER_SIZE},
     {0,(uint32_t) &_irom0_text_end,0}
   }
 };
@@ -122,11 +127,20 @@ extern void _ResetHandler(void);
  * configure the PT, etc during provisioning.
  */
 void user_pre_init(void) {
+    STARTUP_COUNT;
 #ifdef LUA_USE_MODULES_RTCTIME
   // Note: Keep this as close to call_user_start() as possible, since it
   // is where the cpu clock actually gets bumped to 80MHz.
     rtctime_early_startup ();
 #endif
+    int startup_option = platform_rcr_get_startup_option();
+
+    if (startup_option & STARTUP_OPTION_CPU_FREQ_MAX) {
+      REG_SET_BIT(0x3ff00014, BIT(0));
+      ets_update_cpu_frequency(SYS_CPU_160MHZ);
+    }
+    int no_banner = startup_option & STARTUP_OPTION_NO_BANNER;
+
     partition_item_t *rcr_pt = NULL, *pt;
     enum flash_size_map fs_size_code = system_get_flash_size_map();
 // Flash size lookup is SIZE_256K*2^N where N is as follows (see SDK/user_interface.h)
@@ -142,7 +156,9 @@ void user_pre_init(void) {
         os_printf("Flash size (%u) too small to support NodeMCU\n", flash_size);
         return;
     } else {
-        os_printf("system SPI FI size:%u, Flash size: %u\n", fs_size_code, flash_size );
+        if (!no_banner) {
+            os_printf("system SPI FI size:%u, Flash size: %u\n", fs_size_code, flash_size );
+        }
     }
 
     pt = os_malloc_iram(i);  // We will work on and register a copy of the PT in iRAM
@@ -162,8 +178,11 @@ void user_pre_init(void) {
     }
 
     // Now register the partition and return
-// for (i=0;i<n;i++) os_printf("P%d: %3d %06x %06x\n", i, pt[i].type, pt[i].addr, pt[i].size);
     if( fs_size_code > 1 && system_partition_table_regist(pt, n, fs_size_code)) {
+        if (no_banner) {
+            system_set_os_print(0);
+        }
+        STARTUP_COUNT;
         return;
     }
     os_printf("Invalid system partition table\n");
@@ -231,26 +250,41 @@ static uint32_t first_time_setup(partition_item_t *pt, uint32_t n, uint32_t flas
                 p->addr = last;
             break;
 
+         /*
+          * Set up the SPIFFS partition based on some sensible defaults:
+          *    size == 0 mean no SPIFFS partition.
+          *    size == ~0 means use all of the available flash for SPIFFS (resp the addr if set).
+          *    if size > 0 then float the default boundary to 1M if the SPIFFS will fit.
+          */
           case NODEMCU_PARTITION_SPIFFS:
-            if (p->size == ~0x0 && p->addr == 0) {
-                // This allocate all the remaining flash to SPIFFS
-                p->addr = last;
-                p->size = flash_size - last;
-            } else if (p->size == ~0x0) {
-                p->size = flash_size - p->addr;
-           }  else if (p->addr == 0) {
-                // if the is addr not specified then start SPIFFS at 1Mb
-                // boundary if the size will fit otherwise make it consecutive
-                // to the previous partition.
-                p->addr = (p->size <= flash_size - 0x100000) ? 0x100000 : last;
+            if (p->size == ~0x0) {         /* Maximum SPIFFS partition */
+                if (p->addr == 0)
+                    p->addr = last;
+                p->size = flash_size - SYSTEM_PARAMETER_SIZE - last;
+            } else if (p->size > 0x0) {    /* Explicit SPIFFS size */
+                if (p->addr < last)   // SPIFFS can't overlap the previous region;
+                    p->addr = 0;
+                if (p->addr == 0)
+                    p->addr = (p->size <= flash_size - SYSTEM_PARAMETER_SIZE - 0x100000) ?
+                              0x100000 : last;
             }
+            /* else p->size == 0              No SPIFFS partition */
+            break;
+
+          case SYSTEM_PARTITION_SYSTEM_PARAMETER:
+            p->addr = flash_size - SYSTEM_PARAMETER_SIZE;
+            p->size = SYSTEM_PARAMETER_SIZE;
         }
 
         if (p->size == 0) {
             // Delete 0-sized partitions as the SDK barfs on these
             newn--;
         } else {
-            // Do consistency tests on the partition
+           /*
+            * Do consistency tests on the partition.  The address and size must
+            * be flash sector aligned.  Partitions can't overlap, and the last
+            * patition must fit within the flash size.
+            */
             if (p->addr & (INTERNAL_FLASH_SECTOR_SIZE - 1) ||
                 p->size & (INTERNAL_FLASH_SECTOR_SIZE - 1) ||
                 p->addr < last ||
@@ -260,7 +294,6 @@ static uint32_t first_time_setup(partition_item_t *pt, uint32_t n, uint32_t flas
             }
             if (j < i)   // shift the partition down if we have any deleted slots
                 pt[j] = *p;
-//os_printf("Partition %d: %04x %06x %06x\n", j, p->type, p->addr, p->size);
             j++;
             last = p->addr + p->size;
         }
@@ -276,23 +309,13 @@ uint32 ICACHE_RAM_ATTR user_iram_memory_is_enabled(void) {
 }
 
 void nodemcu_init(void) {
+  STARTUP_COUNT;
    NODE_DBG("Task task_lua starting.\n");
    // Call the Lua bootstrap startup directly.  This uses the task interface
    // internally to carry out the main lua libraries initialisation.
    if(lua_main())
      lua_main();  // If it returns true then LFS restart is needed
 }
-
-#ifdef LUA_USE_MODULES_WIFI
-#include "../modules/wifi_common.h"
-
-void user_rf_pre_init(void)
-{
-//set WiFi hostname before RF initialization (adds ~479 us to boot time)
-  wifi_change_default_host_name();
-}
-#endif
-
 
 /******************************************************************************
  * FunctionName : user_init
@@ -311,6 +334,9 @@ void user_init(void) {
     }
     UartBautRate br = BIT_RATE_DEFAULT;
     uart_init (br, br);
+#ifdef LUA_USE_MODULES_WIFI
+    wifi_change_default_host_name();
+#endif
 #ifndef NODE_DEBUG
     system_set_os_print(0);
 #endif

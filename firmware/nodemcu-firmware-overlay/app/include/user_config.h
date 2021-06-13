@@ -126,7 +126,7 @@
 // will remove any associated runtime overhead.
 
 #define GPIO_INTERRUPT_ENABLE
-//#define GPIO_INTERRUPT_HOOK_ENABLE
+#define GPIO_INTERRUPT_HOOK_ENABLE
 
 
 // If your application uses the light sleep functions and you wish the
@@ -239,9 +239,13 @@
 #  define LUA_FLASH_STORE                 0x0
 #endif
 
-#define SPIFFS_FIXED_LOCATION 0x100000
+#ifndef SPIFFS_FIXED_LOCATION
+  #define SPIFFS_FIXED_LOCATION           0x0
+  // You'll rarely need to customize this, because nowadays
+  // it's usually overruled by the partition table anyway.
+#endif
 #ifndef SPIFFS_MAX_FILESYSTEM_SIZE
-#  define SPIFFS_MAX_FILESYSTEM_SIZE      0xFFFFFFFF
+  #define SPIFFS_MAX_FILESYSTEM_SIZE      0xFFFFFFFF
 #endif
 //#define SPIFFS_SIZE_1M_BOUNDARY
 
