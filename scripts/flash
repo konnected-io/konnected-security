@@ -46,8 +46,8 @@ fi
 FILESYSTEM_NAME="$(echo ${BUILD_PATH}/konnected-filesystem-0x*-${VERSION}.img)"
 FS_ADDRESS="$(cut -d'-' -f5 <<<${FILESYSTEM_NAME})"
 
-esptool.py "--port=${PORT}" write_flash --flash_mode dio 0x00000 "${FIRMWARE_NAME}"
-esptool.py "--port=${PORT}" write_flash --flash_mode dio "${FS_ADDRESS}" "${FILESYSTEM_NAME}"
+esptool.py "--port=${PORT}" write_flash --flash_mode dio --flash_size detect 0x00000 "${FIRMWARE_NAME}"
+esptool.py "--port=${PORT}" write_flash --flash_mode dio --flash_size detect "${FS_ADDRESS}" "${FILESYSTEM_NAME}"
 
 tput bel
 
