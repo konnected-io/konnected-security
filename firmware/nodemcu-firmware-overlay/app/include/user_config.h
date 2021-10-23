@@ -98,7 +98,8 @@
 
 #define BUILD_SPIFFS
 #define SPIFFS_CACHE 1          // Enable if you use you SPIFFS in R/W mode
-//#define SPIFFS_MAX_FILESYSTEM_SIZE 128000
+#define SPIFFS_MAX_FILESYSTEM_SIZE 0x100000
+#define SPIFFS_FIXED_LOCATION      0x100000
 #define SPIFFS_MAX_OPEN_FILES 4 // maximum number of open files for SPIFFS
 #define FS_OBJ_NAME_LEN 31      // maximum length of a filename
 

@@ -89,7 +89,7 @@ static const struct defaultpt rompt IROM_PTABLE_ATTR USED_ATTR  = {
     { NODEMCU_PARTITION_IROM0TEXT,        0x10000,     0x0000},
     { NODEMCU_PARTITION_LFS,              0x0,         LUA_FLASH_STORE},
     { NODEMCU_PARTITION_SPIFFS,           0x0,         SPIFFS_MAX_FILESYSTEM_SIZE},
-    { SYSTEM_PARTITION_SYSTEM_PARAMETER,  0x0,     SYSTEM_PARAMETER_SIZE},
+    { SYSTEM_PARTITION_SYSTEM_PARAMETER,  0x0,         SYSTEM_PARAMETER_SIZE},
     {0,(uint32_t) &_irom0_text_end,0}
   }
 };
