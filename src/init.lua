@@ -1,8 +1,8 @@
 print("Heap: ", node.heap(), "Initializing Konnected (" .. string.gsub(wifi.sta.getmac(), ":", "") .. ")")
 
 -- load the application in LFS if needed
-if node.flashindex() == nil then
-  node.flashreload("lfs.img")
+if node.flashindex("_init") == nil then
+  node.LFS.reload("lfs.img")
 end
 
 pcall(node.flashindex("_init"))

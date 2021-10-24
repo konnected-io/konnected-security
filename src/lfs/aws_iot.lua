@@ -72,7 +72,8 @@ local function startLoop()
 	end)
 
 	mqttTimeout:start()
-	c:connect(settings.endpoint)
+  -- stripping -ats uses the endpoint with a smaller cert chain
+	c:connect(string.gsub(settings.endpoint, "-ats", ""))
 end
 
 c:on('puback', function(_, message_id)

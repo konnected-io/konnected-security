@@ -9,6 +9,7 @@ local function set(name, value)
   node.compile(fn)
   file.remove(fn)
   print("Heap: ", node.heap(), "Wrote: ", fn)
+  package.loaded[name] = nil
   collectgarbage()
 end
 

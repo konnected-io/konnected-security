@@ -4,6 +4,7 @@ local dht_sensors = require("dht_sensors")
 local ds18b20_sensors = require("ds18b20_sensors")
 local actuators = require("actuators")
 local settings = require("settings")
+local ds18b20 = require("ds18b20")
 local sensorTimer = tmr.create()
 
 -- globals
@@ -54,13 +55,11 @@ end
 if #ds18b20_sensors > 0 then
 
   local function ds18b20Callback(pin)
-    local callbackFn = function(i, rom, res, temp, temp_dec, par)
-      local temperature_string = temp .. "." .. math.abs(temp_dec)
-      print("Heap:", node.heap(), "Temperature:", temperature_string, "Resolution:", res)
-      if (res >= 12) then
-        table.insert(sensorPut, { pin = pin, temp = temperature_string,
-          addr = string.format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-            string.match(rom, "(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)")) })
+    local callbackFn = function(temps)
+      for addr,value in pairs(temps) do
+        print("Heap:", node.heap(), "Temperature:", value)
+        table.insert(sensorPut, { pin = pin, temp = value,
+          addr = string.format(('%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X'):format(addr:byte(1,8)))})
       end
     end
     return callbackFn
@@ -71,10 +70,8 @@ if #ds18b20_sensors > 0 then
     pollInterval = (pollInterval > 0 and pollInterval or 3) * 60 * 1000
     print("Heap:", node.heap(), "Polling DS18b20 on pin " .. sensor.pin .. " every " .. pollInterval .. "ms")
     local callbackFn = ds18b20Callback(sensor.pin)
-    ds18b20.setup(sensor.pin)
-    ds18b20.setting({}, 12)
-    tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() ds18b20.read(callbackFn, {}) end)
-    ds18b20.read(callbackFn, {})
+    tmr.create():alarm(pollInterval, tmr.ALARM_AUTO, function() ds18b20:read_temp(callbackFn, sensor.pin, ds18b20.C) end)
+    ds18b20:read_temp(callbackFn, sensor.pin, ds18b20.C)
   end
 end
 
