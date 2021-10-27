@@ -28,26 +28,15 @@ if [ ! -d "${BUILD_PATH}" ] ; then
     BUILD_PATH="firmware/releases/${VERSION}"
 fi
 
-FIRMWARE_NAME="${BUILD_PATH}/konnected-firmware-${VERSION}.bin"
-FILESYSTEM_NAME="${BUILD_PATH}/konnected-filesystem-0x*-${VERSION}.img"
+IMAGE_NAME="${BUILD_PATH}/konnected-esp8266-${VERSION}.bin"
 
 # Make sure the files exist as expected before flashing
-if ! [ -f ${FIRMWARE_NAME} ] ; then
-    echo "Firmware build not found...expected at '${FIRMWARE_NAME}'"
+if ! [ -f ${IMAGE_NAME} ] ; then
+    echo "Image not found...expected at '${IMAGE_NAME}'"
     usage
 fi
 
-if ! [ -f ${FILESYSTEM_NAME} ] ; then
-    echo "Filesystem build not found...expected at '${FILESYSTEM_NAME}'"
-    usage
-fi
-
-# Get the full name and parse out the address
-FILESYSTEM_NAME="$(echo ${BUILD_PATH}/konnected-filesystem-0x*-${VERSION}.img)"
-FS_ADDRESS="$(cut -d'-' -f5 <<<${FILESYSTEM_NAME})"
-
-esptool.py "--port=${PORT}" write_flash --flash_mode dio --flash_size detect 0x00000 "${FIRMWARE_NAME}"
-esptool.py "--port=${PORT}" write_flash --flash_mode dio --flash_size detect "${FS_ADDRESS}" "${FILESYSTEM_NAME}"
+esptool.py "--port=${PORT}" write_flash --flash_mode dio --flash_size detect 0x0 "${IMAGE_NAME}"
 
 tput bel
 

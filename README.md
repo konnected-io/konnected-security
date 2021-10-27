@@ -4,13 +4,21 @@
 
 # Konnected
 
-**Konnected** integrates wired alarm system sensors and sirens to SmartThings, Home Assistant, OpenHAB, or Hubitat using a NodeMCU based ESP8266 development board and (optional) relay. This project consists of a few components:
+**Konnected** integrates wired alarm system sensors and sirens to SmartThings, Alexa, Home Assistant, OpenHAB, Hubitat
+using the [Konnected Alarm Panel](https://konnected.io) or a ESP8266 development board. 
 
- 1. [NodeMCU](http://nodemcu.com/index_en.html) based firmware for an ESP8266 development board in `firmware`
- 1. Lua and HTML source code for the NodeMCU in `src`. All these files are built into a SPIFFS file system which runs on NodeMCU
- 1. [SmartThings](https://www.smartthings.com/) platform code in `smartapps` and `devicetypes`
+This is open-source software designed to run on the ESP8266 platform only! This is what powers the
+[Konnected Alarm Panel](https://konnected.io) family of ESP8266-based products and is available 
+open-source for you to use on any compatible device.
 
-![](http://docs.konnected.io/assets/images/konnected-alarm-panel.jpg)
+Devices running this software can connect to local home automation platforms using our
+[2-way realtime REST API](https://help.konnected.io/support/solutions/articles/32000026804-api-overview) or connect to the 
+[Konnected Cloud](https://help.konnected.io/support/solutions/articles/32000028756-provision-a-device-in-konnected-cloud),
+a cloud service that enables simple integrations with SmartThings or Alexa (currently free to use!).
+
+This project is built upon the [NodeMCU Lua firmware](https://github.com/nodemcu/nodemcu-firmware).
+
+![alarm-panel-plus-addon-2 3-soona](https://user-images.githubusercontent.com/12016/139100157-5e792dbe-fd08-45c1-8637-7dedfc0ae7ef.jpg)
 
 ## Skip this Installation!
 
@@ -21,23 +29,28 @@
 
  1. Flash the device with the latest firmware and filesystem [firmware/releases](firmware/releases) using the instructions in the [Konnected Security Support Documentation](https://help.konnected.io/support/solutions/articles/32000023470-flashing-new-konnected-firmware-software)
  1. Connect to the WiFi network `konnected-security_XXXXXX` to set up WiFi
- 1. Follow wiring instructions and application setup instructions in the [Konnected Security Documentation](http://docs.konnected.io/security-alarm-system)
+ 1. Follow wiring instructions and application setup instructions in the [Konnected Getting Started Guide](https://help.konnected.io/support/solutions/32000015807)
 
-#### Note on Device Drivers
+### Device Drivers
 
 Windows and Mac users will need to download drivers so your computer can talk to the ESP8266 chip over USB. Depending
 on which board you have, there are different drivers:
 
+**[Silicon Labs USB to UART drivers](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers)** for:
+* all Konnected branded hardware
+* development boards with the name _Amica_ on the back
+* the small component on the board near the USB port is engraved with SiLABS CP2102
+
 **[WeMos CH340 drivers](https://www.wemos.cc/en/latest/ch340_driver.html)** for boards that:
 * have the name _LoLin_ on the back or front
 * the small rectangular component on the board near the USB port is engraved with CH340G
-* **Mac OS X Sierra users**: [use this driver](http://kig.re/2014/12/31/how-to-use-arduino-nano-mini-pro-with-CH340G-on-mac-osx-yosemite.html)
 
-**[Silicon Labs USB to UART drivers](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers)** for boards that:
-* have the name _Amica_ on the back
-* the small component on the board near the USB port is engraved with SiLABS CP2102
+### Download Latest Firmware
 
-### Building the Firmware
+Go to the [releases section](https://github.com/konnected-io/konnected-security/releases/latest) for a downloadable image
+that you can flash on your Konnected Alarm Panel or ESP8266 device.
+
+### Building the Firmware Yourself
 Konnected leverages the [NodeMCU](https://github.com/nodemcu/nodemcu-firmware) codebase and [Docker builder](https://hub.docker.com/r/marcelstoer/nodemcu-build/) to create a base nodeMCU firmware image and a filesystem containing the Konnected application. Building only requires a few steps.
 
 1. Download and install [Docker](https://www.docker.com/products/docker-desktop)
@@ -54,42 +67,35 @@ Konnected leverages the [NodeMCU](https://github.com/nodemcu/nodemcu-firmware) c
    1. konnected-filesystem-0x100000-2-2-99.img
    1. konnected-firmware-2-2-99.bin
    1. konnected-esp8266-2-2-99.bin
+   
+The `konnected-firmware-*` contains the firmware partition and should be flashed at location `0x0`.
+The `konnected-filesystem-*` image contains the Konnected application and should be flashed at the memory location in
+the filename.
+For convenience, the `konnected-esp8266-*` image is an all-in-one image to be flashed at memory location `0x0` containing the two images above.
 
 *Note: Each time you build it will remove any prior build outputs corresponding to the same version.*
 *Note: Versions in this project should always be formatted `<major>-<minor>-<patch>`.*
 
 ### Flashing a Build
-Flashing a build is simple with the [Konnected Flashing Tool](https://help.konnected.io/support/solutions/articles/32000023470-flashing-new-konnected-firmware-software).
+Flashing a build is simple with the [NodeMCU PyFlasher](https://github.com/marcelstoer/nodemcu-pyflasher/releases). Simply flash
+the `konnected-esp8266-*.bin` file to your device. Typically use baud rate 115200 and flash mode `dio`.
 
-Mac and Linux users can also easily flash from the command line using [scripts/flash](scripts/flash).
+Mac and Linux users can also easily flash from the command line using `esptool`
 
  1. You must have Python installed with `pip` or `pip3`.
-    * **Mac users**: I recommend using [Homebrew](https://brew.sh/) and `brew install python`
+    * **Mac users**: Recommend using [Homebrew](https://brew.sh/) and `brew install python`
 
  1. Open up a terminal and install `esptool` packages:
 
         pip3 install esptool
 
- 1. Run the script in `scripts/flash` to flash the firmware and software to the device. You must pass in version and serial port args. The flash script will always attempt to flash a matching version in `firmware/builds` before falling back to `firmware/releases`
+ 1. Flash the downloaded image using `esptool`:
 
-         ./scripts/flash 2-2-99 /dev/ttyS3
+         esptool.py --port=/dev/cu.SLAB_USBtoUART write_flash --flash_mode dio --flash_size detect 0x0 konnected-esp8266-3-0-0.bin
 
- *Note: You may also need to make the script executable by running `chmod 755 scripts/flash`.*
+ *Note: The USB port may vary depending on your computer platform and board.*
 
 
-### Donations
-
-We work hard on this project because we're passionate about making home automation accessible to everybody. Millions of
- homes in North America and worldwide are already wired with sensors and have the potential to become smart homes. We
- want to make this a reality.
-
-If you've used Konnected Security and it's improved your life and your home security, please consider [donating](http://docs.konnected.io/donate) to help us
-achieve that goal.
-
-Thank you for your support,
-
-Nate Clark
-**@heythisisnate**
 
 
 ### [For more information, click here for Konnected Documentation, Help and Community support](http://help.konnected.io)
