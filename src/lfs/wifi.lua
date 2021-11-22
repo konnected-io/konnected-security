@@ -19,14 +19,7 @@ failsafeTimer:register(300000, tmr.ALARM_SINGLE, function() node.restart() end)
 
 wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(T)
   print("Heap: ", node.heap(), "Cannot connect to WiFi ", T.SSID, 'Reason Code:', T.reason)
-
-  if T.reason == wifi.eventmon.reason.AUTH_EXPIRE then
-    -- wifi password is incorrect, immediatly enter setup mode
-    print("Heap: ", node.heap(), "Wifi password is incorrect")
-    startWifiSetup()
-  else
-    wifiFailTimer:start()
-  end
+  wifiFailTimer:start()
 end)
 
 if wifi.sta.getconfig() == "" then

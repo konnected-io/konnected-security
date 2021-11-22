@@ -18,7 +18,7 @@ fi
 set -e
 
 FW_TAG="3.0.0-release_20210201"
-VERSION="3-0-0"
+VERSION="$1"
 FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
 
 LFS_BASE="${PWD}/src/lfs"
