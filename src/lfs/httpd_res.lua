@@ -15,10 +15,10 @@ local function respondWithText(sck, body, ty, st, headers)
   })
   local function doSend(s)
     if sendContent == '' then
-      s:close()
+      pcall(s.close, s)
       sendContent = nil
     else
-      s:send(string.sub(sendContent, 1, 512))
+      pcall(s.send, s, string.sub(sendContent, 1, 512))
       sendContent = string.sub(sendContent, 513)
     end
   end
@@ -49,9 +49,9 @@ local function respondWithFile(sck, filename, ty, st, headers)
     if f.seek('set', i) then
       local buf = file.read(512)
       i = i + 512
-      s:send(buf)
+      pcall(s.send, s, buf)
     else
-      s:close()
+      pcall(s.close, s)
     end
     f.close()
   end
