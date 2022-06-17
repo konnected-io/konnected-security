@@ -7,7 +7,7 @@ function usage() {
     echo '    version should be formatted <major>-<minor>-<patch>'
     echo
     echo 'Execute from the root dir of the repo.'
-    echo "    ex: '$0 2-3-0 /dev/ttyS5'"
+    echo "    ex: '$0 3-0-1 /dev/cu.SLAB_USBtoUART '"
     exit 1
 }
 if [ "$#" == 0 ]; then
