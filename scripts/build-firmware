@@ -2,118 +2,111 @@
 
 function usage() {
     echo
-    echo "usage: $0 <version>"
+    echo "usage: $0 [-h][-c]"
     echo
-    echo '    -v version should be formatted <major>-<minor>-<patch>'
-    echo '    -c <nodemcu-repo> optional abs path to custom nodemcu-firmware repo'
+    echo '    -h displays usage information'
+    echo '    -c perform a clean build'
     echo
-    echo 'Execute from the root dir of the repo. Upon successful completion the release will be created in firmware/releases/<version>'
-    echo "    ex: '$0 2-3-0'"
+    echo 'Execute from the root dir of the repo. Upon successful completion the firmware image will be build/konnected-pro-fw_*'
+    echo "    ex: '$0'"
     exit 1
 }
-if [ "$#" == 0 ]; then
-    usage
-fi
 
 set -e
 
-FW_TAG="3.0.0-release_20210201"
-VERSION="$1"
-FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
+if ! git describe --exact-match --tags &> /dev/null; then
+BRANCH="$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')"
+else
+BRANCH="$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))"
+fi
 
+FW_TAG="3.0.0-release_20210201"
+FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
 LFS_BASE="${PWD}/src/lfs"
 OUTPUT_BASE="${PWD}/build"
 OUTPUT_APP="${OUTPUT_BASE}/app"
-FW_BASE="${OUTPUT_BASE}/nodemcu-firmware"
+FW_BASE="${PWD}/nodemcu-firmware"
+IMAGE_NAME="konnected-firmware-${BRANCH}"
 
 # process cmd args
-while getopts "v:c:h" opt; do
-    case ${opt} in
-        h )
-            usage
-            ;;
-        c )
-            FW_BASE="$OPTARG"
-            FW_TAG=''
-            echo "using custom nodemcu-repo ${FW_BASE}"
-            ;;
-        v )
-            VERSION="$OPTARG"
-            if ! [[ "${VERSION}" =~ ^[0-9]+-[0-9]+-[0-9]+ ]] ; then
-                echo "Version not formatted correctly..."
-                usage
-            fi
-            echo "tagging as version ${VERSION}"
-            ;;
-        \? )
-            echo "Invalid Option: -$OPTARG" 1>&2
-            exit 1
-            ;;
-    esac
+while getopts "ch" opt; do
+  case ${opt} in
+    h )
+      usage
+      ;;
+    c )
+      cd "${FW_BASE}"
+      make clean
+      cd -
+      # copy in our config overlay
+      cp -rf "${FIRMWARE_OVERLAY_PATH}"/* "${FW_BASE}/"
+      rm -f "${FW_BASE}/local/fs/*"
+      echo "performing clean build"
+      ;;
+   \? )
+     echo "Invalid Option: -$OPTARG" 1>&2
+     exit 1
+     ;;
+  esac
 done
 
-BUILD_PATH="firmware/builds/${VERSION}"
-IMAGE_NAME="konnected-firmware-${VERSION}"
-
-rm -rf ${OUTPUT_BASE}
+rm -rf "${OUTPUT_BASE}"
 mkdir -p "${OUTPUT_BASE}";
 chown -R $USER "${OUTPUT_BASE}"
 
-# pull and update the FW repo if none is supplied
-if [ ! -z "$FW_TAG" ] ; then
+# pull and update the FW repo if not already existing
+if [ ! -d "$FW_BASE" ] ; then
     echo "Checking out nodemcu-firmware:${FW_TAG}"
     git clone --recurse-submodules https://github.com/nodemcu/nodemcu-firmware.git \
         "${FW_BASE}"
+    # Copy firmware configuration from this repository to the nodemcu-firmware repo
+    cp -rf "${FIRMWARE_OVERLAY_PATH}"/* "${FW_BASE}/"
+    rm -f "${FW_BASE}/local/fs/*"
     cd "${FW_BASE}"
     git checkout "${FW_TAG}"
     git submodule update --recursive
     cd -
 fi
 
-# Copy firmware configuration from this repository to the nodemcu-firmware repo
-cp -rf "${FIRMWARE_OVERLAY_PATH}"/* "${FW_BASE}/"
+# Build it
+cd "${FW_BASE}"
+make
+srec_cat -output "${OUTPUT_BASE}/${IMAGE_NAME}.bin" -binary bin/0x00000.bin -binary -fill 0xff 0x00000 0x10000 bin/0x10000.bin -binary -offset 0x10000
+cd -
 
-rm -f "${FW_BASE}/local/fs/*"
-
-# Build NodeMCU firmware image
-docker run -e "IMAGE_NAME=${IMAGE_NAME}" \
-    --rm -ti -v "${FW_BASE}:/opt/nodemcu-firmware" marcelstoer/nodemcu-build build
+# Build spiffsimg tool (manual for now because of https://github.com/nodemcu/nodemcu-firmware/issues/2943)
+make -C "${FW_BASE}"/tools/spiffsimg
 
 # Build LFS image with application files
-LUA_FILES=$(find ${LFS_BASE} -iname "*.lua" | sed "s|${LFS_BASE}|/lfs|g")
+mkdir -p "${OUTPUT_APP}"
+LUA_FILES=$(find ${LFS_BASE} -iname "*.lua")
 
 echo Adding files to LFS:
 echo ${LUA_FILES}
-docker run --rm -ti \
-  -v ${FW_BASE}:/nodemcu-firmware \
-  -v ${OUTPUT_APP}:/build \
-  -v ${LFS_BASE}:/lfs \
-  marcelstoer/nodemcu-build /nodemcu-firmware/luac.cross.int -m 0x40000 -f -o "/build/lfs.img" ${LUA_FILES}
 echo
+"${FW_BASE}/luac.cross.int" -m 0x40000 -f -o "${OUTPUT_APP}/lfs.img" ${LUA_FILES}
 
 # transfer source files not in the lfs to the build output (ignore the status)
 cp -f ${LFS_BASE}/../* "${OUTPUT_APP}" 2>/dev/null || true; echo "Building SPIFFS..."
 
-# Build spiffsimg tool (manual for now because of https://github.com/nodemcu/nodemcu-firmware/issues/2943)
-docker run --rm -ti \
-  -v ${FW_BASE}:/nodemcu-firmware \
-  marcelstoer/nodemcu-build make -C /nodemcu-firmware/tools/spiffsimg
+# create the fs list from /build/app
+rm -rf "${OUTPUT_BASE}/spiffs.lst"
+find "${OUTPUT_APP}" -type f | sed "s|${OUTPUT_APP}/||" | awk '{printf "import build/app/%s %s\n", $1, $1}' > "${OUTPUT_BASE}/spiffs.lst"
 
-# Create SPIFFS image
-docker run \
-    --rm -ti -v "${FW_BASE}:/opt/nodemcu-firmware" \
-    -v "${PWD}/scripts:/scripts" \
-    -v "${OUTPUT_APP}:/opt/lua" marcelstoer/nodemcu-build bash /scripts/build-spiffs
+echo Adding files to spiffs:
+cat "${OUTPUT_BASE}/spiffs.lst"
+echo
 
-# Create or clear the output directory and transfer files
-mkdir -p "${BUILD_PATH}"
-rm -rf "${BUILD_PATH}/*"
-cp "${FW_BASE}/bin/nodemcu_integer_${IMAGE_NAME}.bin" "${BUILD_PATH}/${IMAGE_NAME}.bin"
-cp "${FW_BASE}/bin/konnected-filesystem-0x100000.img" "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img"
+"${FW_BASE}/tools/spiffsimg/spiffsimg" -f "${OUTPUT_BASE}/konnected-filesystem-0x100000-${BRANCH}.img" -S 10m -U 0x100000 -r "${OUTPUT_BASE}/spiffs.lst" -d
 
-srec_cat -output "${BUILD_PATH}/konnected-esp8266-${VERSION}.bin" -binary "${BUILD_PATH}/${IMAGE_NAME}.bin" -binary -fill 0xff 0x0000 0x100000 "${BUILD_PATH}/konnected-filesystem-0x100000-${VERSION}.img" -binary -offset 0x100000
+# Transfer firmware file
+#cp "${FW_BASE}/bin/nodemcu_integer_${IMAGE_NAME}.bin" "${OUTPUT_BASE}/${IMAGE_NAME}.bin"
+
+# Build full image
+srec_cat -output "${OUTPUT_BASE}/konnected-esp8266-${BRANCH}.bin" -binary "${OUTPUT_BASE}/${IMAGE_NAME}.bin" -binary -fill 0xff 0x0000 0x100000 "${OUTPUT_BASE}/konnected-filesystem-0x100000-${BRANCH}.img" -binary -offset 0x100000
 
 # Copy to common name for ease of flashing
-cp "${BUILD_PATH}/konnected-esp8266-${VERSION}.bin" "${BUILD_PATH}/../konnected-esp8266-latest.bin"
+cp "${OUTPUT_BASE}/konnected-esp8266-${BRANCH}.bin" "${OUTPUT_BASE}/konnected-esp8266-latest.bin"
 
-echo "Build Complete: Flash this build with './scripts/flash ${VERSION} <port>'"
+echo "Build Complete: Flash this build with './scripts/flash ${BRANCH} <port>'"
+

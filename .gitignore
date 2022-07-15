@@ -48,3 +48,6 @@ firmware/builds
 
 # Private files
 private
+
+# NodeMCU
+nodemcu-firmware
