@@ -51,34 +51,31 @@ Go to the [releases section](https://github.com/konnected-io/konnected-security/
 that you can flash on your Konnected Alarm Panel or ESP8266 device.
 
 ### Building the Firmware Yourself
-Konnected leverages the [NodeMCU](https://github.com/nodemcu/nodemcu-firmware) codebase and [Docker builder](https://hub.docker.com/r/marcelstoer/nodemcu-build/) to create a base nodeMCU firmware image and a filesystem containing the Konnected application. Building only requires a few steps.
+Konnected leverages the [NodeMCU](https://github.com/nodemcu/nodemcu-firmware) codebase to create a base nodeMCU firmware image and a filesystem containing the Konnected application. Building only requires a few steps.
 
-1. Download and install [Docker](https://www.docker.com/products/docker-desktop)
 1. Clone the Konnected repo
 
         git clone https://github.com/konnected-io/konnected-security.git
 
-1. Use the build-firmware script to kick off the build - providing a semantic version command line argument as shown below. The build script will automatically pull down the correct nodeMCU image, and use this nodeMCU docker builder to create base firmware, an LFS image, and a SPIFFS file system containing the entire Konnected application.
+1. Use the build-firmware script to kick off the build. The build script will automatically pull down the correct nodeMCU image, and use this to create base firmware, an LFS image, and a SPIFFS file system containing the entire Konnected application.
 
         cd konnected-security
-        ./scripts/build-firmware 2-2-99
+        ./scripts/build-firmware
 
-1. Once the build completes a folder will be created in `firmware/builds` named after the version specified in the previous step. This folder will contain three files also reflecting the version.
-   1. konnected-filesystem-0x100000-2-2-99.img
-   1. konnected-firmware-2-2-99.bin
-   1. konnected-esp8266-2-2-99.bin
+1. Once the build completes a folder will be created in `build`. This folder will contain three files reflecting the version or branch.
+   1. konnected-filesystem-0x100000-{BRANCH/VERSION}.img
+   1. konnected-firmware-{BRANCH/VERSION}.bin
+   1. konnected-esp8266-*.bin
    
 The `konnected-firmware-*` contains the firmware partition and should be flashed at location `0x0`.
 The `konnected-filesystem-*` image contains the Konnected application and should be flashed at the memory location in
 the filename.
-For convenience, the `konnected-esp8266-*` image is an all-in-one image to be flashed at memory location `0x0` containing the two images above.
+For convenience, the `konnected-esp8266-latest` image is an all-in-one image to be flashed at memory location `0x0` containing the two images above.
 
-*Note: Each time you build it will remove any prior build outputs corresponding to the same version.*
-*Note: Versions in this project should always be formatted `<major>-<minor>-<patch>`.*
 
 ### Flashing a Build
 Flashing a build is simple with the [NodeMCU PyFlasher](https://github.com/marcelstoer/nodemcu-pyflasher/releases). Simply flash
-the `konnected-esp8266-*.bin` file to your device. Typically use baud rate 115200 and flash mode `dio`.
+the `konnected-esp8266-latest.bin` file to your device. Typically use baud rate 115200 and flash mode `dio`.
 
 Mac and Linux users can also easily flash from the command line using `esptool`
 
@@ -91,7 +88,7 @@ Mac and Linux users can also easily flash from the command line using `esptool`
 
  1. Flash the downloaded image using `esptool`:
 
-         esptool.py --port=/dev/cu.SLAB_USBtoUART write_flash --flash_mode dio --flash_size detect 0x0 konnected-esp8266-3-0-0.bin
+         esptool.py --port=/dev/cu.SLAB_USBtoUART write_flash --flash_mode dio --flash_size detect 0x0 konnected-esp8266-latest.bin
 
  *Note: The USB port may vary depending on your computer platform and board.*
 

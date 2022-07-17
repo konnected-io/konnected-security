@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-upload:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libusb-1.0-0 cmake srecord
+          pip install -U pyserial
+
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Prepare Release Assets
+        run: |
+          ./scripts/build-firmware
+          mkdir assets
+          cp build/konnected-esp8266-latest.bin assets/konnected-esp8266-${{ steps.get_release.outputs.tag_name }}.bin
+
+      - name: Upload asset to release
+        uses: bgpat/release-asset-action@03b0c30db1c4031ce3474740b0e4275cd7e126a3
+        with:
+          pattern: "assets/*"
+          release-url: ${{ steps.get_release.outputs.upload_url }}
+          allow-overwrite: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}

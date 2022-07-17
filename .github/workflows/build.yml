@@ -1,0 +1,23 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build-upload:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libusb-1.0-0 cmake srecord
+          pip install -U pyserial
+      - name: Build
+        run: ./scripts/build-firmware
