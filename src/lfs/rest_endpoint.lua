@@ -1,5 +1,7 @@
 local module = ...
 
+local zoneToPin = require("zone_to_pin")
+
 -- print HTTP status line
 local function printHttpResponse(code, data)
   local a = { "Heap:", node.heap(), "HTTP Call:", code }
@@ -27,28 +29,46 @@ local function startLoop(settings)
       local actuator = actuatorGet[1]
       timeout:start()
 
-      http.get(table.concat({ settings.endpoint, "/device/", dni, '?pin=', actuator.pin }),
-        table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\n" }),
+      local req = nil
+      if actuator.zone ~= nil then
+        req = table.concat({ settings.endpoint, "/device/", dni, '?zone=', actuator.zone })
+      else
+        req = table.concat({ settings.endpoint, "/device/", dni, '?pin=', actuator.pin })
+      end
+
+      http.get(req, table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\n" }),
         function(code, response)
           timeout:stop()
-          local pin, state, json_response, status
+          local zone, pin, state, json_response, status
           if response and code >= 200 and code < 300 then
             status, json_response = pcall(function() return sjson.decode(response) end)
             if status then
+              zone = json_response.zone
               pin = tonumber(json_response.pin)
               state = tonumber(json_response.state)
             end
           end
-          printHttpResponse(code, {pin = pin, state = state})
 
-          gpio.mode(actuator.pin, gpio.OUTPUT)
-          if pin == tonumber(actuator.pin) and code >= 200 and code < 300 and state then
-            gpio.write(actuator.pin, state)
+          if zone ~= nil then
+            printHttpResponse(code, {zone = zone, state = state})
+            pin = zoneToPin(actuator.zone)
+          else
+            printHttpResponse(code, {pin = pin, state = state})
+          end
+
+          gpio.mode(pin, gpio.OUTPUT)
+          if pin == tonumber(actuator.pin) or zone == actuator.zone and code >= 200 and code < 300 and state then
+            gpio.write(pin, state)
           else
             state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
-            gpio.write(actuator.pin, state)
+            gpio.write(pin, state)
           end
-          print("Heap:", node.heap(), "Initialized actuator Pin:", actuator.pin, "Trigger:", actuator.trigger, "Initial state:", state)
+
+          if zone ~= nil then
+            print("Heap:", node.heap(), "Initialized actuator Zone:", actuator.zone, "Trigger:", actuator.trigger, "Initial state:", state)
+          else
+            print("Heap:", node.heap(), "Initialized actuator Pin:", actuator.pin, "Trigger:", actuator.trigger, "Initial state:", state)
+          end
 
           table.remove(actuatorGet, 1)
           blinktimer:start()
