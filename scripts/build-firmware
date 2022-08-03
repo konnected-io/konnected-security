@@ -15,9 +15,13 @@ function usage() {
 set -e
 
 if ! git describe --exact-match --tags &> /dev/null; then
-BRANCH="$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')"
+  if [[ -z "${PR_NUMBER}" ]]; then
+    BRANCH="$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')"
+  else
+    BRANCH="PR-"${PR_NUMBER}
+  fi
 else
-BRANCH="$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))"
+  BRANCH="$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))"
 fi
 
 FW_TAG="3.0.0-release_20210201"

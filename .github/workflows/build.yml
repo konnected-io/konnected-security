@@ -1,6 +1,6 @@
 name: Build
 
-on: [push, pull_request]
+on: pull_request
 
 jobs:
   build-upload:
@@ -19,5 +19,8 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install libusb-1.0-0 cmake srecord
           pip install -U pyserial
+
       - name: Build
+        env:
+          PR_NUMBER: ${{ github.event.number }}
         run: ./scripts/build-firmware
