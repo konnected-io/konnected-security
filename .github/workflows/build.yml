@@ -24,3 +24,13 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.number }}
         run: ./scripts/build-firmware
+
+      - uses: keithweaver/aws-s3-github-action@v1.0.0
+        name: Copy PR bin to AWS
+        with:
+          command: cp
+          source: build/konnected-esp8266-PR-${{ github.event.number }}.bin
+          destination: s3://konnected-io/builds/
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-2
