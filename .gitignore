@@ -51,3 +51,6 @@ private
 
 # NodeMCU
 nodemcu-firmware
+
+# IDE's
+.vscode

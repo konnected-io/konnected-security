@@ -2,6 +2,7 @@ local module = ...
 
 local mqtt = require('mqtt_ws')
 local settings = require('settings')
+local zoneToPin = require("zone_to_pin")
 local device_id = wifi.sta.getmac():lower():gsub(':','')
 local c = mqtt.Client(settings.aws)
 local topics = settings.aws.topics
@@ -103,6 +104,9 @@ c:on('message', function(_, topic, message)
 		local revertIn = (payload.momentary + pause) * times - pause
 		tmr.create():alarm(revertIn, tmr.ALARM_SINGLE, function()
 			local revertState = { pin = endState.pin, state = endState.state == 0 and 1 or 0}
+			if endState.zone ~= nil then
+			  revertState = { zone = endState.zone, state = endState.state == 0 and 1 or 0}
+			end
 			table.insert(sensorPut, revertState)
 		end)
 	end
@@ -116,7 +120,11 @@ c:on('connect', function()
 
 	-- update current state of actuators upon boot
 	for i, actuator in pairs(actuatorGet) do
-		table.insert(sensorPut, { pin = actuator.pin, state = gpio.read(actuator.pin) })
+		if actuator.zone ~= nil then
+			table.insert(sensorPut, { zone = actuator.zone, state = gpio.read(zoneToPin(actuator.zone)) })
+		else
+			table.insert(sensorPut, { pin = actuator.pin, state = gpio.read(actuator.pin) })
+		end
 	end
 
 	heartbeat:start()
