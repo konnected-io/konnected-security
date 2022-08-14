@@ -62,8 +62,8 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
             tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"]))
         bootApp()
       end,
-      function()
-        print("Heap: ", node.heap(), "Time sync failed!")
+      function(code, err)
+        print("Heap: ", node.heap(), "Time sync failed!", "Code: ", code, err)
         bootApp()
       end)
   end
