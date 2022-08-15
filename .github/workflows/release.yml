@@ -33,7 +33,7 @@ jobs:
           ./scripts/build-firmware
           mkdir assets
           cp build/konnected-esp8266-latest.bin assets/konnected-esp8266-${{ steps.get_release.outputs.tag_name }}.bin
-
+          cp build/app/lfs.img assets/lfs-${{ steps.get_release.outputs.tag_name }}.img
       - name: Upload asset to release
         uses: bgpat/release-asset-action@03b0c30db1c4031ce3474740b0e4275cd7e126a3
         with:
