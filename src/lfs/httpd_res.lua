@@ -66,5 +66,6 @@ local httpdResponse = {
 
 return function()
   package.loaded[module] = nil
+  module = nil
   return httpdResponse
 end
