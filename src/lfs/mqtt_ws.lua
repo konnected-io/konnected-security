@@ -59,12 +59,7 @@ local function Client(aws_settings)
 	}
 
 	ws:on('receive', function(_, msg, opcode, x)
---		print("received", msg:len(), "msg:", msg, "bytes:", mqtt_packet.toHex(msg))
 		local parsed = mqtt_packet.parse(msg)
---		for k, v in pairs(parsed) do
---			print('>', k, v)
---		end
-
 		if parsed.cmd == 4 then
 			client:emit('puback', parsed.message_id)
 		elseif parsed.cmd == 3 then
@@ -74,7 +69,6 @@ local function Client(aws_settings)
 		else
 			print(parsed)
 		end
-
 	end)
 
 	ws:on('close', function(_, status)
