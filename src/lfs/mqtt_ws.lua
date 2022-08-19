@@ -1,3 +1,4 @@
+local module = ...
 local mqtt_packet = require('mqtt_packet')
 
 local function emit(self, event, ...)
@@ -89,6 +90,8 @@ local function Client(aws_settings)
 	return client
 end
 
-return {
-	Client = Client
-}
+return function(aws_settings)
+  package.loaded[module] = nil
+  module = nil
+  return Client(aws_settings)
+end
