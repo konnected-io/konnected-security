@@ -15,11 +15,7 @@ function usage() {
 set -e
 
 if ! git describe --exact-match --tags &> /dev/null; then
-  if [[ -z "${PR_NUMBER}" ]]; then
-    BRANCH="$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')"
-  else
-    BRANCH="PR-"${PR_NUMBER}
-  fi
+  BRANCH="$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')"
 else
   BRANCH="$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))"
 fi
@@ -108,9 +104,11 @@ echo
 
 # Build full image
 srec_cat -output "${OUTPUT_BASE}/konnected-esp8266-${BRANCH}.bin" -binary "${OUTPUT_BASE}/${IMAGE_NAME}.bin" -binary -fill 0xff 0x0000 0x100000 "${OUTPUT_BASE}/konnected-filesystem-0x100000-${BRANCH}.img" -binary -offset 0x100000
+echo "Wrote ${OUTPUT_BASE}/konnected-esp8266-${BRANCH}.bin"
 
 # Copy to common name for ease of flashing
 cp "${OUTPUT_BASE}/konnected-esp8266-${BRANCH}.bin" "${OUTPUT_BASE}/konnected-esp8266-latest.bin"
 
-echo "Build Complete: Flash this build with './scripts/flash ${BRANCH} <port>'"
+echo "Build Complete:Flash this build with './scripts/flash ${BRANCH} <port>'"
+echo "konnected-esp8266-${BRANCH}.bin"
 

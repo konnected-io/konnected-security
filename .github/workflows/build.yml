@@ -1,6 +1,6 @@
 name: Build
 
-on: pull_request
+on: push
 
 jobs:
   build-upload:
@@ -20,16 +20,19 @@ jobs:
           sudo apt-get -y install libusb-1.0-0 cmake srecord
           pip install -U pyserial
 
-      - name: Build
+      - id: build
+        name: Build
         env:
-          PR_NUMBER: ${{ github.event.number }}
-        run: ./scripts/build-firmware
+          SHA: ${{ github.event.head }}
+        run: |
+          fname=$(./scripts/build-firmware | tail -1)
+          echo "::set-output name=fname::$fname"
 
       - uses: keithweaver/aws-s3-github-action@v1.0.0
-        name: Copy PR bin to AWS
+        name: Copy build to AWS
         with:
           command: cp
-          source: build/konnected-esp8266-PR-${{ github.event.number }}.bin
+          source: build/${{ steps.build.outputs.fname }}
           destination: s3://konnected-io/builds/
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
