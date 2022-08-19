@@ -22,8 +22,6 @@ jobs:
 
       - id: build
         name: Build
-        env:
-          SHA: ${{ github.event.head }}
         run: |
           fname=$(./scripts/build-firmware | tail -1)
           echo "::set-output name=fname::$fname"
