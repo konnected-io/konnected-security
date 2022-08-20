@@ -2,7 +2,6 @@ local module = ...
 
 local mqtt = require('mqtt_ws')
 local settings = require('settings')
-local zoneToPin = require("zone_to_pin")
 local device_id = wifi.sta.getmac():lower():gsub(':','')
 local c = mqtt(settings.aws)
 local topics = settings.aws.topics
