@@ -51,6 +51,7 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: us-east-2
+          flags: --acl public-read
 
       - uses: keithweaver/aws-s3-github-action@v1.0.0
         name: Copy LFS to S3
@@ -61,3 +62,4 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: us-east-2
+          flags: --acl public-read
