@@ -1,7 +1,5 @@
 local module = ...
 
-local zoneToPin = require("zone_to_pin")
-
 -- print HTTP status line
 local function printHttpResponse(code, data)
   local a = { "Heap:", node.heap(), "HTTP Call:", code }

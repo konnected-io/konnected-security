@@ -1,9 +1,5 @@
 local bit32 = bit32 or bit
 
-local function toHex(str)
-  return str:gsub("(.)", function(s) return string.format("%02x ", string.byte(s)) end)
-end
-
 local function lengthStr(length)
   local buf = ""
   local digit = 0
@@ -66,6 +62,5 @@ end
 return {
 	subscribe = subscribe,
 	publish = publish,
-	parse = parse,
-	toHex = toHex
+	parse = parse
 }

@@ -1,3 +1,4 @@
+local module = ...
 local mqtt_packet = require('mqtt_packet')
 
 local function emit(self, event, ...)
@@ -58,12 +59,7 @@ local function Client(aws_settings)
 	}
 
 	ws:on('receive', function(_, msg, opcode, x)
---		print("received", msg:len(), "msg:", msg, "bytes:", mqtt_packet.toHex(msg))
 		local parsed = mqtt_packet.parse(msg)
---		for k, v in pairs(parsed) do
---			print('>', k, v)
---		end
-
 		if parsed.cmd == 4 then
 			client:emit('puback', parsed.message_id)
 		elseif parsed.cmd == 3 then
@@ -73,7 +69,6 @@ local function Client(aws_settings)
 		else
 			print(parsed)
 		end
-
 	end)
 
 	ws:on('close', function(_, status)
@@ -89,6 +84,8 @@ local function Client(aws_settings)
 	return client
 end
 
-return {
-	Client = Client
-}
+return function(aws_settings)
+  package.loaded[module] = nil
+  module = nil
+  return Client(aws_settings)
+end

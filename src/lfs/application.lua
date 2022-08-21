@@ -6,11 +6,21 @@ local actuators = require("actuators")
 local settings = require("settings")
 local ds18b20 = require("ds18b20")
 local sensorTimer = tmr.create()
-local zoneToPin = require("zone_to_pin")
 
 -- globals
 sensorPut = {}
 actuatorGet = {}
+function zoneToPin(zone)
+  -- handle strings or numbers
+  --return zoneMap[zone] or zoneMap[tonumber(zone)]
+  if zone == 1 or zone == '1' then return 1 end
+  if zone == 2 or zone == '2' then return 2 end
+  if zone == 3 or zone == '3' then return 5 end
+  if zone == 4 or zone == '4' then return 6 end
+  if zone == 5 or zone == '5' then return 7 end
+  if zone == 6 or zone == '6' then return 9 end
+  if zone == "out" then return 8 end
+end
 
 local function getDevicePin(device)
   if device.zone ~= nil then

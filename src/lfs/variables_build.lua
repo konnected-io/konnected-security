@@ -1,6 +1,5 @@
 local module = ...
 
-
 local function build_list(objects)
   local out = {}
   for key, value in pairs(objects) do

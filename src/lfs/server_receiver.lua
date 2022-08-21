@@ -17,8 +17,8 @@ local function httpReceiver(sck, payload)
   end
   collectgarbage()
 
-  local request = require("httpd_req")(payload)
-  local response = require("httpd_res")()
+  request = require("httpd_req")(payload)
+  response = require("httpd_res")()
 
   if request.method == 'OPTIONS' then
     print("Heap: ", node.heap(), "HTTP: ", "Options")
@@ -26,10 +26,8 @@ local function httpReceiver(sck, payload)
       "Access-Control-Allow-Methods: POST, GET, PUT, OPTIONS\r\n",
       "Access-Control-Allow-Headers: Content-Type\r\n"
     }))
-    return
-  end
 
-  if request.path == "/" then
+  elseif request.path == "/" then
     print("Heap: ", node.heap(), "HTTP: ", "Index")
     response.file(sck, "http_index.html")
 
@@ -41,8 +39,17 @@ local function httpReceiver(sck, payload)
     print("Heap: ", node.heap(), "HTTP: ", "Discovery")
 
   elseif request.path == "/settings" then
-    print("Heap: ", node.heap(), "HTTP: ", "Settings")
-    response.text(sck, require("server_settings")(request))
+    if mqttC ~= nil  and request.method ~= "GET" then
+      mqttC:on("offline", function(client)
+        print("Heap: ", node.heap(), "HTTP: ", "Settings")
+        response.text(sck, require("server_settings")(request))
+      end)
+      mqttC:close()
+      return
+    else
+      print("Heap: ", node.heap(), "HTTP: ", "Settings")
+      response.text(sck, require("server_settings")(request))
+    end
 
   elseif request.path == "/device" then
     print("Heap: ", node.heap(), "HTTP: ", "Device")
