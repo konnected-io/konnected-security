@@ -41,3 +41,23 @@ jobs:
           release-url: ${{ steps.get_release.outputs.upload_url }}
           allow-overwrite: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: keithweaver/aws-s3-github-action@v1.0.0
+        name: Copy image to S3
+        with:
+          command: cp
+          source: assets/konnected-esp8266-${{ steps.get_release.outputs.tag_name }}.bin
+          destination: s3://konnected-io/esp8266/images/
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-2
+
+      - uses: keithweaver/aws-s3-github-action@v1.0.0
+        name: Copy LFS to S3
+        with:
+          command: cp
+          source: assets/lfs-${{ steps.get_release.outputs.tag_name }}.img
+          destination: s3://konnected-io/esp8266/lfs/
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-2
