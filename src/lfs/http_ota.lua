@@ -68,7 +68,7 @@ finalise = function(sck)
     wifi.setmode(wifi.NULLMODE, false)
     collectgarbage();collectgarbage()
     -- run as separate task to maximise RAM available
-    node.task.post(function() node.flashreload(image) end)
+    node.task.post(function() node.LFS.reload(image) end)
   else
     print"Invalid save of image file"
   end
