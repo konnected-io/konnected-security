@@ -55,7 +55,7 @@ local function startLoop(settings)
           end
 
           gpio.mode(pin, gpio.OUTPUT)
-          if pin == tonumber(actuator.pin) or zone == actuator.zone and code >= 200 and code < 300 and state then
+          if (pin == tonumber(actuator.pin) or zone == actuator.zone) and code >= 200 and code < 300 and state then
             gpio.write(pin, state)
           else
             state = actuator.trigger == gpio.LOW and gpio.HIGH or gpio.LOW
