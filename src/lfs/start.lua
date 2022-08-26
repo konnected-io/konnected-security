@@ -1,6 +1,6 @@
 for fn in pairs(file.list()) do
   local fm = string.match(fn,".*%.lua-$")
-  if (fm) and fm ~= "init.lua" then
+  if (fm) and fm ~= "init.lua" and fm ~= "ota_update.lua" then
     print("Heap: ", node.heap(), "Compiling: ", fn)
     node.compile(fm)
     file.remove(fm)

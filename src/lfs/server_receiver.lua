@@ -39,15 +39,14 @@ local function httpReceiver(sck, payload)
     print("Heap: ", node.heap(), "HTTP: ", "Discovery")
 
   elseif request.path == "/settings" then
+    print("Heap: ", node.heap(), "HTTP: ", "Settings")
     if mqttC ~= nil  and request.method ~= "GET" then
       mqttC:on("offline", function(client)
-        print("Heap: ", node.heap(), "HTTP: ", "Settings")
         response.text(sck, require("server_settings")(request))
       end)
       mqttC:close()
       return
     else
-      print("Heap: ", node.heap(), "HTTP: ", "Settings")
       response.text(sck, require("server_settings")(request))
     end
 
@@ -65,7 +64,17 @@ local function httpReceiver(sck, payload)
 
   elseif request.path == "/ota" then
     print("Heap: ", node.heap(), "HTTP: ", "OTA Update")
-    response.text(sck, require("ota")(request))
+    if mqttC ~= nil  and request.method ~= "GET" then
+        local uri = request.body.uri
+        local host, path, filename = string.match(uri, "%w+://([^/]+)(/[%w%p]+/)(.*)")
+        local f = file.open("ota_update.lua", "w")
+        f.writeline("return function() return " .. "'"..host.."'," .. "'"..path.."'," .. "'"..filename.."'" .. " end")
+        f.close()
+        response.text(sck, '{ "status":"ok", "host":"'.. host ..'", "path":"'.. path ..'", "filename":"'.. filename ..'" }')
+        tmr.create():alarm(1000, tmr.ALARM_SINGLE, function() print("Restarting for update") node.restart() end)
+    else
+      response.text(sck, require("ota")(request))
+    end
   end
 
   sck, request, response = nil
