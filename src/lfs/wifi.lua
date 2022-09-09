@@ -61,7 +61,7 @@ local _ = tmr.create():alarm(900, tmr.ALARM_AUTO, function(t)
     gpio.write(4, gpio.HIGH)
     enduser_setup.stop()
 
-    sntp.sync({gw, 'time.google.com', 'pool.ntp.org'},
+    sntp.sync({require("settings").time_server or gw, 'time.google.com', 'pool.ntp.org'},
       function(sec)
         tm = rtctime.epoch2cal(sec)
         print("Heap: ", node.heap(), "Current Date/Time:",
