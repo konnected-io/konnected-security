@@ -30,7 +30,8 @@ local function process(request)
 			endpoint_type = request.body.endpoint_type,
 			blink = request.body.blink,
 			discovery = request.body.discovery,
-			aws = request.body.aws
+			aws = request.body.aws,
+			time_server = request.body.time_server
 		}))
 		setVar("sensors",   require("variables_build")(request.body.sensors))
 		setVar("actuators", require("variables_build")(request.body.actuators))
