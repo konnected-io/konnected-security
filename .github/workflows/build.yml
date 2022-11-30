@@ -35,3 +35,11 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: us-east-2
+      
+      - name: Build manifest.json for ESP Webtools on install.konnected.io
+        run: |
+          mkdir assets
+          ruby ./scripts/update-espwebtools-manifest.rb
+        env:
+          RELEASE_IMAGE_URI: https://konnected-io.s3.us-east-2.amazonaws.com/esp8266/images/konnected-esp8266-${{ steps.get_release.outputs.tag_name }}.bin
+          CHIP_FAMILY: ESP8266
