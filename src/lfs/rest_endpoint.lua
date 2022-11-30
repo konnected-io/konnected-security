@@ -77,7 +77,6 @@ local function startLoop(settings)
     elseif sensorPut[1] then
       t:stop()
       local sensor = sensorPut[1]
-      printHttpResponse(0, sensor)
       timeout:start()
       http.put(table.concat({ settings.endpoint, "/device/", dni }),
         table.concat({ "Authorization: Bearer ", settings.token, "\r\nAccept: application/json\r\nContent-Type: application/json\r\n" }),
