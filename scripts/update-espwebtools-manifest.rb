@@ -11,6 +11,6 @@ end
 manifest = JSON.parse(res.body)
 puts manifest
 build = manifest['builds'].detect{|b| b['chipFamily'] == ENV['CHIP_FAMILY']}
-build['parts'] = { path: ENV['RELEASE_IMAGE_URI'], offset: 0 }
+build['parts'] = [{ path: ENV['RELEASE_IMAGE_URI'], offset: 0 }]
 puts manifest
 File.write('assets/manifest.json', JSON.dump(manifest))
