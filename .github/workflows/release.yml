@@ -65,7 +65,9 @@ jobs:
           flags: --acl public-read
 
       - name: Build manifest.json for ESP Webtools on install.konnected.io
-        run: ruby ./scripts/update-espwebtools-manifest.rb
+        run: |
+          mkdir assets
+          ruby ./scripts/update-espwebtools-manifest.rb
         env:
           RELEASE_IMAGE_URI: https://konnected-io.s3.us-east-2.amazonaws.com/esp8266/images/konnected-esp8266-${{ steps.get_release.outputs.tag_name }}.bin
           CHIP_FAMILY: ESP8266
