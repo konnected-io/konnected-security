@@ -49,11 +49,11 @@ local function startLoop(settings)
 
           if zone ~= nil then
             printHttpResponse(code, {zone = zone, state = state})
-            pin = zoneToPin(actuator.zone)
           else
             printHttpResponse(code, {pin = pin, state = state})
           end
 
+          pin = pin or tonumber(actuator.pin) or zoneToPin(actuator.zone)
           gpio.mode(pin, gpio.OUTPUT)
           if (pin == tonumber(actuator.pin) or zone == actuator.zone) and code >= 200 and code < 300 and state then
             gpio.write(pin, state)
