@@ -20,7 +20,7 @@ else
   BRANCH="$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))"
 fi
 
-FW_TAG="3.0.0-release_20210201"
+FW_TAG="3.0.0-release_20211229"
 FIRMWARE_OVERLAY_PATH="firmware/nodemcu-firmware-overlay"
 LFS_BASE="${PWD}/src/lfs"
 OUTPUT_BASE="${PWD}/build"
