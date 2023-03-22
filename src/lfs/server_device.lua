@@ -24,7 +24,7 @@ local function process(request)
     else
       body = { {
         zone = request.query.zone,
-        state = gpio.read(require("zone_to_pin")(request.query.zone))
+        state = gpio.read(zoneToPin(request.query.zone))
       } }
     end
     return sjson.encode(body)

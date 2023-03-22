@@ -19,7 +19,7 @@ function zoneToPin(zone)
   if zone == 4 or zone == '4' then return 6 end
   if zone == 5 or zone == '5' then return 7 end
   if zone == 6 or zone == '6' then return 9 end
-  if zone == "out" then return 8 end
+  if zone == "out" or zone == "alarm" then return 8 end
 end
 
 local function getDevicePin(device)
