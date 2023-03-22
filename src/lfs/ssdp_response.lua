@@ -5,7 +5,7 @@ local function ssdpResponse(c, d, port, ip)
     local device = require("device")
     local info = node.info("sw_version")
     local urn = d:match("ST: (urn:[%w%p]*)")
-    if (urn == device.urn or string.match(d, "ST: ssdp:all")) then
+    if (string.match(d, "ST:%s*ssdp:all") or (urn and device.urn:sub(1, #urn) == urn)) then
       print("Heap: ", node.heap(), "Responding to UPnP Discovery request from " .. ip .. ":" .. port)
       local resp =
       "HTTP/1.1 200 OK\r\n" ..
