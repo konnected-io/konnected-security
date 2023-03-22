@@ -42,7 +42,7 @@ local function updatePin(payload)
 
   if zone ~= nil then
     print("Heap:", node.heap(), "Actuator Zone:", zone, "State:", state)
-    pin = require("zone_to_pin")(zone)
+    pin = zoneToPin(zone)
   else
     print("Heap:", node.heap(), "Actuator Pin:", pin, "State:", state)
   end

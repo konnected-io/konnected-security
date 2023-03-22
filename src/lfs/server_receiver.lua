@@ -50,7 +50,7 @@ local function httpReceiver(sck, payload)
       response.text(sck, require("server_settings")(request))
     end
 
-  elseif request.path == "/device" then
+  elseif request.path == "/device" or request.path == "/zone" then
     print("Heap: ", node.heap(), "HTTP: ", "Device")
     response.text(sck, require("server_device")(request))
 
